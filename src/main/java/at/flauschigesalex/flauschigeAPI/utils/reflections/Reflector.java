@@ -1,6 +1,6 @@
 package at.flauschigesalex.flauschigeAPI.utils.reflections;
 
-import at.flauschigesalex.flauschigeAPI.FlauschigeMinecraftLibrary;
+import at.flauschigesalex.flauschigeAPI.FlauschigeLibrary;
 import lombok.Getter;
 import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
@@ -28,8 +28,8 @@ public final class Reflector {
 
     @CheckReturnValue
     public ReflectionStatement reflect() {
-        final ArrayList<String> reflectMe = new ArrayList<>(List.of(FlauschigeMinecraftLibrary.getAPI().getOwnDirectoryPath()));
-        reflectMe.addAll(FlauschigeMinecraftLibrary.getAPI().getWorkingDirectoryPath());
+        final ArrayList<String> reflectMe = new ArrayList<>(List.of(FlauschigeLibrary.getAPI().getOwnDirectoryPath()));
+        reflectMe.addAll(FlauschigeLibrary.getAPI().getWorkingDirectoryPath());
         final String[] reflectionPaths = reflectMe.toArray(String[]::new);
         if (!cache.containsKey(reflectionPaths)) cache.put(reflectionPaths, new ReflectionStatement(reflectionPath));
         return cache.get(reflectionPaths);

@@ -1,6 +1,6 @@
 package at.flauschigesalex.flauschigeAPI.database.mongo;
 
-import at.flauschigesalex.flauschigeAPI.FlauschigeMinecraftLibrary;
+import at.flauschigesalex.flauschigeAPI.FlauschigeLibrary;
 import at.flauschigesalex.flauschigeAPI.database.DatabaseCredentials;
 import at.flauschigesalex.flauschigeAPI.database.mongo.annotations.MongoIgnore;
 import at.flauschigesalex.flauschigeAPI.database.mongo.annotations.MongoInformation;
@@ -29,13 +29,13 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public final class MongoManager {
     private final static ArrayList<MongoManager> list = new ArrayList<>();
 
-    public static MongoManager construct(FlauschigeMinecraftLibrary api, DatabaseCredentials credentials) {
+    public static MongoManager construct(FlauschigeLibrary api, DatabaseCredentials credentials) {
         return new MongoManager(api, credentials);
     }
 
     @Getter(AccessLevel.NONE) private MongoClient mongoClient;
     private MongoDatabase mongoDatabase;
-    private final FlauschigeMinecraftLibrary API;
+    private final FlauschigeLibrary API;
     private final DatabaseCredentials credentials;
 
     public MongoCollection<?> getCollection(String name, Class<?> mongoCollectionClass) {
@@ -44,7 +44,7 @@ public final class MongoManager {
         return getMongoDatabase().getCollection(name, mongoCollectionClass);
     }
 
-    private MongoManager(FlauschigeMinecraftLibrary api, DatabaseCredentials credentials) {
+    private MongoManager(FlauschigeLibrary api, DatabaseCredentials credentials) {
         this.API = api;
         this.credentials = credentials;
         list.add(this);
@@ -79,6 +79,7 @@ public final class MongoManager {
         list.remove(this);
     }
 
+    @SuppressWarnings("unchecked")
     private String getMongoInformationClassPath(Class<?> clazz) {
         String text = "instanceof {1}";
         StringBuilder superClassBuilder = new StringBuilder();
@@ -92,6 +93,7 @@ public final class MongoManager {
         return superClassBuilder.append("extends ").append(MongoInformationClass.class.getSimpleName()).toString();
     }
 
+    @SuppressWarnings("unchecked")
     public MongoManager connect() {
         try {
             MongoCredential credential = MongoCredential.createCredential(getCredentials().getUsername(), getCredentials().getDatabase(), getCredentials().getAccessKey().toCharArray());

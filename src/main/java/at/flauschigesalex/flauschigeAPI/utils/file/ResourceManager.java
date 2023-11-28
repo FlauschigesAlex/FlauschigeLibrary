@@ -1,6 +1,6 @@
 package at.flauschigesalex.flauschigeAPI.utils.file;
 
-import at.flauschigesalex.flauschigeAPI.FlauschigeMinecraftLibrary;
+import at.flauschigesalex.flauschigeAPI.FlauschigeLibrary;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +14,7 @@ import java.net.URL;
 public class ResourceManager {
 
     public static @Nullable ResourceManager getResource(String sourcePath) {
-        URL url = FlauschigeMinecraftLibrary.getAPI().getClass().getClassLoader().getResource(sourcePath);
+        URL url = FlauschigeLibrary.getAPI().getClass().getClassLoader().getResource(sourcePath);
         if (url == null) return null;
         return new ResourceManager(url);
     }
