@@ -1,0 +1,25 @@
+@file:Suppress("unused")
+
+package at.flauschigesalex.lib.base.file
+
+import java.io.InputStream
+import java.net.URI
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+
+@Deprecated("Renamed to DataManager", ReplaceWith("DataManager"), DeprecationLevel.ERROR)
+typealias DataHandler = DataManager
+
+abstract class DataManager protected constructor(val uri: URI) {
+
+    abstract fun readStream(): InputStream?
+    open fun readBytes(): ByteArray? = this.readStream()?.readAllBytes()
+    open fun readString(charset: Charset = StandardCharsets.UTF_8): String? = this.readBytes()?.let { String(it, charset) }
+
+    abstract val isReadable: Boolean
+    abstract val isWritable: Boolean
+
+    override fun toString(): String {
+        return this.readString() ?: super.toString()
+    }
+}
