@@ -23,7 +23,8 @@ public final class ReflectionStatement {
     }
 
     ReflectionStatement(final @NotNull String reflectionPath, final @NotNull String... moreReflectionPaths) {
-        final ArrayList<String> list = new ArrayList<>(List.of(reflectionPath));
+        final ArrayList<String> list = new ArrayList<>();
+        list.add(reflectionPath);
         Collections.addAll(list, moreReflectionPaths);
         this.reflectionPaths = list.toArray(String[]::new);
     }
