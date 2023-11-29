@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
 @Getter
-public class FlauschigeLibrary {
+public final class FlauschigeLibrary {
     public static void main(String[] args) {
         getAPI();
     }
@@ -25,14 +25,14 @@ public class FlauschigeLibrary {
         return flauschigeLibrary;
     }
 
-    protected final String ownDirectoryPath;
+    private final String ownDirectoryPath;
     private final ArrayList<String> workingDirectoryPath = new ArrayList<>();
     public FlauschigeLibrary addWorkingDirectory(String path) {
         this.workingDirectoryPath.add(path);
         return this;
     }
 
-    protected FlauschigeLibrary() {
+    private FlauschigeLibrary() {
         this.ownDirectoryPath = getClass().getPackage().getName();
         for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
             if (definedPackage.getName().startsWith(getClass().getPackage().getName())) continue;
