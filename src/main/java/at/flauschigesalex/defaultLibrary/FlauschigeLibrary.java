@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
 @Getter
-public class FlauschigeLibrary {
+public final class FlauschigeLibrary {
     public static void main(String[] args) {
         getAPI();
     }
@@ -32,7 +32,7 @@ public class FlauschigeLibrary {
         return this;
     }
 
-    protected FlauschigeLibrary() {
+    private FlauschigeLibrary() {
         this.ownDirectoryPath = getClass().getPackage().getName();
         for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
             if (definedPackage.getName().startsWith(getClass().getPackage().getName())) continue;
