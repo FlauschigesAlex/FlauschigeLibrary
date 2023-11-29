@@ -16,8 +16,10 @@ public final class ReflectionStatement {
     ArrayList<Reflections> getReflected() {
         if (this.reflections == null) {
             reflections = new ArrayList<>();
-            for (final String reflectionPath : reflectionPaths)
+            for (final String reflectionPath : reflectionPaths) {
+                if (reflectionPath == null) continue;
                 reflections.add(new Reflections(reflectionPath));
+            }
         }
         return reflections;
     }
