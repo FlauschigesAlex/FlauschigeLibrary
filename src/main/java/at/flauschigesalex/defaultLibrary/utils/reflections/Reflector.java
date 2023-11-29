@@ -19,7 +19,7 @@ public final class Reflector {
         return reflector;
     }
 
-    private final HashMap<String[], ReflectionStatement> cache = new HashMap<>();
+    private final HashMap<ArrayList<String>, ReflectionStatement> cache = new HashMap<>();
 
     private Reflector() {
     }
@@ -30,15 +30,15 @@ public final class Reflector {
     public ReflectionStatement reflect() {
         final ArrayList<String> reflectMe = new ArrayList<>(List.of(FlauschigeLibrary.getAPI().getOwnDirectoryPath()));
         reflectMe.addAll(FlauschigeLibrary.getAPI().getWorkingDirectoryPath());
-        final String[] reflectionPaths = reflectMe.toArray(String[]::new);
-        if (!cache.containsKey(reflectionPaths)) cache.put(reflectionPaths, new ReflectionStatement(reflectionPath));
-        return cache.get(reflectionPaths);
+        if (!cache.containsKey(reflectMe)) cache.put(reflectMe, new ReflectionStatement(reflectionPath));
+        return cache.get(reflectMe);
     }
 
     @CheckReturnValue
     public ReflectionStatement reflect(String reflectionPath) {
-        if (!cache.containsKey(new String[]{reflectionPath})) cache.put(new String[]{reflectionPath}, new ReflectionStatement(reflectionPath));
-        return cache.get(new String[]{reflectionPath});
+        final ArrayList<String> list = new ArrayList<>(List.of(reflectionPath));
+        if (!cache.containsKey(list)) cache.put(list, new ReflectionStatement(reflectionPath));
+        return cache.get(list);
     }
 }
 
