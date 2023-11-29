@@ -25,7 +25,7 @@ public class FlauschigeLibrary {
         return flauschigeLibrary;
     }
 
-    private final String ownDirectoryPath;
+    protected String ownDirectoryPath;
     private final ArrayList<String> workingDirectoryPath = new ArrayList<>();
     public FlauschigeLibrary addWorkingDirectory(String path) {
         this.workingDirectoryPath.add(path);
