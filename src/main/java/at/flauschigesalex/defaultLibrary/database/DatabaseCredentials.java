@@ -92,15 +92,12 @@ public class DatabaseCredentials {
                 ports.add(portShort);
             if (portObject instanceof JSONArray jsonArray)
                 for (Object o : jsonArray) {
-                    System.out.println("| "+o);
                     if (o == null) continue;
                     try {
-                        System.out.println("|| "+o);
                         ports.add(Integer.parseInt(o.toString()));
                     } catch (Exception ignore) {}
                 }
         }
-        System.out.println("hallo "+ports);
 
         final ArrayList<String> hosts = new ArrayList<>();
         if (jsonManager.contains("hostname")) {
@@ -119,7 +116,6 @@ public class DatabaseCredentials {
             ports.add(defaultPort);
 
 
-        System.out.println("bye "+ports);
         return new DatabaseCredentials(hosts, username, accessKey, database, ports);
     }
 
@@ -141,9 +137,7 @@ public class DatabaseCredentials {
             throw new DatabaseLoginException("database is null");
         if (ports == null || ports.isEmpty())
             throw new DatabaseLoginException("ports is null or empty");
-        System.err.println(ports);
         while (ports.size() < hostnames.size()) {
-            System.err.println("added Port");
             ports.add(defaultPort);
         }
         this.hostnames = hostnames;
