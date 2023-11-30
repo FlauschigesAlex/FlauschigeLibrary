@@ -96,6 +96,7 @@ public class DatabaseCredentials {
                         ports.add(portShort);
                 }
         }
+        System.out.println("hallo "+ports);
 
         final ArrayList<String> hosts = new ArrayList<>();
         if (jsonManager.contains("hostname")) {
@@ -112,6 +113,9 @@ public class DatabaseCredentials {
 
         if (ports.isEmpty())
             ports.add(defaultPort);
+
+
+        System.out.println("bye "+ports);
         return new DatabaseCredentials(hosts, username, accessKey, database, ports);
     }
 
