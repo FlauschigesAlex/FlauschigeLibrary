@@ -93,10 +93,11 @@ public class DatabaseCredentials {
             if (portObject instanceof JSONArray jsonArray)
                 for (Object o : jsonArray) {
                     System.out.println("| "+o);
-                    if (o instanceof Integer portShort) {
-                        ports.add(portShort);
-                        System.out.println("ee "+o);
-                    }
+                    if (o == null) continue;
+                    try {
+                        System.out.println("|| "+o);
+                        ports.add(Integer.parseInt(o.toString()));
+                    } catch (Exception ignore) {}
                 }
         }
         System.out.println("hallo "+ports);
