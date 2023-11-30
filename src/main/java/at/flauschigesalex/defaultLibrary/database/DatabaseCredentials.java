@@ -18,7 +18,7 @@ public class DatabaseCredentials {
     public static DatabaseCredentials construct(@NotNull String hostname, @NotNull String username, @NotNull CharSequence accessKey, @NotNull String database) {
         return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, accessKey.toString(), database, new ArrayList<>(List.of(defaultPort)));
     }
-    public static DatabaseCredentials construct(@NotNull String hostname, @NotNull String username, @NotNull CharSequence accessKey, @NotNull String database, short port) {
+    public static DatabaseCredentials construct(@NotNull String hostname, @NotNull String username, @NotNull CharSequence accessKey, @NotNull String database, int port) {
         return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, accessKey.toString(), database, new ArrayList<>(List.of(port)));
     }
     public static DatabaseCredentials construct(@NotNull File file) {
@@ -85,14 +85,14 @@ public class DatabaseCredentials {
             database = string;
 
 
-        final ArrayList<Short> ports = new ArrayList<>();
+        final ArrayList<Integer> ports = new ArrayList<>();
         if (jsonManager.contains("port")) {
             Object portObject = jsonManager.asObject("port");
-            if (portObject instanceof Short portShort)
+            if (portObject instanceof Integer portShort)
                 ports.add(portShort);
             if (portObject instanceof JSONArray jsonArray)
                 for (Object o : jsonArray) {
-                    if (o instanceof Short portShort)
+                    if (o instanceof Integer portShort)
                         ports.add(portShort);
                 }
         }
@@ -119,10 +119,10 @@ public class DatabaseCredentials {
     private final String username;
     private final String accessKey;
     private final String database;
-    private final ArrayList<Short> ports;
-    private static final short defaultPort = 27017;
+    private final ArrayList<Integer> ports;
+    private static final int defaultPort = 27017;
 
-    DatabaseCredentials(ArrayList<String> hostnames, String username, String accessKey, String database, ArrayList<Short> ports) {
+    DatabaseCredentials(ArrayList<String> hostnames, String username, String accessKey, String database, ArrayList<Integer> ports) {
         if (hostnames == null || hostnames.isEmpty())
             throw new DatabaseLoginException("hostnames is null or empty");
         if (username == null)
