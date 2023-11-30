@@ -123,18 +123,19 @@ public class DatabaseCredentials {
     private static final short defaultPort = 27017;
 
     DatabaseCredentials(ArrayList<String> hostnames, String username, String accessKey, String database, ArrayList<Short> ports) {
-        if(hostnames == null || hostnames.isEmpty())
+        if (hostnames == null || hostnames.isEmpty())
             throw new DatabaseLoginException("hostnames is null or empty");
-        if(username == null)
+        if (username == null)
             throw new DatabaseLoginException("username is null");
-        if(accessKey == null)
+        if (accessKey == null)
             throw new DatabaseLoginException("accessKey is null");
-        if(database == null)
+        if (database == null)
             throw new DatabaseLoginException("database is null");
-        if(ports == null || ports.isEmpty())
+        if (ports == null || ports.isEmpty())
             throw new DatabaseLoginException("ports is null or empty");
-        if(ports.size() != hostnames.size())
-            throw new DatabaseLoginException("ports size and hostnames size are different");
+        while (ports.size() < hostnames.size()) {
+            ports.add(defaultPort);
+        }
         this.hostnames = hostnames;
         this.username = username;
         this.accessKey = accessKey;
