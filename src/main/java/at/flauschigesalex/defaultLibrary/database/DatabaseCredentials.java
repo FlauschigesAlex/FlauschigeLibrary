@@ -133,7 +133,9 @@ public class DatabaseCredentials {
             throw new DatabaseLoginException("database is null");
         if (ports == null || ports.isEmpty())
             throw new DatabaseLoginException("ports is null or empty");
+        System.err.println(ports);
         while (ports.size() < hostnames.size()) {
+            System.err.println("added Port");
             ports.add(defaultPort);
         }
         this.hostnames = hostnames;

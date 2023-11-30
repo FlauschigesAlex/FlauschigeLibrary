@@ -99,7 +99,6 @@ public final class MongoManager {
         try {
             final ArrayList<ServerAddress> addresses = new ArrayList<>();
             for (int credential = 0; credential < getCredentials().getHostnames().size(); credential++) {
-                System.out.println(getCredentials().getHostnames().get(credential) +" "+ getCredentials().getPorts().get(credential));
                 addresses.add(new ServerAddress(getCredentials().getHostnames().get(credential), getCredentials().getPorts().get(credential)));
             }
             MongoCredential credential = MongoCredential.createCredential(getCredentials().getUsername(), getCredentials().getDatabase(), getCredentials().getAccessKey().toCharArray());
