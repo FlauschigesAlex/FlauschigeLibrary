@@ -2,6 +2,7 @@ package at.flauschigesalex.defaultLibrary.database.mongo;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import at.flauschigesalex.defaultLibrary.database.DatabaseCredentials;
+import at.flauschigesalex.defaultLibrary.database.DatabaseLoginException;
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoInformation;
 import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
@@ -96,10 +97,14 @@ public final class MongoManager {
     @SuppressWarnings("unchecked")
     public MongoManager connect() {
         try {
+            final ArrayList<ServerAddress> addresses = new ArrayList<>();
+            for (int credential = 0; credential < getCredentials().getHostnames().size(); credential++) {
+                addresses.add(new ServerAddress(getCredentials().getHostnames().get(credential), getCredentials().getPorts().get(credential)));
+            }
             MongoCredential credential = MongoCredential.createCredential(getCredentials().getUsername(), getCredentials().getDatabase(), getCredentials().getAccessKey().toCharArray());
             MongoClientSettings settings = MongoClientSettings.builder()
                     .credential(credential)
-                    .applyToClusterSettings(builder -> builder.hosts(List.of(new ServerAddress(getCredentials().getHostname(), getCredentials().getPort()))))
+                    .applyToClusterSettings(builder -> builder.hosts(addresses))
                     .uuidRepresentation(UuidRepresentation.STANDARD)
                     .build();
 

@@ -5,18 +5,21 @@ import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
 import at.flauschigesalex.defaultLibrary.utils.file.ResourceManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.json.simple.JSONArray;
 import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @SuppressWarnings({"unused", "DataFlowIssue"})
 public class DatabaseCredentials {
 
     public static DatabaseCredentials construct(@NotNull String hostname, @NotNull String username, @NotNull CharSequence accessKey, @NotNull String database) {
-        return new DatabaseCredentials(new String[]{hostname, username, accessKey.toString(), database}, defaultPort);
+        return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, accessKey.toString(), database, new ArrayList<>(List.of(defaultPort)));
     }
     public static DatabaseCredentials construct(@NotNull String hostname, @NotNull String username, @NotNull CharSequence accessKey, @NotNull String database, short port) {
-        return new DatabaseCredentials(new String[]{hostname, username, accessKey.toString(), database}, port);
+        return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, accessKey.toString(), database, new ArrayList<>(List.of(port)));
     }
     public static DatabaseCredentials construct(@NotNull File file) {
 
@@ -65,34 +68,77 @@ public class DatabaseCredentials {
     public static DatabaseCredentials construct(@NotNull String jsonString) {
         JsonManager jsonManager = JsonManager.parse(jsonString);
         String[] requiredCredentials = new String[]{"hostname","username","accessKey","database"};
-        String[] credentials = new String[requiredCredentials.length+1];
-        for (int loginCredential = 0; loginCredential < requiredCredentials.length; loginCredential++) {
-            if (!jsonManager.contains(requiredCredentials[loginCredential]))
-                return null;
-            credentials[loginCredential] = jsonManager.asString(requiredCredentials[loginCredential]);
-        }
-        short port = defaultPort;
+
+        String username = null;
+        final Object userObject = jsonManager.asObject("username");
+        if (userObject instanceof String string)
+            username = string;
+
+        String accessKey = null;
+        final Object accessObject = jsonManager.asObject("accessKey");
+        if (accessObject instanceof String string)
+            accessKey = string;
+
+        String database = null;
+        final Object databaseObject = jsonManager.asObject("database");
+        if (databaseObject instanceof String string)
+            database = string;
+
+
+        final ArrayList<Short> ports = new ArrayList<>();
         if (jsonManager.contains("port")) {
             Object portObject = jsonManager.asObject("port");
-            if (!(portObject instanceof Short portShort))
-                throw new DatabaseLoginException("Required credential \""+portObject+"\" is not an instance of \"Short\".");
-            port = portShort;
+            if (portObject instanceof Short portShort)
+                ports.add(portShort);
+            if (portObject instanceof JSONArray jsonArray)
+                for (Object o : jsonArray) {
+                    if (o instanceof Short portShort)
+                        ports.add(portShort);
+                }
         }
-        return new DatabaseCredentials(credentials, port);
+
+        final ArrayList<String> hosts = new ArrayList<>();
+        if (jsonManager.contains("hostname")) {
+            Object hostObject = jsonManager.asObject("hostname");
+            if (hostObject instanceof String hostString)
+                hosts.add(hostString);
+            if (hostObject instanceof JSONArray jsonArray)
+                for (Object o : jsonArray) {
+                    if (o instanceof String hostString) {
+                        hosts.add(hostString);
+                    }
+                }
+        }
+
+        if (ports.isEmpty())
+            ports.add(defaultPort);
+        return new DatabaseCredentials(hosts, username, accessKey, database, ports);
     }
 
-    private final String hostname;
+    private final ArrayList<String> hostnames;
     private final String username;
     private final String accessKey;
     private final String database;
-    private final short port;
+    private final ArrayList<Short> ports;
     private static final short defaultPort = 27017;
 
-    DatabaseCredentials(String[] credentials, short port) {
-        this.hostname = credentials[0];
-        this.username = credentials[1];
-        this.accessKey = credentials[2];
-        this.database = credentials[3];
-        this.port = port;
+    DatabaseCredentials(ArrayList<String> hostnames, String username, String accessKey, String database, ArrayList<Short> ports) {
+        if(hostnames == null || hostnames.isEmpty())
+            throw new DatabaseLoginException("hostnames is null or empty");
+        if(username == null)
+            throw new DatabaseLoginException("username is null");
+        if(accessKey == null)
+            throw new DatabaseLoginException("accessKey is null");
+        if(database == null)
+            throw new DatabaseLoginException("database is null");
+        if(ports == null || ports.isEmpty())
+            throw new DatabaseLoginException("ports is null or empty");
+        if(ports.size() != hostnames.size())
+            throw new DatabaseLoginException("ports size and hostnames size are different");
+        this.hostnames = hostnames;
+        this.username = username;
+        this.accessKey = accessKey;
+        this.database = database;
+        this.ports = ports;
     }
 }

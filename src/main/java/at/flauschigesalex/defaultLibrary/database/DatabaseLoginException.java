@@ -7,7 +7,7 @@ public final class DatabaseLoginException extends DatabaseException {
         super();
     }
 
-    DatabaseLoginException(String message) {
+    public DatabaseLoginException(String message) {
         super(message);
     }
 
