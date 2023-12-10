@@ -2,7 +2,6 @@ package at.flauschigesalex.defaultLibrary.database.mongo;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import at.flauschigesalex.defaultLibrary.database.DatabaseCredentials;
-import at.flauschigesalex.defaultLibrary.database.DatabaseLoginException;
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoInformation;
 import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
@@ -19,7 +18,6 @@ import org.bson.codecs.pojo.PojoCodecProvider;
 import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -30,13 +28,13 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public final class MongoManager {
     private final static ArrayList<MongoManager> list = new ArrayList<>();
 
-    public static MongoManager construct(FlauschigeLibrary api, DatabaseCredentials credentials) {
-        return new MongoManager(api, credentials);
+    public static MongoManager construct(FlauschigeLibrary library, DatabaseCredentials credentials) {
+        return new MongoManager(library, credentials);
     }
 
     @Getter(AccessLevel.NONE) private MongoClient mongoClient;
     private MongoDatabase mongoDatabase;
-    private final FlauschigeLibrary API;
+    private final FlauschigeLibrary library;
     private final DatabaseCredentials credentials;
 
     public MongoCollection<?> getCollection(String name, Class<?> mongoCollectionClass) {
@@ -44,9 +42,12 @@ public final class MongoManager {
             throw new MongoInternalException("Class " + mongoCollectionClass + " cannot be accessed since it wasn't registered.");
         return getMongoDatabase().getCollection(name, mongoCollectionClass);
     }
+    public MongoCollection<?> getCollection(String name) {
+        return getMongoDatabase().getCollection(name);
+    }
 
-    private MongoManager(FlauschigeLibrary api, DatabaseCredentials credentials) {
-        this.API = api;
+    private MongoManager(FlauschigeLibrary library, DatabaseCredentials credentials) {
+        this.library = library;
         this.credentials = credentials;
         list.add(this);
     }
@@ -110,12 +111,12 @@ public final class MongoManager {
 
             PojoCodecProvider.Builder pojoCodecProviderBuilder = PojoCodecProvider.builder();
 
-            for (Class<?> annotatedClass : Reflector.getReflector().reflect(getAPI().getOwnDirectoryPath()).getAnnotatedClasses(MongoInformation.class)) {
+            for (Class<?> annotatedClass : Reflector.getReflector().reflect(getLibrary().getOwnDirectoryPath()).getAnnotatedClasses(MongoInformation.class)) {
                 MongoDatabaseRegisterInformationClass registerInformation = (annotatedClass.getGenericSuperclass() != null && !annotatedClass.isAnnotationPresent(MongoInformation.class)) ? MongoDatabaseRegisterInformationClass.SUPERCLASS : MongoDatabaseRegisterInformationClass.ANNOTATION;
                 if (informationClasses.containsKey(annotatedClass)) continue;
                 informationClasses.put(annotatedClass, registerInformation);
             }
-            for (String workingDirectory : getAPI().getWorkingDirectoryPath()) {
+            for (String workingDirectory : getLibrary().getWorkingDirectoryPath()) {
                 for (Class<?> annotatedClass : Reflector.getReflector().reflect(workingDirectory).getAnnotatedClasses(MongoInformation.class)) {
                     MongoDatabaseRegisterInformationClass registerInformation = (annotatedClass.getGenericSuperclass() != null && !annotatedClass.isAnnotationPresent(MongoInformation.class)) ? MongoDatabaseRegisterInformationClass.SUPERCLASS : MongoDatabaseRegisterInformationClass.ANNOTATION;
                     if (informationClasses.containsKey(annotatedClass)) continue;

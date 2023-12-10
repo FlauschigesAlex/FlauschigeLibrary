@@ -1,8 +1,8 @@
 package at.flauschigesalex.defaultLibrary.database;
 
-import at.flauschigesalex.defaultLibrary.exception.APIException;
+import at.flauschigesalex.defaultLibrary.exception.LibraryException;
 
-public abstract class DatabaseException extends APIException {
+public abstract class DatabaseException extends LibraryException {
 
     protected DatabaseException() {
         super();

@@ -7,9 +7,9 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
 @Getter
-public final class FlauschigeLibrary {
+public class FlauschigeLibrary {
     public static void main(String[] args) {
-        getAPI();
+        getLibrary();
     }
 
     private static FlauschigeLibrary flauschigeLibrary;
@@ -18,9 +18,9 @@ public final class FlauschigeLibrary {
      * Make sure to run this method in your main class!
      * This is extremely important for reflections!
      *
-     * @return an instance of the API
+     * @return an instance of the Library
      */
-    public static FlauschigeLibrary getAPI() {
+    public static FlauschigeLibrary getLibrary() {
         if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
         return flauschigeLibrary;
     }
@@ -32,7 +32,7 @@ public final class FlauschigeLibrary {
         return this;
     }
 
-    private FlauschigeLibrary() {
+    protected FlauschigeLibrary() {
         this.ownDirectoryPath = getClass().getPackage().getName();
         for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
             if (definedPackage.getName().startsWith(getClass().getPackage().getName())) continue;

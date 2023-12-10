@@ -14,7 +14,7 @@ import java.net.URL;
 public class ResourceManager {
 
     public static @Nullable ResourceManager getResource(String sourcePath) {
-        URL url = FlauschigeLibrary.getAPI().getClass().getClassLoader().getResource(sourcePath);
+        URL url = FlauschigeLibrary.getLibrary().getClass().getClassLoader().getResource(sourcePath);
         if (url == null) return null;
         return new ResourceManager(url);
     }
