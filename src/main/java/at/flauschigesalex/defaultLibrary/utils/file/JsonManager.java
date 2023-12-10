@@ -13,7 +13,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 @Getter
-@SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed"})
+@SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed", "unchecked"})
 public final class JsonManager {
 
     public static JsonManager parse(@NotNull String source) {

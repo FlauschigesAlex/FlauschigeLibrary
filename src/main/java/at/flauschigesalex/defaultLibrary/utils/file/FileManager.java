@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.io.*;
+import java.util.ArrayList;
 
 @Getter
 @MongoIgnore
@@ -61,8 +62,21 @@ public final class FileManager {
     }
 
     public boolean delete() {
+        return purge(file);
+    }
+
+    private boolean purge(final @NotNull File file) {
         if (!file.exists())
             return true;
+        if (file.isDirectory()) {
+            final File[] contents = file.listFiles();
+            if (contents != null) {
+                for (File contentFile : contents) {
+                    if (!purge(contentFile))
+                        return false;
+                }
+            }
+        }
         return file.delete();
     }
 
