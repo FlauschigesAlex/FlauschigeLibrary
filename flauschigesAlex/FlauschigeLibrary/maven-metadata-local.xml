@@ -3,10 +3,11 @@
   <groupId>flauschigesAlex</groupId>
   <artifactId>FlauschigeLibrary</artifactId>
   <versioning>
-    <release>v1.0.1</release>
+    <release>v1.0.2</release>
     <versions>
       <version>v1.0.1</version>
+      <version>v1.0.2</version>
     </versions>
-    <lastUpdated>20231130234842</lastUpdated>
+    <lastUpdated>20231210000420</lastUpdated>
   </versioning>
 </metadata>

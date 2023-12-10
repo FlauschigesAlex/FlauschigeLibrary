@@ -28,8 +28,8 @@ public final class Reflector {
 
     @CheckReturnValue
     public ReflectionStatement reflect() {
-        final ArrayList<String> reflectMe = new ArrayList<>(List.of(FlauschigeLibrary.getAPI().getOwnDirectoryPath()));
-        reflectMe.addAll(FlauschigeLibrary.getAPI().getWorkingDirectoryPath());
+        final ArrayList<String> reflectMe = new ArrayList<>(List.of(FlauschigeLibrary.getLibrary().getOwnDirectoryPath()));
+        reflectMe.addAll(FlauschigeLibrary.getLibrary().getWorkingDirectoryPath());
         if (!cache.containsKey(reflectMe)) cache.put(reflectMe, new ReflectionStatement(reflectionPath));
         return cache.get(reflectMe);
     }
