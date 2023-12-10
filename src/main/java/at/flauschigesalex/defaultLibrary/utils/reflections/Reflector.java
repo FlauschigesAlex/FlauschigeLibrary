@@ -30,7 +30,7 @@ public final class Reflector {
     public ReflectionStatement reflect() {
         final ArrayList<String> reflectMe = new ArrayList<>(List.of(FlauschigeLibrary.getLibrary().getOwnDirectoryPath()));
         reflectMe.addAll(FlauschigeLibrary.getLibrary().getWorkingDirectoryPath());
-        if (!cache.containsKey(reflectMe)) cache.put(reflectMe, new ReflectionStatement(reflectionPath));
+        if (!cache.containsKey(reflectMe)) cache.put(reflectMe, new ReflectionStatement(FlauschigeLibrary.getLibrary().getOwnDirectoryPath(), FlauschigeLibrary.getLibrary().getWorkingDirectoryPath().toArray(String[]::new)));
         return cache.get(reflectMe);
     }
 
