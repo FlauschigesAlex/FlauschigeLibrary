@@ -34,15 +34,11 @@ public class FlauschigeLibrary {
 
     protected FlauschigeLibrary() {
         this.ownDirectoryPath = getClass().getPackage().getName();
-        for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
-            if (definedPackage.getName().startsWith(getClass().getPackage().getName())) continue;
-            boolean doContinue = false;
+        loop: for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
+            if (definedPackage.getName().startsWith(ownDirectoryPath)) continue;
             for (String workingDirectory : this.workingDirectoryPath) {
-                if (!workingDirectory.startsWith(definedPackage.getName())) continue;
-                doContinue = true;
-                break;
+                if (definedPackage.getName().startsWith(workingDirectory)) continue loop;
             }
-            if (doContinue) continue;
             this.workingDirectoryPath.add(definedPackage.getName());
         }
     }
