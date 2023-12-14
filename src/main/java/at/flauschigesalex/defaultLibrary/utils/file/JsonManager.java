@@ -41,9 +41,8 @@ public final class JsonManager {
             try {
                 if ((read = fileInputStream.read()) == -1) break;
                 builder.append((char) read);
-            } catch (IOException fail) {
-                fail.printStackTrace();
-            }
+            } catch (IOException ignore) {
+                            }
         }
         if (builder.isEmpty())
             return null;
@@ -52,9 +51,8 @@ public final class JsonManager {
     public static JsonManager parse(@NotNull URL resource) {
         try {
             return parse(resource.openStream());
-        } catch (IOException fail) {
-            fail.printStackTrace();
-        }
+        } catch (IOException ignore) {
+                    }
         return null;
     }
 
@@ -76,8 +74,7 @@ public final class JsonManager {
     public JSONObject asJsonObject() {
         try {
             return (JSONObject) asObject();
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
@@ -88,8 +85,7 @@ public final class JsonManager {
     public Object asObject() {
         try {
             return new JSONParser().parse(getSource());
-        } catch (ParseException fail) {
-            fail.printStackTrace();
+        } catch (ParseException ignore) {
         }
         return null;
     }
@@ -100,8 +96,7 @@ public final class JsonManager {
     public JSONArray asJsonArray() {
         try {
             return (JSONArray) asObject();
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
@@ -135,8 +130,7 @@ public final class JsonManager {
                 return current.get(splitSource);
             try {
                 current = (JSONObject) object;
-            } catch (Exception fail) {
-                fail.printStackTrace();
+            } catch (Exception ignore) {
                 break;
             }
         }
@@ -145,80 +139,70 @@ public final class JsonManager {
     public JSONObject asJsonObject(String sourcePath) {
         try {
             return (JSONObject) asObject(sourcePath);
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public JSONArray asJsonArray(String sourcePath) {
         try {
             return (JSONArray) asObject(sourcePath);
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<Object> asList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Object>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<String> asStringList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<String>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<Short> asShortList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Short>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<Integer> asIntegerList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Integer>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<Long> asLongList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Long>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<Float> asFloatList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Float>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<Double> asDoubleList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Double>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public ArrayList<Boolean> asBooleanList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Boolean>) asObject(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
@@ -232,48 +216,42 @@ public final class JsonManager {
     public Short asShort(String sourcePath) {
         try {
             return Short.parseShort(asString(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+        } catch (Exception ignore) {
         }
         return null;
     }
     public Integer asInteger(String sourcePath) {
         try {
-            return Integer.parseInt(asString(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+            return Integer.valueOf(asString(sourcePath));
+        } catch (Exception ignore) {
         }
         return null;
     }
     public Long asLong(String sourcePath) {
         try {
-            return Long.parseLong(asString(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+            return Long.valueOf(asString(sourcePath));
+        } catch (Exception ignore) {
         }
         return null;
     }
     public Float asFloat(String sourcePath) {
         try {
-            return Float.parseFloat(asString(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+            return Float.valueOf(asString(sourcePath));
+        } catch (Exception ignore) {
         }
         return null;
     }
     public Double asDouble(String sourcePath) {
         try {
-            return Double.parseDouble(asString(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+            return Double.valueOf(asString(sourcePath));
+        } catch (Exception ignore) {
         }
         return null;
     }
     public Boolean asBoolean(String sourcePath) {
         try {
-            return Boolean.parseBoolean(asString(sourcePath));
-        } catch (Exception fail) {
-            fail.printStackTrace();
+            return Boolean.valueOf(asString(sourcePath));
+        } catch (Exception ignore) {
         }
         return null;
     }
