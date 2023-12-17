@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.io.*;
+import java.util.ArrayList;
 
 @Getter
 @MongoIgnore
@@ -88,18 +89,23 @@ public final class FileManager {
         return null;
     }
 
-    public boolean write(@NotNull String string) {
+    public boolean write(byte[] bytes) {
         if (!isWritable())
             return false;
         try {
             OutputStream stream = new FileOutputStream(file);
-            stream.write(string.getBytes());
+            stream.write(bytes);
             stream.close();
             return true;
         } catch (Exception fail) {
             fail.printStackTrace();
         }
         return false;
+    }
+    public boolean write(@NotNull String string) {
+        if (!isWritable())
+            return false;
+        return write(string.getBytes());
     }
 
     public boolean write(@NotNull JsonManager jsonManager) {
@@ -111,13 +117,18 @@ public final class FileManager {
     }
 
     public boolean write(@NotNull InputStream inputStream) {
-        StringBuilder builder = new StringBuilder();
+        final ArrayList<Byte> byteArray = new ArrayList<>();
         int read;
         try {
             while ((read = inputStream.read()) != -1) {
-                builder.append((char) read);
+                byteArray.add((byte) read);
             }
-            return write(builder);
+
+            byte[] bytes = new byte[byteArray.size()];
+            for (int bytePosition = 0; bytePosition < byteArray.size(); bytePosition++) {
+                bytes[bytePosition] = byteArray.get(bytePosition);
+            }
+            write(bytes);
         } catch (Exception fail) {
             fail.printStackTrace();
         }

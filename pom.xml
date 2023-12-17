@@ -6,7 +6,7 @@
 
     <groupId>at.flauschigesalex</groupId>
     <artifactId>FlauschigeLibrary</artifactId>
-    <version>v1.1.0</version>
+    <version>v1.1.1</version>
     <packaging>jar</packaging>
 
     <name>${artifactId}</name>
@@ -55,6 +55,12 @@
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
             <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-resolver-provider</artifactId>
+            <version>3.8.5</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

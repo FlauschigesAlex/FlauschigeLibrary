@@ -20,7 +20,6 @@ public final class NameCorrection {
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     public String correct() throws NullPointerException {
         if (mojangAPI == null) {
             throw new NullPointerException("mojangAPI is not instanced!");

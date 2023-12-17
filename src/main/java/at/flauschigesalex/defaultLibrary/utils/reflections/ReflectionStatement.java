@@ -30,23 +30,26 @@ public final class ReflectionStatement {
         return this;
     }
 
-    public ArrayList<Class<?>> getSubClasses(final @NotNull Class<?> clazz) {
-        final ArrayList<Class<?>> reflectedClasses = new ArrayList<>();
+    public <C> ArrayList<Class<? extends C>> getSubClasses(final @NotNull Class<C> clazz) {
+        final ArrayList<Class<? extends C>> reflectedClasses = new ArrayList<>();
         for (final Reflections reflected : getReflected()) {
             reflectedClasses.addAll(reflected.getSubTypesOf(clazz));
         }
-        return removeAll(reflectedClasses);
+        final ArrayList<Class<?>> ignoreClasses = new ArrayList<>(reflectedClasses);
+        removeUnnecessary(ignoreClasses);
+        return reflectedClasses;
     }
 
-    public ArrayList<Class<?>> getAnnotatedClasses(final @NotNull Class<? extends Annotation> annotation) {
+    public <A extends Annotation> ArrayList<Class<?>> getAnnotatedClasses(final @NotNull Class<A> annotation) {
         final ArrayList<Class<?>> reflectedClasses = new ArrayList<>();
         for (final Reflections reflected : getReflected()) {
-            reflectedClasses.addAll(reflected.getTypesAnnotatedWith(annotation));
+            if (!reflected.getClass().isAnnotationPresent(annotation)) continue;
+            reflectedClasses.add(reflected.getClass());
         }
-        return removeAll(reflectedClasses);
+        return removeUnnecessary(reflectedClasses);
     }
 
-    private ArrayList<Class<?>> removeAll(final @NotNull ArrayList<Class<?>> arrayList) {
+    private ArrayList<Class<?>> removeUnnecessary(final @NotNull ArrayList<Class<?>> arrayList) {
         for (final Reflections reflected : getReflected()) {
             arrayList.removeAll(reflected.getTypesAnnotatedWith(ReflectorInvisible.class));
         }

@@ -25,7 +25,6 @@ public final class NameResolver {
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     public String resolve() throws NullPointerException {
         if (mojangAPI == null) {
             throw new NullPointerException("mojangAPI is not instanced!");
