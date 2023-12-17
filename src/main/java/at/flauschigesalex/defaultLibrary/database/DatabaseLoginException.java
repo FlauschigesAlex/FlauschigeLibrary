@@ -3,12 +3,12 @@ package at.flauschigesalex.defaultLibrary.database;
 @SuppressWarnings("unused")
 public final class DatabaseLoginException extends DatabaseException {
 
-    DatabaseLoginException() {
-        super();
-    }
-
     public DatabaseLoginException(String message) {
         super(message);
+    }
+
+    DatabaseLoginException() {
+        super();
     }
 
     DatabaseLoginException(String message, Throwable cause) {

@@ -4,7 +4,8 @@ import java.util.Comparator;
 
 public final class MongoInformationClassComparator implements Comparator<Class<?>> {
 
-    MongoInformationClassComparator() {}
+    MongoInformationClassComparator() {
+    }
 
     public int compare(Class<?> mongoInformation1, Class<?> mongoInformation2) {
         int min = Math.min(mongoInformation1.getName().length(), mongoInformation2.getName().length());
@@ -24,7 +25,6 @@ public final class MongoInformationClassComparator implements Comparator<Class<?
         }
         return 0;
     }
-
 
     private int weight(char c) {
         String regex = ".0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ_";

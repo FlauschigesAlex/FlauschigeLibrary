@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.database.mongo.annotations;
+package at.flauschigesalex.defaultLibrary.utils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,5 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface MongoInformation {
+public @interface Silent {
 }

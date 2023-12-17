@@ -11,7 +11,7 @@ import java.net.URL;
 
 @Getter
 @SuppressWarnings("unused")
-public class ResourceManager {
+public final class ResourceManager {
 
     public static @Nullable ResourceManager getResource(String sourcePath) {
         URL url = FlauschigeLibrary.getLibrary().getClass().getClassLoader().getResource(sourcePath);
@@ -20,6 +20,8 @@ public class ResourceManager {
     }
 
     private final URL url;
+    @Getter(AccessLevel.NONE)
+    private JsonManager jsonManager;
 
     ResourceManager(@NotNull URL url) {
         this.url = url;
@@ -28,7 +30,8 @@ public class ResourceManager {
     public @Nullable String read() {
         if (!isReadable())
             return null;
-        StringBuilder builder = new StringBuilder(); int read;
+        StringBuilder builder = new StringBuilder();
+        int read;
         try {
             InputStream inputStream = url.openStream();
             while ((read = inputStream.read()) != -1) {
@@ -42,8 +45,15 @@ public class ResourceManager {
         return null;
     }
 
-    @Getter(AccessLevel.NONE) private JsonManager jsonManager;
-    public @Nullable JsonManager jsonFile() {
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "@ {"
+                + "\nurl:" + url
+                + "\nread:" + read()
+                + "\n}";
+    }
+
+    public @Nullable JsonManager getJsonManager() {
         final String read = read();
         if (read == null)
             return null;
@@ -63,13 +73,5 @@ public class ResourceManager {
             fail.printStackTrace();
         }
         return false;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName()+"@ {"
-                +"\nurl:"+url
-                +"\nread:"+read()
-                +"\n}";
     }
 }

@@ -8,11 +8,11 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused"})
 @Getter
 public class FlauschigeLibrary {
+    private static FlauschigeLibrary flauschigeLibrary;
+
     public static void main(String[] args) {
         getLibrary();
     }
-
-    private static FlauschigeLibrary flauschigeLibrary;
 
     /**
      * Make sure to run this method in your main class!
@@ -27,14 +27,11 @@ public class FlauschigeLibrary {
 
     private final String ownDirectoryPath;
     private final ArrayList<String> workingDirectoryPath = new ArrayList<>();
-    public FlauschigeLibrary addWorkingDirectory(String path) {
-        this.workingDirectoryPath.add(path);
-        return this;
-    }
 
     protected FlauschigeLibrary() {
         this.ownDirectoryPath = getClass().getPackage().getName();
-        loop: for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
+        loop:
+        for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
             if (definedPackage.getName().startsWith(ownDirectoryPath)) continue;
             for (String workingDirectory : this.workingDirectoryPath) {
                 if (definedPackage.getName().startsWith(workingDirectory)) continue loop;
@@ -43,9 +40,15 @@ public class FlauschigeLibrary {
         }
     }
 
+    public FlauschigeLibrary addWorkingDirectory(String path) {
+        this.workingDirectoryPath.add(path);
+        return this;
+    }
+
     public MojangAPI getMojangAPI() {
         return MojangAPI.mojangAPI();
     }
+
     public Reflector getReflector() {
         return Reflector.getReflector();
     }

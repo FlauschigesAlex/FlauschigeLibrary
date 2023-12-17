@@ -20,17 +20,17 @@ public final class Reflector {
     }
 
     private final HashMap<ArrayList<String>, ReflectionStatement> cache = new HashMap<>();
+    private String reflectionPath;
 
     private Reflector() {
     }
-
-    private String reflectionPath;
 
     @CheckReturnValue
     public ReflectionStatement reflect() {
         final ArrayList<String> reflectMe = new ArrayList<>(List.of(FlauschigeLibrary.getLibrary().getOwnDirectoryPath()));
         reflectMe.addAll(FlauschigeLibrary.getLibrary().getWorkingDirectoryPath());
-        if (!cache.containsKey(reflectMe)) cache.put(reflectMe, new ReflectionStatement(FlauschigeLibrary.getLibrary().getOwnDirectoryPath(), FlauschigeLibrary.getLibrary().getWorkingDirectoryPath().toArray(String[]::new)));
+        if (!cache.containsKey(reflectMe))
+            cache.put(reflectMe, new ReflectionStatement(FlauschigeLibrary.getLibrary().getOwnDirectoryPath(), FlauschigeLibrary.getLibrary().getWorkingDirectoryPath().toArray(String[]::new)));
         return cache.get(reflectMe);
     }
 

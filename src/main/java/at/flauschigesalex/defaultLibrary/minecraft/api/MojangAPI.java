@@ -8,18 +8,22 @@ import java.util.UUID;
 public final class MojangAPI {
 
     private static MojangAPI mojangAPI;
+
     public static MojangAPI mojangAPI() {
         if (mojangAPI == null) mojangAPI = new MojangAPI();
         return mojangAPI;
     }
+
     HashMap<String, String> cache = new HashMap<>();
 
-    private MojangAPI() {}
+    private MojangAPI() {
+    }
 
     @CheckReturnValue
     public NameResolver nameResolver(UUID uuid) {
         return new NameResolver(uuid).instanced(this);
     }
+
     @CheckReturnValue
     public NameResolver nameResolver(String uuid) {
         return new NameResolver(uuid).instanced(this);

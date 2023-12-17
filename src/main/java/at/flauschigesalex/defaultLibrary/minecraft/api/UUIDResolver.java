@@ -27,7 +27,6 @@ public final class UUIDResolver {
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     public String resolveString() throws NullPointerException {
         if (mojangAPI == null) {
             throw new NullPointerException("mojangAPI is not instanced!");
@@ -35,7 +34,7 @@ public final class UUIDResolver {
         for (String name : mojangAPI.cache.keySet()) {
             if (!this.name.equalsIgnoreCase(name)) continue;
             final String uuid = mojangAPI.cache.get(name);
-            String uuidSubString = uuid.substring(0,8)+"-"+uuid.substring(8,12)+"-"+uuid.substring(12,16)+"-"+uuid.substring(16,20)+"-"+uuid.substring(20);
+            String uuidSubString = uuid.substring(0, 8) + "-" + uuid.substring(8, 12) + "-" + uuid.substring(12, 16) + "-" + uuid.substring(16, 20) + "-" + uuid.substring(20);
             if (subString) return uuidSubString;
             return uuid;
         }
@@ -55,10 +54,11 @@ public final class UUIDResolver {
             String name = jsonManager.asString("name");
             String uuid = jsonManager.asString("id");
             if (uuid == null) return null;
-            String uuidSubString = uuid.substring(0,8)+"-"+uuid.substring(8,12)+"-"+uuid.substring(12,16)+"-"+uuid.substring(16,20)+"-"+uuid.substring(20);
+            String uuidSubString = uuid.substring(0, 8) + "-" + uuid.substring(8, 12) + "-" + uuid.substring(12, 16) + "-" + uuid.substring(16, 20) + "-" + uuid.substring(20);
             mojangAPI.cache.put(name, uuid);
-            return subString?uuidSubString:uuid;
-        } catch (Exception ignore) {}
+            return subString ? uuidSubString : uuid;
+        } catch (Exception ignore) {
+        }
         return null;
     }
 

@@ -13,46 +13,53 @@ import java.net.URL;
 import java.util.ArrayList;
 
 @Getter
-@SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed", "unchecked"})
+@SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
     public static JsonManager parse(@NotNull String source) {
         return new JsonManager(source);
     }
+
     public static JsonManager parse(@NotNull StringBuilder source) {
         return parse(source.toString());
     }
+
     public static JsonManager parse(@NotNull FileManager fileManager) {
         final String read = fileManager.read();
         if (read == null) return null;
         return parse(read);
     }
+
     public static JsonManager parse(@NotNull ResourceManager resourceManager) {
         final String read = resourceManager.read();
         if (read == null) return null;
         return parse(read);
     }
+
     public static JsonManager parse(@NotNull File file) {
         return parse(FileManager.getFile(file));
     }
+
     public static JsonManager parse(@NotNull InputStream fileInputStream) {
-        StringBuilder builder = new StringBuilder(); int read;
+        StringBuilder builder = new StringBuilder();
+        int read;
         while (true) {
             try {
                 if ((read = fileInputStream.read()) == -1) break;
                 builder.append((char) read);
             } catch (IOException ignore) {
-                            }
+            }
         }
         if (builder.isEmpty())
             return null;
         return parse(builder);
     }
+
     public static JsonManager parse(@NotNull URL resource) {
         try {
             return parse(resource.openStream());
         } catch (IOException ignore) {
-                    }
+        }
         return null;
     }
 
@@ -62,14 +69,10 @@ public final class JsonManager {
     JsonManager(String source) {
         this.source = source;
     }
-    JsonManager file(FileManager fileManager) {
-        this.fileManager = fileManager;
-        return this;
-    }
 
     /**
-     * @deprecated check {@link #asJsonObject(String)}
      * @return {@link JsonManager} as a {@link JSONObject}
+     * @deprecated check {@link #asJsonObject(String)}
      */
     public JSONObject asJsonObject() {
         try {
@@ -78,9 +81,10 @@ public final class JsonManager {
         }
         return null;
     }
+
     /**
-     * @deprecated check {@link #asObject(String)}
      * @return {@link JsonManager} as an {@link Object}
+     * @deprecated check {@link #asObject(String)}
      */
     public Object asObject() {
         try {
@@ -89,9 +93,10 @@ public final class JsonManager {
         }
         return null;
     }
+
     /**
-     * @deprecated check {@link #asObject(String)}
      * @return {@link JsonManager} as an {@link Object}
+     * @deprecated check {@link #asObject(String)}
      */
     public JSONArray asJsonArray() {
         try {
@@ -100,15 +105,11 @@ public final class JsonManager {
         }
         return null;
     }
+
     public String asJsonString() {
         JSONObject jsonObject = asJsonObject();
         if (asJsonObject() == null) return null;
         return asJsonObject().toJSONString();
-    }
-    private Object get(JSONObject jsonObject, String sourcePath) {
-        if (!jsonObject.containsKey(sourcePath))
-            return null;
-        return jsonObject.get(sourcePath);
     }
 
     public Object asObject(String sourcePath) {
@@ -136,6 +137,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public JSONObject asJsonObject(String sourcePath) {
         try {
             return (JSONObject) asObject(sourcePath);
@@ -143,6 +145,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public JSONArray asJsonArray(String sourcePath) {
         try {
             return (JSONArray) asObject(sourcePath);
@@ -150,6 +153,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<Object> asList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Object>) asObject(sourcePath));
@@ -157,6 +161,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<String> asStringList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<String>) asObject(sourcePath));
@@ -164,6 +169,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<Short> asShortList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Short>) asObject(sourcePath));
@@ -171,6 +177,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<Integer> asIntegerList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Integer>) asObject(sourcePath));
@@ -178,6 +185,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<Long> asLongList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Long>) asObject(sourcePath));
@@ -185,6 +193,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<Float> asFloatList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Float>) asObject(sourcePath));
@@ -192,6 +201,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<Double> asDoubleList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Double>) asObject(sourcePath));
@@ -199,6 +209,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public ArrayList<Boolean> asBooleanList(String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Boolean>) asObject(sourcePath));
@@ -213,6 +224,7 @@ public final class JsonManager {
             return null;
         return object.toString();
     }
+
     public Short asShort(String sourcePath) {
         try {
             return Short.parseShort(asString(sourcePath));
@@ -220,6 +232,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public Integer asInteger(String sourcePath) {
         try {
             return Integer.valueOf(asString(sourcePath));
@@ -227,6 +240,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public Long asLong(String sourcePath) {
         try {
             return Long.valueOf(asString(sourcePath));
@@ -234,6 +248,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public Float asFloat(String sourcePath) {
         try {
             return Float.valueOf(asString(sourcePath));
@@ -241,6 +256,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public Double asDouble(String sourcePath) {
         try {
             return Double.valueOf(asString(sourcePath));
@@ -248,6 +264,7 @@ public final class JsonManager {
         }
         return null;
     }
+
     public Boolean asBoolean(String sourcePath) {
         try {
             return Boolean.valueOf(asString(sourcePath));
@@ -269,7 +286,7 @@ public final class JsonManager {
         String[] splitSourcePath = sourcePath.split("\\.");
         for (String splitSource : splitSourcePath) {
             currentPath = splitSource;
-            if (currentPath.equals(splitSourcePath[splitSourcePath.length-1])) {
+            if (currentPath.equals(splitSourcePath[splitSourcePath.length - 1])) {
                 boolean value = current.put(currentPath, object) != null;
                 this.source = jsonObject.toJSONString();
                 return value;
@@ -283,6 +300,7 @@ public final class JsonManager {
 
     /**
      * Requires this {@link JsonManager} to be created with a {@link FileManager}.
+     *
      * @return If the file was successfully updated
      */
     public boolean updateFile() {
@@ -294,14 +312,26 @@ public final class JsonManager {
     public boolean contains(String sourcePath) {
         return asObject(sourcePath) != null;
     }
+
     public boolean instanceOf(String sourcePath, Class<? super Object> aClass) {
         return aClass.isInstance(asObject(sourcePath));
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName()+"@ {"
-                +"\ncontent: "+getSource()
-                +"\n}";
+        return getClass().getSimpleName() + "@ {"
+                + "\ncontent: " + getSource()
+                + "\n}";
+    }
+
+    JsonManager file(FileManager fileManager) {
+        this.fileManager = fileManager;
+        return this;
+    }
+
+    private Object get(JSONObject jsonObject, String sourcePath) {
+        if (!jsonObject.containsKey(sourcePath))
+            return null;
+        return jsonObject.get(sourcePath);
     }
 }

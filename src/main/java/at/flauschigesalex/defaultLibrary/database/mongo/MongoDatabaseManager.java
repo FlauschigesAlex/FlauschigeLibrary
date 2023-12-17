@@ -4,6 +4,7 @@ import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import at.flauschigesalex.defaultLibrary.database.DatabaseCredentials;
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoInformation;
+import at.flauschigesalex.defaultLibrary.utils.Silent;
 import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
 import com.mongodb.*;
 import com.mongodb.client.MongoClient;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.jetbrains.annotations.NotNull;
 import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,78 +27,53 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public final class MongoManager {
-    private final static ArrayList<MongoManager> list = new ArrayList<>();
+public final class MongoDatabaseManager {
 
-    public static MongoManager construct(FlauschigeLibrary library, DatabaseCredentials credentials) {
-        return new MongoManager(library, credentials);
-    }
-
-    @Getter(AccessLevel.NONE) private MongoClient mongoClient;
-    private MongoDatabase mongoDatabase;
     private final FlauschigeLibrary library;
     private final DatabaseCredentials credentials;
+    private final HashMap<Class<?>, MongoDatabaseRegisterInformationClass> informationClasses = new HashMap<>();
+    private final ArrayList<Class<?>> ignoredInformationClasses = new ArrayList<>();
+    @Getter(AccessLevel.NONE)
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDatabase;
 
-    public MongoCollection<?> getCollection(String name, Class<?> mongoCollectionClass) {
+    public MongoDatabaseManager(FlauschigeLibrary library, DatabaseCredentials credentials) {
+        this.library = library;
+        this.credentials = credentials;
+    }
+
+    public <C> MongoCollection<C> getCollection(final @NotNull String name, final @NotNull Class<C> mongoCollectionClass) {
         if (!informationClasses.containsKey(mongoCollectionClass))
             throw new MongoInternalException("Class " + mongoCollectionClass + " cannot be accessed since it wasn't registered.");
         return getMongoDatabase().getCollection(name, mongoCollectionClass);
     }
-    public MongoCollection<?> getCollection(String name) {
+
+    public MongoCollection<?> getCollection(final @NotNull String name) {
         return getMongoDatabase().getCollection(name);
     }
 
-    private MongoManager(FlauschigeLibrary library, DatabaseCredentials credentials) {
-        this.library = library;
-        this.credentials = credentials;
-        list.add(this);
-    }
-
-    private final HashMap<Class<?>, MongoDatabaseRegisterInformationClass> informationClasses = new HashMap<>();
-    private final ArrayList<Class<?>> ignoredInformationClasses = new ArrayList<>();
-
-    @Getter
-    public enum MongoDatabaseRegisterInformationClass {
-        MANUAL(""),
-        ANNOTATION("@Annotation"),
-        SUPERCLASS("{0}");
-
-        private final String registerTypeString;
-
-        MongoDatabaseRegisterInformationClass(String registerTypeString) {
-            this.registerTypeString = registerTypeString;
-        }
-    }
-
     @CheckReturnValue
-    public MongoManager register(Class<?>... informationClass) {
+    public MongoDatabaseManager register(Class<?>... informationClass) {
         for (Class<?> infoClass : informationClass) {
             informationClasses.put(infoClass, MongoDatabaseRegisterInformationClass.MANUAL);
         }
         return this;
     }
 
+    @CheckReturnValue
+    public MongoDatabaseManager registerSilent(Class<?>... informationClass) {
+        for (Class<?> infoClass : informationClass) {
+            informationClasses.put(infoClass, MongoDatabaseRegisterInformationClass.SILENT);
+        }
+        return this;
+    }
+
     public void close() {
         mongoClient.close();
-        list.remove(this);
     }
 
     @SuppressWarnings("unchecked")
-    private String getMongoInformationClassPath(Class<?> clazz) {
-        String text = "instanceof {1}";
-        StringBuilder superClassBuilder = new StringBuilder();
-        while (clazz.getGenericSuperclass() != null && !clazz.getGenericSuperclass().equals(MongoInformationClass.class)) {
-            if (clazz.getGenericSuperclass().equals(Object.class))
-                return superClassBuilder.append("implements @Annotation").toString();
-            String[] className = clazz.getGenericSuperclass().getTypeName().split("\\.");
-            superClassBuilder.append(text.replace("{1}", className[className.length - 1])).append(" ");
-            clazz = (Class<? extends MongoInformationClass>) clazz.getGenericSuperclass();
-        }
-        return superClassBuilder.append("extends ").append(MongoInformationClass.class.getSimpleName()).toString();
-    }
-
-    @SuppressWarnings("unchecked")
-    public MongoManager connect() {
+    public MongoDatabaseManager connect() {
         try {
             final ArrayList<ServerAddress> addresses = new ArrayList<>();
             for (int credential = 0; credential < getCredentials().getHostnames().size(); credential++) {
@@ -138,10 +115,13 @@ public final class MongoManager {
                 ArrayList<Class<?>> informationClasses = new ArrayList<>(this.informationClasses.keySet());
                 informationClasses.sort(new MongoInformationClassComparator());
                 for (Class<?> informationClass : informationClasses) {
-                    outBuilder.append("\n - ").append(informationClass.getName()).append(" ");
+                    if (informationClass.isAnnotationPresent(Silent.class)) continue;
                     MongoDatabaseRegisterInformationClass registerInformation = this.informationClasses.get(informationClass);
+                    if (registerInformation == MongoDatabaseRegisterInformationClass.SILENT) continue;
+
+                    outBuilder.append("\n - ").append(informationClass.getName()).append(" ");
                     if (registerInformation == MongoDatabaseRegisterInformationClass.MANUAL) continue;
-                    String registerTypeString = registerInformation.getRegisterTypeString();
+                    String registerTypeString = registerInformation.registerTypeString;
                     if (registerInformation == MongoDatabaseRegisterInformationClass.SUPERCLASS) {
                         Class<? extends MongoInformationClass> mongoInformationClass = (Class<? extends MongoInformationClass>) informationClass;
                         registerTypeString = registerTypeString.replace("{0}", getMongoInformationClassPath(mongoInformationClass));
@@ -167,6 +147,33 @@ public final class MongoManager {
             return this;
         } catch (IllegalStateException exception) {
             throw new MongoClientException(exception.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String getMongoInformationClassPath(Class<?> clazz) {
+        String text = "instanceof {1}";
+        StringBuilder superClassBuilder = new StringBuilder();
+        while (clazz.getGenericSuperclass() != null && !clazz.getGenericSuperclass().equals(MongoInformationClass.class)) {
+            if (clazz.getGenericSuperclass().equals(Object.class))
+                return superClassBuilder.append("implements @Annotation").toString();
+            String[] className = clazz.getGenericSuperclass().getTypeName().split("\\.");
+            superClassBuilder.append(text.replace("{1}", className[className.length - 1])).append(" ");
+            clazz = (Class<? extends MongoInformationClass>) clazz.getGenericSuperclass();
+        }
+        return superClassBuilder.append("extends ").append(MongoInformationClass.class.getSimpleName()).toString();
+    }
+
+    public enum MongoDatabaseRegisterInformationClass {
+        MANUAL(""),
+        ANNOTATION("@Annotation"),
+        SUPERCLASS("{0}"),
+        SILENT(null);
+
+        private final String registerTypeString;
+
+        MongoDatabaseRegisterInformationClass(String registerTypeString) {
+            this.registerTypeString = registerTypeString;
         }
     }
 }

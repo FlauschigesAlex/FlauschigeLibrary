@@ -10,5 +10,6 @@ public abstract class MongoInformationClass {
     /**
      * Upon connecting to your MongoDatabase, all classes extending this class will be registered automatically.
      */
-    public MongoInformationClass() {}
+    public MongoInformationClass() {
+    }
 }

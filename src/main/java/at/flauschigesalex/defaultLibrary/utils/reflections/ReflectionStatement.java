@@ -5,24 +5,15 @@ import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 @SuppressWarnings({"unused"})
 public final class ReflectionStatement {
 
     private final String[] reflectionPaths;
+    private final ArrayList<Class<?>> ignoredClasses = new ArrayList<>();
+    private final ArrayList<Class<?>> ignoredExtendedClasses = new ArrayList<>();
+    private final ArrayList<Class<? extends Annotation>> ignoredAnnotations = new ArrayList<>();
     private ArrayList<Reflections> reflections;
-
-    ArrayList<Reflections> getReflected() {
-        if (this.reflections == null) {
-            reflections = new ArrayList<>();
-            for (final String reflectionPath : reflectionPaths) {
-                if (reflectionPath == null) continue;
-                reflections.add(new Reflections(reflectionPath));
-            }
-        }
-        return reflections;
-    }
 
     ReflectionStatement(final @NotNull String reflectionPath, final @NotNull String... moreReflectionPaths) {
         final ArrayList<String> list = new ArrayList<>();
@@ -31,24 +22,12 @@ public final class ReflectionStatement {
         this.reflectionPaths = list.toArray(String[]::new);
     }
 
-    private final ArrayList<Class<?>> ignoredClasses = new ArrayList<>();
-    private final ArrayList<Class<?>> ignoredExtendedClasses = new ArrayList<>();
-    private final ArrayList<Class<? extends Annotation>> ignoredAnnotations = new ArrayList<>();
-
     public ReflectionStatement ignoreClass(final @NotNull Class<?>... clazz) {
         for (final Class<?> aClass : clazz) {
             if (ignoredClasses.contains(aClass)) continue;
             ignoredClasses.add(aClass);
         }
         return this;
-    }
-
-    private ArrayList<Class<?>> removeAll(final @NotNull ArrayList<Class<?>> arrayList) {
-        for (final Reflections reflected : getReflected()) {
-            arrayList.removeAll(reflected.getTypesAnnotatedWith(ReflectorInvisible.class));
-        }
-        arrayList.removeAll(ignoredClasses);
-        return arrayList;
     }
 
     public ArrayList<Class<?>> getSubClasses(final @NotNull Class<?> clazz) {
@@ -65,5 +44,24 @@ public final class ReflectionStatement {
             reflectedClasses.addAll(reflected.getTypesAnnotatedWith(annotation));
         }
         return removeAll(reflectedClasses);
+    }
+
+    private ArrayList<Class<?>> removeAll(final @NotNull ArrayList<Class<?>> arrayList) {
+        for (final Reflections reflected : getReflected()) {
+            arrayList.removeAll(reflected.getTypesAnnotatedWith(ReflectorInvisible.class));
+        }
+        arrayList.removeAll(ignoredClasses);
+        return arrayList;
+    }
+
+    ArrayList<Reflections> getReflected() {
+        if (this.reflections == null) {
+            reflections = new ArrayList<>();
+            for (final String reflectionPath : reflectionPaths) {
+                if (reflectionPath == null) continue;
+                reflections.add(new Reflections(reflectionPath));
+            }
+        }
+        return reflections;
     }
 }
