@@ -49,9 +49,7 @@ public final class ReflectionStatement {
 
     @SuppressWarnings("SuspiciousMethodCalls")
     private <C> ArrayList<Class<? extends C>> removeUnnecessary(final @NotNull ArrayList<Class<? extends C>> arrayList) {
-        for (final Reflections reflected : getReflected()) {
-            arrayList.removeAll(reflected.getTypesAnnotatedWith(ReflectorInvisible.class));
-        }
+        arrayList.removeIf(aClass -> aClass.isAnnotationPresent(ReflectorInvisible.class));
         arrayList.removeAll(ignoredClasses);
         return arrayList;
     }
