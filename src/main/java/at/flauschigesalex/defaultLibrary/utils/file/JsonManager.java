@@ -16,31 +16,45 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
-    public static JsonManager parse(@NotNull String source) {
+    JsonManager(final @NotNull String source) {
+        this.source = source;
+    }
+
+    public static JsonManager createNew() {
+        return parse("{}");
+    }
+
+    public static JsonManager writeNew(final @NotNull String sourcePath, final Object object) {
+        final JsonManager manager = createNew();
+        manager.write(sourcePath, object);
+        return manager;
+    }
+
+    public static JsonManager parse(final @NotNull String source) {
         return new JsonManager(source);
     }
 
-    public static JsonManager parse(@NotNull StringBuilder source) {
+    public static JsonManager parse(final @NotNull StringBuilder source) {
         return parse(source.toString());
     }
 
-    public static JsonManager parse(@NotNull FileManager fileManager) {
+    public static JsonManager parse(final @NotNull FileManager fileManager) {
         final String read = fileManager.read();
         if (read == null) return null;
         return parse(read);
     }
 
-    public static JsonManager parse(@NotNull ResourceManager resourceManager) {
+    public static JsonManager parse(final @NotNull ResourceManager resourceManager) {
         final String read = resourceManager.read();
         if (read == null) return null;
         return parse(read);
     }
 
-    public static JsonManager parse(@NotNull File file) {
+    public static JsonManager parse(final @NotNull File file) {
         return parse(FileManager.getFile(file));
     }
 
-    public static JsonManager parse(@NotNull InputStream fileInputStream) {
+    public static JsonManager parse(final @NotNull InputStream fileInputStream) {
         StringBuilder builder = new StringBuilder();
         int read;
         while (true) {
@@ -55,19 +69,15 @@ public final class JsonManager {
         return parse(builder);
     }
 
-    public static JsonManager parse(@NotNull URL resource) {
+    private String source;
+    private FileManager fileManager;
+
+    public static JsonManager parse(final @NotNull URL resource) {
         try {
             return parse(resource.openStream());
         } catch (IOException ignore) {
         }
         return null;
-    }
-
-    private String source;
-    private FileManager fileManager;
-
-    JsonManager(String source) {
-        this.source = source;
     }
 
     /**
@@ -138,7 +148,7 @@ public final class JsonManager {
         return null;
     }
 
-    public JSONObject asJsonObject(String sourcePath) {
+    public JSONObject asJsonObject(final @NotNull String sourcePath) {
         try {
             return (JSONObject) asObject(sourcePath);
         } catch (Exception ignore) {
@@ -146,7 +156,7 @@ public final class JsonManager {
         return null;
     }
 
-    public JSONArray asJsonArray(String sourcePath) {
+    public JSONArray asJsonArray(final @NotNull String sourcePath) {
         try {
             return (JSONArray) asObject(sourcePath);
         } catch (Exception ignore) {
@@ -154,7 +164,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<Object> asList(String sourcePath) {
+    public ArrayList<Object> asList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Object>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -162,7 +172,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<String> asStringList(String sourcePath) {
+    public ArrayList<String> asStringList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<String>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -170,7 +180,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<Short> asShortList(String sourcePath) {
+    public ArrayList<Short> asShortList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Short>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -178,7 +188,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<Integer> asIntegerList(String sourcePath) {
+    public ArrayList<Integer> asIntegerList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Integer>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -186,7 +196,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<Long> asLongList(String sourcePath) {
+    public ArrayList<Long> asLongList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Long>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -194,7 +204,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<Float> asFloatList(String sourcePath) {
+    public ArrayList<Float> asFloatList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Float>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -202,7 +212,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<Double> asDoubleList(String sourcePath) {
+    public ArrayList<Double> asDoubleList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Double>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -210,7 +220,7 @@ public final class JsonManager {
         return null;
     }
 
-    public ArrayList<Boolean> asBooleanList(String sourcePath) {
+    public ArrayList<Boolean> asBooleanList(final @NotNull String sourcePath) {
         try {
             return new ArrayList<>((ArrayList<Boolean>) asObject(sourcePath));
         } catch (Exception ignore) {
@@ -218,14 +228,14 @@ public final class JsonManager {
         return null;
     }
 
-    public String asString(String sourcePath) {
+    public String asString(final @NotNull String sourcePath) {
         Object object = asObject(sourcePath);
         if (object == null)
             return null;
         return object.toString();
     }
 
-    public Short asShort(String sourcePath) {
+    public Short asShort(final @NotNull String sourcePath) {
         try {
             return Short.parseShort(asString(sourcePath));
         } catch (Exception ignore) {
@@ -233,7 +243,7 @@ public final class JsonManager {
         return null;
     }
 
-    public Integer asInteger(String sourcePath) {
+    public Integer asInteger(final @NotNull String sourcePath) {
         try {
             return Integer.valueOf(asString(sourcePath));
         } catch (Exception ignore) {
@@ -241,7 +251,7 @@ public final class JsonManager {
         return null;
     }
 
-    public Long asLong(String sourcePath) {
+    public Long asLong(final @NotNull String sourcePath) {
         try {
             return Long.valueOf(asString(sourcePath));
         } catch (Exception ignore) {
@@ -249,7 +259,7 @@ public final class JsonManager {
         return null;
     }
 
-    public Float asFloat(String sourcePath) {
+    public Float asFloat(final @NotNull String sourcePath) {
         try {
             return Float.valueOf(asString(sourcePath));
         } catch (Exception ignore) {
@@ -257,7 +267,7 @@ public final class JsonManager {
         return null;
     }
 
-    public Double asDouble(String sourcePath) {
+    public Double asDouble(final @NotNull String sourcePath) {
         try {
             return Double.valueOf(asString(sourcePath));
         } catch (Exception ignore) {
@@ -265,7 +275,7 @@ public final class JsonManager {
         return null;
     }
 
-    public Boolean asBoolean(String sourcePath) {
+    public Boolean asBoolean(final @NotNull String sourcePath) {
         try {
             return Boolean.valueOf(asString(sourcePath));
         } catch (Exception ignore) {
@@ -273,7 +283,7 @@ public final class JsonManager {
         return null;
     }
 
-    public boolean write(String sourcePath, Object object) {
+    public boolean write(final @NotNull String sourcePath, Object object) {
         JSONObject jsonObject = asJsonObject();
         if (jsonObject == null)
             return false;
@@ -324,12 +334,12 @@ public final class JsonManager {
                 + "\n}";
     }
 
-    JsonManager file(FileManager fileManager) {
+    JsonManager file(final @NotNull FileManager fileManager) {
         this.fileManager = fileManager;
         return this;
     }
 
-    private Object get(JSONObject jsonObject, String sourcePath) {
+    private Object get(final @NotNull JSONObject jsonObject, final @NotNull String sourcePath) {
         if (!jsonObject.containsKey(sourcePath))
             return null;
         return jsonObject.get(sourcePath);
