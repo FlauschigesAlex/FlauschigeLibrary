@@ -35,9 +35,7 @@ public final class ReflectionStatement {
         for (final Reflections reflected : getReflected()) {
             reflectedClasses.addAll(reflected.getSubTypesOf(clazz));
         }
-        final ArrayList<Class<?>> ignoreClasses = new ArrayList<>(reflectedClasses);
-        removeUnnecessary(ignoreClasses);
-        return reflectedClasses;
+        return removeUnnecessary(reflectedClasses);
     }
 
     public <A extends Annotation> ArrayList<Class<?>> getAnnotatedClasses(final @NotNull Class<A> annotation) {
@@ -49,7 +47,8 @@ public final class ReflectionStatement {
         return removeUnnecessary(reflectedClasses);
     }
 
-    private ArrayList<Class<?>> removeUnnecessary(final @NotNull ArrayList<Class<?>> arrayList) {
+    @SuppressWarnings("SuspiciousMethodCalls")
+    private <C> ArrayList<Class<? extends C>> removeUnnecessary(final @NotNull ArrayList<Class<? extends C>> arrayList) {
         for (final Reflections reflected : getReflected()) {
             arrayList.removeAll(reflected.getTypesAnnotatedWith(ReflectorInvisible.class));
         }
