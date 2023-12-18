@@ -41,15 +41,6 @@ public final class TranslationCache {
         }
         return null;
     }
-
-    static void cache(final @NotNull Locale locale, final @NotNull String key, final @NotNull String value) {
-        final TranslationCache translationCache = new TranslationCache(locale, key).value(value);
-        if (blacklist.contains(translationCache))
-            return;
-        if (!cache.contains(translationCache))
-            cache.add(translationCache);
-    }
-
     private final Locale locale;
     private final String key;
     private String value;
@@ -57,6 +48,14 @@ public final class TranslationCache {
     private TranslationCache(final @NotNull Locale locale, final @NotNull String key) {
         this.locale = locale;
         this.key = key;
+    }
+
+    static void cache(final @NotNull Locale locale, final @NotNull String key, final @NotNull String value) {
+        final TranslationCache translationCache = new TranslationCache(locale, key).value(value);
+        if (blacklist.contains(translationCache))
+            return;
+        if (!cache.contains(translationCache))
+            cache.add(translationCache);
     }
 
     @Override

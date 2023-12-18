@@ -18,7 +18,6 @@ public final class Reflector {
         if (reflector == null) reflector = new Reflector();
         return reflector;
     }
-
     private final HashMap<ArrayList<String>, ReflectionStatement> cache = new HashMap<>();
     private String reflectionPath;
 

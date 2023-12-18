@@ -129,7 +129,6 @@ public class DatabaseCredentials {
 
         return new DatabaseCredentials(hosts, username, accessKey, database, ports);
     }
-
     private final ArrayList<String> hostnames;
     private final String username;
     private final String accessKey;

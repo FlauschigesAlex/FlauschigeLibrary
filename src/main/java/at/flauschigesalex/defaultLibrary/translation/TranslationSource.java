@@ -15,6 +15,10 @@ import java.util.Locale;
 public class TranslationSource {
 
     static Locale defaultLocale = Locale.US;
+    protected final HashMap<Locale, JsonManager> map = new HashMap<>();
+
+    protected TranslationSource() {
+    }
 
     static TranslationSource byDatabase(final @NotNull MongoDatabaseManager database) {
         final TranslationSource source = new TranslationSource();
@@ -71,11 +75,6 @@ public class TranslationSource {
             source.insert(locale, jsonManager);
         }
         return source;
-    }
-
-    protected final HashMap<Locale, JsonManager> map = new HashMap<>();
-
-    protected TranslationSource() {
     }
 
     protected final void insert(final @NotNull Locale locale, final @NotNull JsonManager jsonManager) {

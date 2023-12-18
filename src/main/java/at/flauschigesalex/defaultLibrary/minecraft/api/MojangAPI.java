@@ -13,7 +13,6 @@ public final class MojangAPI {
         if (mojangAPI == null) mojangAPI = new MojangAPI();
         return mojangAPI;
     }
-
     HashMap<String, String> cache = new HashMap<>();
 
     private MojangAPI() {

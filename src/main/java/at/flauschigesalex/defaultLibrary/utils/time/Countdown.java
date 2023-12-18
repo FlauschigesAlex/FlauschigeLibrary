@@ -8,8 +8,8 @@ import java.util.List;
 @SuppressWarnings({"DataFlowIssue", "unused", "UnusedReturnValue"})
 public final class Countdown {
 
-    CountdownFormatter format;
     private final TimeManagerLimited timeManager;
+    CountdownFormatter format;
     private long[] values;
 
     Countdown(@NotNull TimeManagerLimited timeManager) {

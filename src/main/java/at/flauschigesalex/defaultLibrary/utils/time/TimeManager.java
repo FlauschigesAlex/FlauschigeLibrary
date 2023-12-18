@@ -29,7 +29,6 @@ public final class TimeManager extends TimeManagerLimited {
     public static TimeManager now() {
         return new TimeManager(Instant.now().toEpochMilli());
     }
-
     final TimeFormatter timeFormatter = new TimeFormatter(this);
 
     TimeManager(long value) {

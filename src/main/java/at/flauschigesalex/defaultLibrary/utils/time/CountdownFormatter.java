@@ -10,12 +10,12 @@ import java.util.List;
 @SuppressWarnings({"unused", "FieldCanBeLocal", "MismatchedReadAndWriteOfArray", "UnusedReturnValue"})
 public final class CountdownFormatter {
 
-    StringBuilder builder = new StringBuilder();
     private final TimeManagerLimited timeManager;
     private final Countdown countdown;
     @Getter(AccessLevel.PROTECTED)
     private final boolean[] enabledFields = new boolean[]{false, false, false, false};
     private final String[] fieldCodes = new String[]{"day", "hour", "minute", "second"};
+    StringBuilder builder = new StringBuilder();
 
     CountdownFormatter(TimeManagerLimited timeManager, Countdown formatter) {
         this.timeManager = timeManager;

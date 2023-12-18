@@ -44,7 +44,6 @@ public final class CustomCountdownFormat {
     private static String[] emptyStringArray() {
         return new String[]{null, null, null, null};
     }
-
     private final String[] customFields;
     private boolean hideZeroField = false;
 

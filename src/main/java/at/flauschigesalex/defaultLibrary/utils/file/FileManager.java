@@ -20,7 +20,6 @@ public final class FileManager {
     public static FileManager getFile(@NotNull String path) {
         return new FileManager(new File(path));
     }
-
     private final File file;
     @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;
@@ -102,6 +101,7 @@ public final class FileManager {
         }
         return false;
     }
+
     public boolean write(@NotNull String string) {
         if (!isWritable())
             return false;

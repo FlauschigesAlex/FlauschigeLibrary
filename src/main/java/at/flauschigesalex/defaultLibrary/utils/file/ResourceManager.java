@@ -18,7 +18,6 @@ public final class ResourceManager {
         if (url == null) return null;
         return new ResourceManager(url);
     }
-
     private final URL url;
     @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;

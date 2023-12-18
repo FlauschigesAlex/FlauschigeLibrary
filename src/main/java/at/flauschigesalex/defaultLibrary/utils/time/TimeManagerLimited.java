@@ -42,7 +42,6 @@ public class TimeManagerLimited {
     public static TimeManagerLimited now() {
         return new TimeManagerLimited(Instant.now().toEpochMilli());
     }
-
     final Countdown countdown = new Countdown(this);
     private final long epochMillisecond;
 

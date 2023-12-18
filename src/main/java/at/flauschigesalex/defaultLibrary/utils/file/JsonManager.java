@@ -2,6 +2,7 @@ package at.flauschigesalex.defaultLibrary.utils.file;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,45 +17,41 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
-    JsonManager(final @NotNull String source) {
-        this.source = source;
-    }
-
-    public static JsonManager createNew() {
+    public static @Nullable JsonManager createNew() {
         return parse("{}");
     }
 
-    public static JsonManager writeNew(final @NotNull String sourcePath, final Object object) {
+    public static @Nullable JsonManager writeNew(final @NotNull String sourcePath, final Object object) {
         final JsonManager manager = createNew();
         manager.write(sourcePath, object);
         return manager;
     }
 
-    public static JsonManager parse(final @NotNull String source) {
+    public static @Nullable JsonManager parse(final @NotNull String source) {
         return new JsonManager(source);
     }
 
-    public static JsonManager parse(final @NotNull StringBuilder source) {
+    public static @Nullable JsonManager parse(final @NotNull StringBuilder source) {
         return parse(source.toString());
     }
 
-    public static JsonManager parse(final @NotNull FileManager fileManager) {
+    public static @Nullable JsonManager parse(final @NotNull FileManager fileManager) {
         final String read = fileManager.read();
         if (read == null) return null;
         return parse(read);
     }
 
-    public static JsonManager parse(final @NotNull ResourceManager resourceManager) {
+    public static @Nullable JsonManager parse(final @NotNull ResourceManager resourceManager) {
         final String read = resourceManager.read();
         if (read == null) return null;
         return parse(read);
     }
 
-    public static JsonManager parse(final @NotNull File file) {
+    public static @Nullable JsonManager parse(final @NotNull File file) {
         return parse(FileManager.getFile(file));
     }
 
-    public static JsonManager parse(final @NotNull InputStream fileInputStream) {
+    public static @Nullable JsonManager parse(final @NotNull InputStream fileInputStream) {
         StringBuilder builder = new StringBuilder();
         int read;
         while (true) {
@@ -69,15 +66,19 @@ public final class JsonManager {
         return parse(builder);
     }
 
-    private String source;
-    private FileManager fileManager;
-
-    public static JsonManager parse(final @NotNull URL resource) {
+    public static @Nullable JsonManager parse(final @NotNull URL resource) {
         try {
             return parse(resource.openStream());
         } catch (IOException ignore) {
         }
         return null;
+    }
+
+    private String source;
+    private FileManager fileManager;
+
+    JsonManager(final @NotNull String source) {
+        this.source = source;
     }
 
     /**
@@ -151,6 +152,14 @@ public final class JsonManager {
     public JSONObject asJsonObject(final @NotNull String sourcePath) {
         try {
             return (JSONObject) asObject(sourcePath);
+        } catch (Exception ignore) {
+        }
+        return null;
+    }
+
+    public JsonManager asJsonManager(final @NotNull String sourcePath) {
+        try {
+            return JsonManager.parse(asJsonObject(sourcePath).toJSONString());
         } catch (Exception ignore) {
         }
         return null;

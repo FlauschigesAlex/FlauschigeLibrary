@@ -24,7 +24,6 @@ public class FlauschigeLibrary {
         if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
         return flauschigeLibrary;
     }
-
     private final String ownDirectoryPath;
     private final ArrayList<String> workingDirectoryPath = new ArrayList<>();
 
