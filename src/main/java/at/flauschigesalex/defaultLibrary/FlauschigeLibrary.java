@@ -2,10 +2,8 @@ package at.flauschigesalex.defaultLibrary;
 
 import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
 import at.flauschigesalex.defaultLibrary.utils.managers.ProjectManager;
-import at.flauschigesalex.defaultLibrary.utils.managers.ProjectManagerComparator;
 import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
 import lombok.Getter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
@@ -43,14 +41,14 @@ public class FlauschigeLibrary {
         }
 
         final ArrayList<ProjectManager> managers = new ArrayList<>();
-        for (Class<? extends ProjectManager> subClass : getReflector().reflect().getSubClasses(ProjectManager.class)) {
+        for (Class<? extends ProjectManager> subClass : getReflector().reflect(ownDirectoryPath, workingDirectoryPath.toArray(String[]::new)).getSubClasses(ProjectManager.class)) {
             try {
                 managers.add(subClass.getConstructor().newInstance());
             } catch (Exception ignore) {
             }
         }
         managers.sort(ProjectManager.comparator());
-        managers.forEach(ProjectManager::executeManager);
+        managers.forEach(manager -> manager.executeManager(this));
     }
 
     public FlauschigeLibrary addWorkingDirectory(String path) {

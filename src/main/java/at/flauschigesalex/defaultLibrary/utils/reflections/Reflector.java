@@ -2,6 +2,7 @@ package at.flauschigesalex.defaultLibrary.utils.reflections;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,9 +35,10 @@ public final class Reflector {
     }
 
     @CheckReturnValue
-    public ReflectionStatement reflect(String reflectionPath) {
+    public ReflectionStatement reflect(final @NotNull String reflectionPath, final @NotNull String... moreReflectionPaths) {
         final ArrayList<String> list = new ArrayList<>(List.of(reflectionPath));
-        if (!cache.containsKey(list)) cache.put(list, new ReflectionStatement(reflectionPath));
+        list.addAll(List.of(moreReflectionPaths));
+        if (!cache.containsKey(list)) cache.put(list, new ReflectionStatement(reflectionPath, moreReflectionPaths));
         return cache.get(list);
     }
 }

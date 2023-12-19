@@ -1,5 +1,7 @@
 package at.flauschigesalex.defaultLibrary.utils.managers;
 
+import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
+import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,7 +32,14 @@ public abstract class ProjectManager {
         return true;
     }
 
-    public final void executeManager() {
+    private FlauschigeLibrary library;
+
+    protected final FlauschigeLibrary parentLibrary() {
+        return library;
+    }
+
+    public final void executeManager(final @NotNull FlauschigeLibrary library) {
+        this.library = library;
         if (!this.matches())
             return;
         this.execute();
