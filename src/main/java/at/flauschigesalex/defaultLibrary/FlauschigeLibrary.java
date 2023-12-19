@@ -48,7 +48,7 @@ public class FlauschigeLibrary {
             }
         }
         managers.sort(ProjectManager.comparator());
-        managers.forEach(manager -> manager.executeManager(this));
+        new Thread(() -> managers.forEach(manager -> manager.executeManager(this))).start();
     }
 
     public FlauschigeLibrary addWorkingDirectory(String path) {
