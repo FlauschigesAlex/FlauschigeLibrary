@@ -23,23 +23,37 @@ public abstract class ProjectManager {
         return 1.0;
     }
 
-    protected abstract void execute();
+    public String successMessage() {
+        return null;
+    }
+
+    public String predicateFailMessage() {
+        return null;
+    }
+
+    public String failMessage() {
+        return null;
+    }
+
+    protected abstract boolean execute();
 
     public final boolean matches() {
         return predicate == null || predicate.matches();
     }
 
     private FlauschigeLibrary library;
-
     protected final FlauschigeLibrary parentLibrary() {
         return library;
     }
 
-    public final void executeManager(final @NotNull FlauschigeLibrary library) {
+    public final boolean executeManager(final @NotNull FlauschigeLibrary library) {
         this.library = library;
-        if (!this.matches())
-            return;
-        this.execute();
+        if (!this.matches()) {
+            if (predicateFailMessage() != null)
+                System.out.println(predicateFailMessage());
+            return false;
+        }
+        return this.execute();
     }
 }
 

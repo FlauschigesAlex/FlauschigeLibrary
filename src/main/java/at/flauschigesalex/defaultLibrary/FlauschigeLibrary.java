@@ -48,7 +48,15 @@ public class FlauschigeLibrary {
             }
         }
         managers.sort(ProjectManager.comparator());
-        new Thread(() -> managers.forEach(manager -> manager.executeManager(this))).start();
+        new Thread(() -> managers.forEach(manager -> {
+            if (manager.executeManager(this)) {
+                if (manager.successMessage() != null)
+                    System.out.println(manager.successMessage());
+            } else {
+                if (manager.failMessage() != null)
+                    System.out.println(manager.failMessage());
+            }
+        })).start();
     }
 
     public FlauschigeLibrary addWorkingDirectory(String path) {
