@@ -26,7 +26,7 @@ public abstract class ProjectManager {
     protected abstract void execute();
 
     public final boolean matches() {
-        return predicate.matches();
+        return predicate == null || predicate.matches();
     }
 
     private FlauschigeLibrary library;
