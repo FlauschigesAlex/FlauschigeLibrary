@@ -13,6 +13,8 @@ public abstract class ProjectManager {
 
     protected ProjectManagerPredicate predicate;
 
+    protected ProjectManager() {
+    }
     protected ProjectManager(ProjectManagerPredicate predicate) {
         this.predicate = predicate;
     }
