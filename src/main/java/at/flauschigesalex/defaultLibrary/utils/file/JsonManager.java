@@ -292,28 +292,37 @@ public final class JsonManager {
         return null;
     }
 
-    public boolean write(final @NotNull String sourcePath, Object object) {
-        JSONObject jsonObject = asJsonObject();
-        if (jsonObject == null)
+    public boolean write(final @NotNull String sourcePath, final @Nullable Object object) {
+        return this.write(sourcePath, asJsonObject(), object);
+    }
+
+    private boolean write(final @NotNull String sourcePath, final @Nullable JSONObject jsonObject, final @Nullable Object object) {
+        final JSONObject manager = jsonObject == null ? asJsonObject() : jsonObject;
+        System.out.println(manager + " # " + sourcePath + " # " + object);
+        if (manager == null)
             return false;
 
-        if (sourcePath.contains(".")) {
-            return jsonObject.put(sourcePath, object) != null;
+        if (!sourcePath.contains(".")) {
+            return manager.put(sourcePath, object) != null;
         }
-        JSONObject current = jsonObject;
-        String currentPath;
-        String[] splitSourcePath = sourcePath.split("\\.");
-        for (String splitSource : splitSourcePath) {
-            currentPath = splitSource;
-            if (currentPath.equals(splitSourcePath[splitSourcePath.length - 1])) {
-                boolean value = current.put(currentPath, object) != null;
-                this.source = jsonObject.toJSONString();
-                return value;
-            }
-            if (!(current.get(currentPath) instanceof JSONObject tempObject))
-                return false;
-            current = tempObject;
-        }
+        if (sourcePath.endsWith("."))
+            return false;
+
+        final String[] splitSourcePath = sourcePath.split("\\.");
+        final String pathPart = splitSourcePath[0];
+
+        if (!manager.containsKey(pathPart) && object == null)
+            return false;
+
+        if (!manager.containsKey(pathPart))
+            manager.put(pathPart, new JSONObject());
+
+        if (!(manager.get(pathPart) instanceof JSONObject newJsonObject))
+            return false;
+
+        final String newSourcePath = sourcePath.replace(pathPart + ".", "");
+        this.write(newSourcePath, newJsonObject, object);
+
         return false;
     }
 
