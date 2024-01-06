@@ -10,6 +10,7 @@ import java.util.ArrayList;
 @Getter
 public class FlauschigeLibrary {
     private static FlauschigeLibrary flauschigeLibrary;
+    private static boolean autoRegisterManagers = true;
 
     public static void main(String[] args) {
         getLibrary();
@@ -22,6 +23,17 @@ public class FlauschigeLibrary {
      * @return an instance of the Library
      */
     public static FlauschigeLibrary getLibrary() {
+        if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
+        return flauschigeLibrary;
+    }
+    /**
+     * Make sure to run this method in your main class!
+     * This is extremely important for reflections!
+     *
+     * @return an instance of the Library
+     */
+    public static FlauschigeLibrary getLibrary(boolean autoRegisterManagers) {
+        FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers;
         if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
         return flauschigeLibrary;
     }
@@ -40,6 +52,11 @@ public class FlauschigeLibrary {
             this.workingDirectoryPath.add(definedPackage.getName());
         }
 
+        if (autoRegisterManagers)
+            executeManagers();
+    }
+
+    public void executeManagers() {
         final ArrayList<ProjectManager> managers = new ArrayList<>();
         for (Class<? extends ProjectManager> subClass : getReflector().reflect(ownDirectoryPath, workingDirectoryPath.toArray(String[]::new)).getSubClasses(ProjectManager.class)) {
             try {
