@@ -10,7 +10,7 @@ import java.util.ArrayList;
 @Getter
 public class FlauschigeLibrary {
     private static FlauschigeLibrary flauschigeLibrary;
-    private static boolean autoRegisterManagers = true;
+    protected static boolean autoRegisterManagers = true;
 
     public static void main(String[] args) {
         getLibrary();
