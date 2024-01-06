@@ -43,8 +43,7 @@ public final class ReflectionStatement extends Printable {
     public <A extends Annotation> ArrayList<Class<?>> getAnnotatedClasses(final @NotNull Class<A> annotation) {
         final ArrayList<Class<?>> reflectedClasses = new ArrayList<>();
         for (final Reflections reflected : getReflected()) {
-            if (!reflected.getClass().isAnnotationPresent(annotation)) continue;
-            reflectedClasses.add(reflected.getClass());
+            reflectedClasses.addAll(reflected.getTypesAnnotatedWith(annotation));
         }
         return removeUnnecessary(reflectedClasses);
     }
