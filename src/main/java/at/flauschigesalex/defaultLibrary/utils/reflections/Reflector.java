@@ -1,6 +1,8 @@
 package at.flauschigesalex.defaultLibrary.utils.reflections;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
+import at.flauschigesalex.defaultLibrary.utils.Invisible;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import javax.annotation.CheckReturnValue;
@@ -10,8 +12,8 @@ import java.util.List;
 
 @Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-@ReflectorInvisible
-public final class Reflector {
+@Invisible
+public final class Reflector extends Printable {
 
     private static Reflector reflector;
 

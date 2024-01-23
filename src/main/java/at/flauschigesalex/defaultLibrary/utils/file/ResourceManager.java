@@ -1,6 +1,7 @@
 package at.flauschigesalex.defaultLibrary.utils.file;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -11,10 +12,10 @@ import java.net.URL;
 
 @Getter
 @SuppressWarnings("unused")
-public final class ResourceManager {
+public final class ResourceManager extends Printable {
 
-    public static @Nullable ResourceManager getResource(String sourcePath) {
-        URL url = FlauschigeLibrary.getLibrary().getClass().getClassLoader().getResource(sourcePath);
+    public static @Nullable ResourceManager getResource(final @NotNull String sourcePath) {
+        final URL url = FlauschigeLibrary.getLibrary().getClass().getClassLoader().getResource(sourcePath);
         if (url == null) return null;
         return new ResourceManager(url);
     }
@@ -22,34 +23,26 @@ public final class ResourceManager {
     @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;
 
-    ResourceManager(@NotNull URL url) {
+    ResourceManager(final @NotNull URL url) {
         this.url = url;
     }
 
     public @Nullable String read() {
         if (!isReadable())
             return null;
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         int read;
         try {
-            InputStream inputStream = url.openStream();
+            final InputStream inputStream = url.openStream();
             while ((read = inputStream.read()) != -1) {
                 builder.append((char) read);
             }
             inputStream.close();
             return builder.toString();
-        } catch (Exception fail) {
+        } catch (final Exception fail) {
             fail.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "@ {"
-                + "\nurl:" + url
-                + "\nread:" + read()
-                + "\n}";
     }
 
     public @Nullable JsonManager getJsonManager() {
@@ -63,12 +56,12 @@ public final class ResourceManager {
 
     public boolean isReadable() {
         try {
-            InputStream stream = url.openStream();
+            final InputStream stream = url.openStream();
             if (stream == null)
                 return false;
             stream.close();
             return true;
-        } catch (IOException fail) {
+        } catch (final IOException fail) {
             fail.printStackTrace();
         }
         return false;

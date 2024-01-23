@@ -1,11 +1,14 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
+import at.flauschigesalex.defaultLibrary.utils.Printable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import javax.annotation.CheckReturnValue;
 import java.util.HashMap;
 import java.util.UUID;
 
 @SuppressWarnings({"unused", "ConstantValue"})
-public final class MojangAPI {
+public final class MojangAPI extends Printable {
 
     private static MojangAPI mojangAPI;
 
@@ -13,36 +16,36 @@ public final class MojangAPI {
         if (mojangAPI == null) mojangAPI = new MojangAPI();
         return mojangAPI;
     }
-    HashMap<String, String> cache = new HashMap<>();
+    final HashMap<String, String> cache = new HashMap<>();
 
     private MojangAPI() {
     }
 
     @CheckReturnValue
-    public NameResolver nameResolver(UUID uuid) {
+    public NameResolver nameResolver(final @Nullable UUID uuid) {
         return new NameResolver(uuid).instanced(this);
     }
 
     @CheckReturnValue
-    public NameResolver nameResolver(String uuid) {
+    public NameResolver nameResolver(final @Nullable String uuid) {
         return new NameResolver(uuid).instanced(this);
     }
 
     @CheckReturnValue
-    public UUIDResolver uuidResolver(String name) {
+    public UUIDResolver uuidResolver(final @Nullable String name) {
         return new UUIDResolver(name).instanced(this);
     }
 
     @CheckReturnValue
-    public NameCorrection nameCorrection(String name) {
+    public NameCorrection nameCorrection(final @Nullable String name) {
         return new NameCorrection(name).instanced(this);
     }
 
-    public boolean isMinecraftProfile(String value) {
+    public boolean isMinecraftProfile(final @NotNull String value) {
         return nameResolver(value) != null || uuidResolver(value) != null;
     }
 
-    public boolean isMinecraftProfile(UUID value) {
+    public boolean isMinecraftProfile(final @NotNull UUID value) {
         return nameResolver(value) != null;
     }
 
@@ -51,16 +54,18 @@ public final class MojangAPI {
         return this.cache.isEmpty();
     }
 
-    public boolean invalidateByName(String name) {
+    public boolean invalidateByName(final @Nullable String name) {
         if (!cache.containsKey(name)) return false;
         cache.remove(name);
         return true;
     }
 
-    public boolean invalidateByUUID(String uuid) {
+    public boolean invalidateByUUID(@Nullable String uuid) {
+        if (uuid == null)
+            return false;
         uuid = uuid.replace("-", "");
         String toRemove = null;
-        for (String keySet : cache.keySet()) {
+        for (final String keySet : cache.keySet()) {
             if (!cache.get(keySet).equals(uuid)) continue;
             toRemove = keySet;
             break;
@@ -70,7 +75,9 @@ public final class MojangAPI {
         return true;
     }
 
-    public boolean invalidateByUUID(UUID uuid) {
+    public boolean invalidateByUUID(final @Nullable UUID uuid) {
+        if (uuid == null)
+            return false;
         return invalidateByUUID(uuid.toString());
     }
 }

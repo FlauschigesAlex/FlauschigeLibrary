@@ -1,5 +1,7 @@
 package at.flauschigesalex.defaultLibrary.utils.reflections;
 
+import at.flauschigesalex.defaultLibrary.utils.Invisible;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
@@ -7,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @SuppressWarnings({"unused"})
-public final class ReflectionStatement {
+public final class ReflectionStatement extends Printable {
 
     private final String[] reflectionPaths;
     private final ArrayList<Class<?>> ignoredClasses = new ArrayList<>();
@@ -49,7 +51,7 @@ public final class ReflectionStatement {
 
     @SuppressWarnings("SuspiciousMethodCalls")
     private <C> ArrayList<Class<? extends C>> removeUnnecessary(final @NotNull ArrayList<Class<? extends C>> arrayList) {
-        arrayList.removeIf(aClass -> aClass.isAnnotationPresent(ReflectorInvisible.class));
+        arrayList.removeIf(aClass -> aClass.isAnnotationPresent(Invisible.class));
         arrayList.removeAll(ignoredClasses);
         return arrayList;
     }

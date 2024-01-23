@@ -1,11 +1,12 @@
 package at.flauschigesalex.defaultLibrary.utils.time.countdown;
 
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
 @SuppressWarnings("unused")
-public final class CountdownStatement {
+public final class CountdownStatement extends Printable {
 
     private final long trueDifference;
 

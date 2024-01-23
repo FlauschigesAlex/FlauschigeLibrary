@@ -1,6 +1,10 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
+import at.flauschigesalex.defaultLibrary.utils.Invisible;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -8,19 +12,28 @@ import java.net.URL;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
-public final class NameResolver {
-    private final String uuid;
-    private MojangAPI mojangAPI;
+public final class NameResolver extends Printable {
 
-    NameResolver(UUID uuid) {
+    private final String uuid;
+    private @Invisible MojangAPI mojangAPI;
+
+    NameResolver(final @Nullable UUID uuid) {
+        if (uuid == null) {
+            this.uuid = null;
+            return;
+        }
         this.uuid = uuid.toString().replace("-", "");
     }
 
-    NameResolver(String uuid) {
+    NameResolver(final @Nullable String uuid) {
+        if (uuid == null) {
+            this.uuid = null;
+            return;
+        }
         this.uuid = uuid.replace("-", "");
     }
 
-    public NameResolver instanced(MojangAPI mojangAPI) {
+    public NameResolver instanced(final @NotNull MojangAPI mojangAPI) {
         this.mojangAPI = mojangAPI;
         return this;
     }
@@ -29,6 +42,8 @@ public final class NameResolver {
         if (mojangAPI == null) {
             throw new NullPointerException("mojangAPI is not instanced!");
         }
+        if (uuid == null)
+            return null;
         for (String name : mojangAPI.cache.keySet()) {
             if (!mojangAPI.cache.get(name).equalsIgnoreCase(uuid)) continue;
             return name;
@@ -46,6 +61,8 @@ public final class NameResolver {
             in.close();
             con.disconnect();
             JsonManager jsonManager = JsonManager.parse(content.toString());
+            if (jsonManager == null)
+                return null;
             String name = jsonManager.asString("name");
             mojangAPI.cache.put(name, uuid);
             return name;

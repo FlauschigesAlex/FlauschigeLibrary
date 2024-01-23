@@ -1,6 +1,7 @@
 package at.flauschigesalex.defaultLibrary.utils.file;
 
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -11,24 +12,24 @@ import java.util.ArrayList;
 @Getter
 @MongoIgnore
 @SuppressWarnings({"UnusedReturnValue", "unused", "BooleanMethodIsAlwaysInverted"})
-public final class FileManager {
+public final class FileManager extends Printable {
 
-    public static FileManager getFile(@NotNull File file) {
+    public static FileManager getFile(final @NotNull File file) {
         return new FileManager(file);
     }
 
-    public static FileManager getFile(@NotNull String path) {
+    public static FileManager getFile(final @NotNull String path) {
         return new FileManager(new File(path));
     }
     private final File file;
     @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;
 
-    FileManager(File file) {
+    FileManager(final @NotNull File file) {
         this.file = file;
     }
 
-    public boolean create(@NotNull FileType fileType) {
+    public boolean create(final @NotNull FileType fileType) {
         switch (fileType) {
             case FILE -> {
                 return createFile();
@@ -88,7 +89,7 @@ public final class FileManager {
         return null;
     }
 
-    public boolean write(byte[] bytes) {
+    public boolean write(final byte[] bytes) {
         if (!isWritable())
             return false;
         try {
@@ -102,21 +103,21 @@ public final class FileManager {
         return false;
     }
 
-    public boolean write(@NotNull String string) {
+    public boolean write(final @NotNull String string) {
         if (!isWritable())
             return false;
         return write(string.getBytes());
     }
 
-    public boolean write(@NotNull JsonManager jsonManager) {
+    public boolean write(final @NotNull JsonManager jsonManager) {
         return this.write(jsonManager.getSource());
     }
 
-    public boolean write(@NotNull StringBuilder builder) {
+    public boolean write(final @NotNull StringBuilder builder) {
         return this.write(builder.toString());
     }
 
-    public boolean write(@NotNull InputStream inputStream) {
+    public boolean write(final @NotNull InputStream inputStream) {
         final ArrayList<Byte> byteArray = new ArrayList<>();
         int read;
         try {
@@ -133,16 +134,6 @@ public final class FileManager {
             fail.printStackTrace();
         }
         return false;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "@ {"
-                + "\nfile: " + getFile().getName()
-                + "\nreadable: " + isReadable()
-                + "\nwritable: " + isWritable()
-                + "\ncontent: " + read()
-                + "\n}";
     }
 
     private boolean purge(final @NotNull File file) {

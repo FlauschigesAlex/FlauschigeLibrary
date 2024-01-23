@@ -1,6 +1,7 @@
 package at.flauschigesalex.defaultLibrary;
 
 import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import at.flauschigesalex.defaultLibrary.utils.managers.ProjectManager;
 import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
 import lombok.Getter;
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
 @Getter
-public class FlauschigeLibrary {
+public class FlauschigeLibrary extends Printable {
     private static FlauschigeLibrary flauschigeLibrary;
     protected static boolean autoRegisterManagers = true;
 

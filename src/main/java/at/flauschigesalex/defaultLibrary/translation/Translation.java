@@ -1,6 +1,8 @@
 package at.flauschigesalex.defaultLibrary.translation;
 
 import at.flauschigesalex.defaultLibrary.database.mongo.MongoDatabaseManager;
+import at.flauschigesalex.defaultLibrary.utils.Invisible;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -10,14 +12,14 @@ import java.util.HashMap;
 import java.util.Locale;
 
 @SuppressWarnings({"DeprecatedIsStillUsed", "unused"})
-public final class Translation {
+public final class Translation extends Printable {
 
     @Getter
     private final TranslationSource source;
     private final HashMap<Integer, Object> replacements = new HashMap<>();
     private boolean useFallbackMessage = true;
     private boolean clearReplacements = true;
-    private @Deprecated int replacement = 0;
+    private @Deprecated @Invisible int replacement = 0;
 
     @Deprecated
     public Translation(final @NotNull TranslationSource translationSource) {

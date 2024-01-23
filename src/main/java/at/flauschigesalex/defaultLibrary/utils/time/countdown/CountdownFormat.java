@@ -1,5 +1,6 @@
 package at.flauschigesalex.defaultLibrary.utils.time.countdown;
 
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import static at.flauschigesalex.defaultLibrary.utils.time.countdown.CountdownDisplayType.*;
 
 @Getter
-public class CountdownFormat {
+public class CountdownFormat extends Printable {
 
     //TODO CUSTOM
 
@@ -92,7 +93,6 @@ public class CountdownFormat {
             return builder.toString();
         }
 
-        //TODO CUSTOM
         return "";
     }
 }

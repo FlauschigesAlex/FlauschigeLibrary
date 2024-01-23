@@ -2,6 +2,7 @@ package at.flauschigesalex.defaultLibrary.translation;
 
 import at.flauschigesalex.defaultLibrary.database.mongo.MongoDatabaseManager;
 import at.flauschigesalex.defaultLibrary.database.mongo.translation.MongoDatabaseTranslation;
+import at.flauschigesalex.defaultLibrary.utils.Printable;
 import at.flauschigesalex.defaultLibrary.utils.file.FileManager;
 import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
 import at.flauschigesalex.defaultLibrary.utils.file.ResourceManager;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class TranslationSource {
+public class TranslationSource extends Printable {
 
     static Locale defaultLocale = Locale.US;
     protected final HashMap<Locale, JsonManager> map = new HashMap<>();
