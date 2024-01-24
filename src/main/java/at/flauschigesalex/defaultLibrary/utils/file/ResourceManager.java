@@ -14,17 +14,17 @@ import java.net.URL;
 @SuppressWarnings("unused")
 public final class ResourceManager extends Printable {
 
+    private final URL url;
+    @Getter(AccessLevel.NONE)
+    private JsonManager jsonManager;
+    ResourceManager(final @NotNull URL url) {
+        this.url = url;
+    }
+
     public static @Nullable ResourceManager getResource(final @NotNull String sourcePath) {
         final URL url = FlauschigeLibrary.getLibrary().getClass().getClassLoader().getResource(sourcePath);
         if (url == null) return null;
         return new ResourceManager(url);
-    }
-    private final URL url;
-    @Getter(AccessLevel.NONE)
-    private JsonManager jsonManager;
-
-    ResourceManager(final @NotNull URL url) {
-        this.url = url;
     }
 
     public @Nullable String read() {

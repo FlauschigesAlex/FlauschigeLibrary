@@ -1,13 +1,12 @@
 package at.flauschigesalex.defaultLibrary.database.mongo.translation;
 
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoInformation;
-import at.flauschigesalex.defaultLibrary.utils.Silent;
+import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoClass;
 import lombok.Getter;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
-@Silent
-@MongoInformation
+@MongoClass
 @SuppressWarnings("unused")
 public final class MongoDatabaseTranslation {
 
@@ -24,12 +23,12 @@ public final class MongoDatabaseTranslation {
     }
 
     @Deprecated
-    public void setTranslationKey(String translationKey) {
+    public void setTranslationKey(final @NotNull String translationKey) {
         this.translationKey = translationKey;
     }
 
     @Deprecated
-    public void setTranslation(String translation) {
+    public void setTranslation(final @NotNull String translation) {
         this.translation = translation;
     }
 }

@@ -12,6 +12,12 @@ import java.time.ZonedDateTime;
 @SuppressWarnings("unused")
 public final class CountdownHandler extends Printable {
 
+    private final TimeHandler start;
+
+    private CountdownHandler(final @NotNull TimeHandler start) {
+        this.start = start;
+    }
+
     public static CountdownHandler now() {
         return handle(TimeHandler.now());
     }
@@ -32,12 +38,6 @@ public final class CountdownHandler extends Printable {
         return new CountdownHandler(start);
     }
 
-    private final TimeHandler start;
-
-    private CountdownHandler(final @NotNull TimeHandler start) {
-        this.start = start;
-    }
-
     @CheckReturnValue
     public CountdownStatement createCountdown(final @NotNull ZonedDateTime end) {
         return createCountdown(TimeHandler.handle(end));
@@ -55,7 +55,7 @@ public final class CountdownHandler extends Printable {
 
     @CheckReturnValue
     public CountdownStatement createCountdown(final @NotNull TimeHandler end) {
-        final long difference = end.getEpochMilli()-getStart().getEpochMilli();
+        final long difference = end.getEpochMilli() - getStart().getEpochMilli();
         return new CountdownStatement(difference);
     }
 }

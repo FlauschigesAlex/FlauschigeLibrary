@@ -1,9 +1,9 @@
 package at.flauschigesalex.defaultLibrary.database.mongo;
 
+import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoClass;
 import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoInformation;
 
-@MongoInformation
+@MongoClass
 @MongoIgnore
 public abstract class MongoInformationClass {
 

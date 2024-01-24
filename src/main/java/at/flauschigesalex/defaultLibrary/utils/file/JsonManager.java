@@ -17,6 +17,13 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
+    private final String source;
+    private FileManager fileManager;
+
+    JsonManager(final @NotNull String source) {
+        this.source = source;
+    }
+
     public static @Nullable JsonManager createNew() {
         return parse("{}");
     }
@@ -72,13 +79,6 @@ public final class JsonManager {
         } catch (IOException ignore) {
         }
         return null;
-    }
-
-    private String source;
-    private FileManager fileManager;
-
-    JsonManager(final @NotNull String source) {
-        this.source = source;
     }
 
     /**
@@ -347,9 +347,7 @@ public final class JsonManager {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "@ {"
-                + "\ncontent: " + getSource()
-                + "\n}";
+        return asJsonString();
     }
 
     JsonManager file(final @NotNull FileManager fileManager) {

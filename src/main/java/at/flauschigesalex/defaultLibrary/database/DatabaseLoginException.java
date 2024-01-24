@@ -1,9 +1,11 @@
 package at.flauschigesalex.defaultLibrary.database;
 
+import org.jetbrains.annotations.Nullable;
+
 @SuppressWarnings("unused")
 public final class DatabaseLoginException extends DatabaseException {
 
-    public DatabaseLoginException(String message) {
+    public DatabaseLoginException(final @Nullable String message) {
         super(message);
     }
 
@@ -11,11 +13,11 @@ public final class DatabaseLoginException extends DatabaseException {
         super();
     }
 
-    DatabaseLoginException(String message, Throwable cause) {
+    DatabaseLoginException(final @Nullable String message, Throwable cause) {
         super(message, cause);
     }
 
-    DatabaseLoginException(Throwable cause) {
+    DatabaseLoginException(final @Nullable Throwable cause) {
         super(cause);
     }
 }

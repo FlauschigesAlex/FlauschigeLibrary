@@ -16,15 +16,14 @@ import java.util.List;
 public final class Reflector extends Printable {
 
     private static Reflector reflector;
+    private final HashMap<ArrayList<String>, ReflectionStatement> cache = new HashMap<>();
+    private String reflectionPath;
+    private Reflector() {
+    }
 
     public static Reflector getReflector() {
         if (reflector == null) reflector = new Reflector();
         return reflector;
-    }
-    private final HashMap<ArrayList<String>, ReflectionStatement> cache = new HashMap<>();
-    private String reflectionPath;
-
-    private Reflector() {
     }
 
     @CheckReturnValue

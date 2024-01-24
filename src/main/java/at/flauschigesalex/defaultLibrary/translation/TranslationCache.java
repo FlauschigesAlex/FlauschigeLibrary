@@ -13,6 +13,14 @@ public final class TranslationCache {
 
     private static final ArrayList<TranslationCache> blacklist = new ArrayList<>();
     private static final ArrayList<TranslationCache> cache = new ArrayList<>();
+    private final Locale locale;
+    private final String key;
+    private String value;
+
+    private TranslationCache(final @NotNull Locale locale, final @NotNull String key) {
+        this.locale = locale;
+        this.key = key;
+    }
 
     public static void clear() {
         cache.clear();
@@ -40,14 +48,6 @@ public final class TranslationCache {
                 return translationCache;
         }
         return null;
-    }
-    private final Locale locale;
-    private final String key;
-    private String value;
-
-    private TranslationCache(final @NotNull Locale locale, final @NotNull String key) {
-        this.locale = locale;
-        this.key = key;
     }
 
     static void cache(final @NotNull Locale locale, final @NotNull String key, final @NotNull String value) {

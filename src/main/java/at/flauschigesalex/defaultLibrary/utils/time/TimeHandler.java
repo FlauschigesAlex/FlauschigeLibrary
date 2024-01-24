@@ -12,6 +12,12 @@ import java.time.ZonedDateTime;
 @SuppressWarnings("unused")
 public final class TimeHandler extends Printable implements Cloneable {
 
+    private final long epochMillisecond;
+
+    TimeHandler(final long value) {
+        this.epochMillisecond = isEpochMillisecond(value) ? value : value * 1000;
+    }
+
     public static boolean isEpochMillisecond(final long value) {
         return value > 100000000000L;
     }
@@ -36,8 +42,8 @@ public final class TimeHandler extends Printable implements Cloneable {
     }
 
     /**
-     * @deprecated
      * @see TimeHandler#clone() Cloneable
+     * @deprecated
      */
     public static TimeHandler clone(final @NotNull TimeHandler handler) {
         return handle(handler.getInstant());
@@ -47,17 +53,12 @@ public final class TimeHandler extends Printable implements Cloneable {
         return handle(Instant.now());
     }
 
-    private final long epochMillisecond;
-
-    TimeHandler(final long value) {
-        this.epochMillisecond = isEpochMillisecond(value) ? value : value * 1000;
-    }
-
     public long getEpochMilli() {
         return epochMillisecond;
     }
+
     public long getEpochSecond() {
-        return getEpochMilli()*1000;
+        return getEpochMilli() * 1000;
     }
 
     public Instant getInstant() {

@@ -11,14 +11,14 @@ import java.util.UUID;
 public final class MojangAPI extends Printable {
 
     private static MojangAPI mojangAPI;
+    final HashMap<String, String> cache = new HashMap<>();
+
+    private MojangAPI() {
+    }
 
     public static MojangAPI mojangAPI() {
         if (mojangAPI == null) mojangAPI = new MojangAPI();
         return mojangAPI;
-    }
-    final HashMap<String, String> cache = new HashMap<>();
-
-    private MojangAPI() {
     }
 
     @CheckReturnValue

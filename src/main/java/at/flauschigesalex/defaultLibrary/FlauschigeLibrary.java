@@ -10,35 +10,8 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused"})
 @Getter
 public class FlauschigeLibrary extends Printable {
-    private static FlauschigeLibrary flauschigeLibrary;
     protected static boolean autoRegisterManagers = true;
-
-    public static void main(String[] args) {
-        getLibrary();
-    }
-
-    /**
-     * Make sure to run this method in your main class!
-     * This is extremely important for reflections!
-     *
-     * @return an instance of the Library
-     */
-    public static FlauschigeLibrary getLibrary() {
-        if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
-        return flauschigeLibrary;
-    }
-    /**
-     * Make sure to run this method in your main class!
-     * This is extremely important for reflections!
-     *
-     * @return an instance of the Library
-     */
-    public static FlauschigeLibrary getLibrary(boolean autoRegisterManagers) {
-        FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers;
-        if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
-        return flauschigeLibrary;
-    }
-
+    private static FlauschigeLibrary flauschigeLibrary;
     private final String ownDirectoryPath;
     private final ArrayList<String> workingDirectoryPath = new ArrayList<>();
 
@@ -55,6 +28,33 @@ public class FlauschigeLibrary extends Printable {
 
         if (autoRegisterManagers)
             executeManagers();
+    }
+
+    public static void main(String[] args) {
+        getLibrary();
+    }
+
+    /**
+     * Make sure to run this method in your main class!
+     * This is extremely important for reflections!
+     *
+     * @return an instance of the Library
+     */
+    public static FlauschigeLibrary getLibrary() {
+        if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
+        return flauschigeLibrary;
+    }
+
+    /**
+     * Make sure to run this method in your main class!
+     * This is extremely important for reflections!
+     *
+     * @return an instance of the Library
+     */
+    public static FlauschigeLibrary getLibrary(boolean autoRegisterManagers) {
+        FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers;
+        if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
+        return flauschigeLibrary;
     }
 
     public void executeManagers() {

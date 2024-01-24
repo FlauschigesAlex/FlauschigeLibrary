@@ -19,6 +19,32 @@ import java.util.List;
 public final class DatabaseCredentials extends Printable {
 
     private static final int defaultPort = 27017;
+    private final ArrayList<String> hostnames;
+    private final String username;
+    private final @Invisible String accessKey;
+    private final String database;
+    private final ArrayList<Integer> ports;
+
+    DatabaseCredentials(final @Nullable ArrayList<String> hostnames, final @Nullable String username, final @Nullable String accessKey, final @Nullable String database, final @Nullable ArrayList<Integer> ports) {
+        if (hostnames == null || hostnames.isEmpty())
+            throw new DatabaseLoginException("hostnames is null or empty");
+        if (username == null)
+            throw new DatabaseLoginException("username is null");
+        if (accessKey == null)
+            throw new DatabaseLoginException("accessKey is null");
+        if (database == null)
+            throw new DatabaseLoginException("database is null");
+        if (ports == null || ports.isEmpty())
+            throw new DatabaseLoginException("ports is null or empty");
+        while (ports.size() < hostnames.size()) {
+            ports.add(defaultPort);
+        }
+        this.hostnames = hostnames;
+        this.username = username;
+        this.accessKey = accessKey;
+        this.database = database;
+        this.ports = ports;
+    }
 
     public static DatabaseCredentials construct(final @NotNull String hostname, final @NotNull String username, final @NotNull CharSequence accessKey, final @NotNull String database) {
         return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, accessKey.toString(), database, new ArrayList<>(List.of(defaultPort)));
@@ -78,9 +104,11 @@ public final class DatabaseCredentials extends Printable {
         return construct(jsonStringBuilder.toString());
     }
 
-    public static DatabaseCredentials construct(@NotNull String jsonString) {
-        JsonManager jsonManager = JsonManager.parse(jsonString);
-        String[] requiredCredentials = new String[]{"hostname", "username", "accessKey", "database"};
+    public static DatabaseCredentials construct(final @NotNull String jsonString) {
+        final JsonManager jsonManager = JsonManager.parse(jsonString);
+        if (jsonManager == null)
+            throw new DatabaseLoginException("Failed to create " + DatabaseCredentials.class.getSimpleName() + " from string: " + jsonString);
+        final String[] requiredCredentials = new String[]{"hostname", "username", "accessKey", "database"};
 
         String username = null;
         final Object userObject = jsonManager.asObject("username");
@@ -130,31 +158,5 @@ public final class DatabaseCredentials extends Printable {
             ports.add(defaultPort);
 
         return new DatabaseCredentials(hosts, username, accessKey, database, ports);
-    }
-    private final ArrayList<String> hostnames;
-    private final String username;
-    private final @Invisible String accessKey;
-    private final String database;
-    private final ArrayList<Integer> ports;
-
-    DatabaseCredentials(final @Nullable ArrayList<String> hostnames, final @Nullable String username, final @Nullable String accessKey, final @Nullable String database, final @Nullable ArrayList<Integer> ports) {
-        if (hostnames == null || hostnames.isEmpty())
-            throw new DatabaseLoginException("hostnames is null or empty");
-        if (username == null)
-            throw new DatabaseLoginException("username is null");
-        if (accessKey == null)
-            throw new DatabaseLoginException("accessKey is null");
-        if (database == null)
-            throw new DatabaseLoginException("database is null");
-        if (ports == null || ports.isEmpty())
-            throw new DatabaseLoginException("ports is null or empty");
-        while (ports.size() < hostnames.size()) {
-            ports.add(defaultPort);
-        }
-        this.hostnames = hostnames;
-        this.username = username;
-        this.accessKey = accessKey;
-        this.database = database;
-        this.ports = ports;
     }
 }

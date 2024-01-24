@@ -1,5 +1,6 @@
 package at.flauschigesalex.defaultLibrary.database.mongo;
 
+import org.jetbrains.annotations.NotNull;
 import java.util.Comparator;
 
 public final class MongoInformationClassComparator implements Comparator<Class<?>> {
@@ -7,8 +8,8 @@ public final class MongoInformationClassComparator implements Comparator<Class<?
     MongoInformationClassComparator() {
     }
 
-    public int compare(Class<?> mongoInformation1, Class<?> mongoInformation2) {
-        int min = Math.min(mongoInformation1.getName().length(), mongoInformation2.getName().length());
+    public int compare(final @NotNull Class<?> mongoInformation1, final @NotNull Class<?> mongoInformation2) {
+        final int min = Math.min(mongoInformation1.getName().length(), mongoInformation2.getName().length());
         for (int size = 0; size < min; size++) {
             if (weight(mongoInformation1.getName().charAt(size)) > weight(mongoInformation2.getName().charAt(size))) {
                 return 1;
@@ -26,8 +27,8 @@ public final class MongoInformationClassComparator implements Comparator<Class<?
         return 0;
     }
 
-    private int weight(char c) {
-        String regex = ".0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ_";
+    private int weight(final char c) {
+        final String regex = ".0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ_";
         for (int i = 0; i < regex.length(); i++) {
             if (regex.charAt(i) != c) continue;
             return i;

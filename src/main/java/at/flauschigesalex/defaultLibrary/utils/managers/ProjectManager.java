@@ -7,16 +7,18 @@ import java.util.Comparator;
 @SuppressWarnings("unused")
 public abstract class ProjectManager {
 
-    public static Comparator<ProjectManager> comparator() {
-        return new ProjectManagerComparator();
-    }
-
     protected ProjectManagerPredicate predicate;
+    private FlauschigeLibrary library;
 
     protected ProjectManager() {
     }
-    protected ProjectManager(ProjectManagerPredicate predicate) {
+
+    protected ProjectManager(final @NotNull ProjectManagerPredicate predicate) {
         this.predicate = predicate;
+    }
+
+    public static Comparator<ProjectManager> comparator() {
+        return new ProjectManagerComparator();
     }
 
     protected double priority() {
@@ -41,7 +43,6 @@ public abstract class ProjectManager {
         return predicate == null || predicate.matches();
     }
 
-    private FlauschigeLibrary library;
     protected final FlauschigeLibrary parentLibrary() {
         return library;
     }

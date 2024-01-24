@@ -19,7 +19,8 @@ public final class Translation extends Printable {
     private final HashMap<Integer, Object> replacements = new HashMap<>();
     private boolean useFallbackMessage = true;
     private boolean clearReplacements = true;
-    private @Deprecated @Invisible int replacement = 0;
+    private @Deprecated
+    @Invisible int replacement = 0;
 
     @Deprecated
     public Translation(final @NotNull TranslationSource translationSource) {

@@ -1,5 +1,7 @@
 package at.flauschigesalex.defaultLibrary.exception;
 
+import org.jetbrains.annotations.Nullable;
+
 @SuppressWarnings("unused")
 public abstract class LibraryException extends RuntimeException {
 
@@ -7,15 +9,15 @@ public abstract class LibraryException extends RuntimeException {
         super();
     }
 
-    protected LibraryException(String message) {
+    protected LibraryException(final @Nullable String message) {
         super(message);
     }
 
-    protected LibraryException(String message, Throwable cause) {
+    protected LibraryException(final @Nullable String message, Throwable cause) {
         super(message, cause);
     }
 
-    protected LibraryException(Throwable cause) {
+    protected LibraryException(final @Nullable Throwable cause) {
         super(cause);
     }
 }

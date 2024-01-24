@@ -14,19 +14,20 @@ import java.util.ArrayList;
 @SuppressWarnings({"UnusedReturnValue", "unused", "BooleanMethodIsAlwaysInverted"})
 public final class FileManager extends Printable {
 
-    public static FileManager getFile(final @NotNull File file) {
-        return new FileManager(file);
-    }
-
-    public static FileManager getFile(final @NotNull String path) {
-        return new FileManager(new File(path));
-    }
     private final File file;
     @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;
 
     FileManager(final @NotNull File file) {
         this.file = file;
+    }
+
+    public static FileManager getFile(final @NotNull File file) {
+        return new FileManager(file);
+    }
+
+    public static FileManager getFile(final @NotNull String path) {
+        return new FileManager(new File(path));
     }
 
     public boolean create(final @NotNull FileType fileType) {
@@ -156,7 +157,9 @@ public final class FileManager extends Printable {
         if (read == null)
             return null;
         if (jsonManager == null)
-            jsonManager = JsonManager.parse(read).file(this);
+            jsonManager = JsonManager.parse(read);
+        if (jsonManager == null) return null;
+        jsonManager.file(this);
         return jsonManager;
     }
 
