@@ -4,6 +4,7 @@ import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
 import at.flauschigesalex.defaultLibrary.utils.Printable;
 import at.flauschigesalex.defaultLibrary.utils.managers.ProjectManager;
 import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
+import at.flauschigesalex.defaultLibrary.utils.tasks.Task;
 import lombok.Getter;
 import java.util.ArrayList;
 
@@ -66,7 +67,7 @@ public class FlauschigeLibrary extends Printable {
             }
         }
         managers.sort(ProjectManager.comparator());
-        new Thread(() -> managers.forEach(manager -> {
+        Task.createAsyncTask(() -> managers.forEach(manager -> {
             if (manager.executeManager(this)) {
                 if (manager.successMessage() != null)
                     System.out.println(manager.successMessage());
@@ -74,7 +75,7 @@ public class FlauschigeLibrary extends Printable {
                 if (manager.failMessage() != null)
                     System.out.println(manager.failMessage());
             }
-        })).start();
+        })).execute();
     }
 
     public FlauschigeLibrary addWorkingDirectory(String path) {
