@@ -2,6 +2,9 @@ package at.flauschigesalex.defaultLibrary.exception;
 
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * {@link Exception General-Exception} regarding the {@link at.flauschigesalex.defaultLibrary.FlauschigeLibrary project} or its children.
+ */
 @SuppressWarnings("unused")
 public abstract class LibraryException extends RuntimeException {
 
