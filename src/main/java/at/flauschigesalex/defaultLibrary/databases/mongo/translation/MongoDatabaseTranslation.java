@@ -1,6 +1,6 @@
-package at.flauschigesalex.defaultLibrary.database.mongo.translation;
+package at.flauschigesalex.defaultLibrary.databases.mongo.translation;
 
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoClass;
+import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoClass;
 import lombok.Getter;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.jetbrains.annotations.NotNull;

@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.database.mongo.annotations;
+package at.flauschigesalex.defaultLibrary.databases.mongo.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

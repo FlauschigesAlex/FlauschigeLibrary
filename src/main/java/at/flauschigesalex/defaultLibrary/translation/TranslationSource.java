@@ -1,7 +1,7 @@
 package at.flauschigesalex.defaultLibrary.translation;
 
-import at.flauschigesalex.defaultLibrary.database.mongo.MongoDatabaseManager;
-import at.flauschigesalex.defaultLibrary.database.mongo.translation.MongoDatabaseTranslation;
+import at.flauschigesalex.defaultLibrary.databases.mongo.MongoDatabaseManager;
+import at.flauschigesalex.defaultLibrary.databases.mongo.translation.MongoDatabaseTranslation;
 import at.flauschigesalex.defaultLibrary.utils.Printable;
 import at.flauschigesalex.defaultLibrary.utils.file.FileManager;
 import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;

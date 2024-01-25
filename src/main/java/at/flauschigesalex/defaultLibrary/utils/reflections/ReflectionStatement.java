@@ -59,7 +59,7 @@ public final class ReflectionStatement extends Printable {
         if (this.reflections == null) {
             reflections = new ArrayList<>();
             for (final String reflectionPath : reflectionPaths) {
-                if (reflectionPath == null) continue;
+                if (reflectionPath == null || reflectionPath.isBlank()) continue;
                 reflections.add(new Reflections(reflectionPath));
             }
         }

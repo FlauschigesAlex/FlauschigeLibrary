@@ -1,9 +1,9 @@
-package at.flauschigesalex.defaultLibrary.database.mongo;
+package at.flauschigesalex.defaultLibrary.databases.mongo;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
-import at.flauschigesalex.defaultLibrary.database.DatabaseCredentials;
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoClass;
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
+import at.flauschigesalex.defaultLibrary.databases.DatabaseCredentials;
+import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoClass;
+import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoIgnore;
 import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
 import com.mongodb.*;
 import com.mongodb.client.MongoClient;
@@ -121,6 +121,7 @@ public final class MongoDatabaseManager {
                     outBuilder.append("\n - ").append(informationClass.getName()).append(" ");
                     if (registerInformation == MongoDatabaseRegisterInformationClass.MANUAL) continue;
                     String registerTypeString = registerInformation.registerTypeString;
+                    if (registerTypeString == null) continue;
                     if (registerInformation == MongoDatabaseRegisterInformationClass.SUPERCLASS) {
                         Class<? extends MongoInformationClass> mongoInformationClass = (Class<? extends MongoInformationClass>) informationClass;
                         registerTypeString = registerTypeString.replace("{0}", getMongoInformationClassPath(mongoInformationClass));

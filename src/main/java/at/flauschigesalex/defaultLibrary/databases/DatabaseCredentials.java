@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.database;
+package at.flauschigesalex.defaultLibrary.databases;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
 import at.flauschigesalex.defaultLibrary.utils.Printable;

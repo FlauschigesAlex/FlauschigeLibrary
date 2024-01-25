@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.database;
+package at.flauschigesalex.defaultLibrary.databases;
 
 import org.jetbrains.annotations.Nullable;
 

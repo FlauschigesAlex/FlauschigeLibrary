@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.database.mongo;
+package at.flauschigesalex.defaultLibrary.databases.mongo;
 
 import org.jetbrains.annotations.NotNull;
 import java.util.Comparator;

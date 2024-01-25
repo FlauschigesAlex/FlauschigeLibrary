@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.utils.file;
 
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
+import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoIgnore;
 import at.flauschigesalex.defaultLibrary.utils.Printable;
 import lombok.AccessLevel;
 import lombok.Getter;

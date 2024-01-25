@@ -1,7 +1,7 @@
-package at.flauschigesalex.defaultLibrary.database.mongo;
+package at.flauschigesalex.defaultLibrary.databases.mongo;
 
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoClass;
-import at.flauschigesalex.defaultLibrary.database.mongo.annotations.MongoIgnore;
+import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoClass;
+import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoIgnore;
 
 @MongoClass
 @MongoIgnore
