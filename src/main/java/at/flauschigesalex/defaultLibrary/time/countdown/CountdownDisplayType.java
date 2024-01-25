@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.utils.time.countdown;
+package at.flauschigesalex.defaultLibrary.time.countdown;
 
 public enum CountdownDisplayType {
     HIDE_ANY_EMPTY_FIELD_SMART,

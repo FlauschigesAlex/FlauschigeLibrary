@@ -1,7 +1,7 @@
-package at.flauschigesalex.defaultLibrary.utils.file;
+package at.flauschigesalex.defaultLibrary.fileUtils;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +12,7 @@ import java.net.URL;
 
 @Getter
 @SuppressWarnings("unused")
-public final class ResourceManager extends Printable {
+public final class ResourceManager extends AutoDisplayable {
 
     private final URL url;
     @Getter(AccessLevel.NONE)

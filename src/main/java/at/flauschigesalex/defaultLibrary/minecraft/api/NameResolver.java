@@ -1,8 +1,8 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
-import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
+import at.flauschigesalex.defaultLibrary.fileUtils.JsonManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
@@ -12,7 +12,7 @@ import java.net.URL;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
-public final class NameResolver extends Printable {
+public final class NameResolver extends AutoDisplayable {
 
     private final String uuid;
     private @Invisible MojangAPI mojangAPI;

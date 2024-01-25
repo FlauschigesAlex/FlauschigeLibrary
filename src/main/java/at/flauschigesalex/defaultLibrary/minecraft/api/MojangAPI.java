@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
-import at.flauschigesalex.defaultLibrary.utils.Printable;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import javax.annotation.CheckReturnValue;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 @SuppressWarnings({"unused", "ConstantValue"})
-public final class MojangAPI extends Printable {
+public final class MojangAPI extends AutoDisplayable {
 
     private static MojangAPI mojangAPI;
     final HashMap<String, String> cache = new HashMap<>();

@@ -2,10 +2,10 @@ package at.flauschigesalex.defaultLibrary.translation;
 
 import at.flauschigesalex.defaultLibrary.databases.mongo.MongoDatabaseManager;
 import at.flauschigesalex.defaultLibrary.databases.mongo.translation.MongoDatabaseTranslation;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
-import at.flauschigesalex.defaultLibrary.utils.file.FileManager;
-import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
-import at.flauschigesalex.defaultLibrary.utils.file.ResourceManager;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
+import at.flauschigesalex.defaultLibrary.fileUtils.FileManager;
+import at.flauschigesalex.defaultLibrary.fileUtils.JsonManager;
+import at.flauschigesalex.defaultLibrary.fileUtils.ResourceManager;
 import com.mongodb.client.MongoCollection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class TranslationSource extends Printable {
+public class TranslationSource extends AutoDisplayable {
 
     static Locale defaultLocale = Locale.US;
     protected final HashMap<Locale, JsonManager> map = new HashMap<>();

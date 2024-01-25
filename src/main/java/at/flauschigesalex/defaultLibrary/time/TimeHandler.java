@@ -1,6 +1,6 @@
-package at.flauschigesalex.defaultLibrary.utils.time;
+package at.flauschigesalex.defaultLibrary.time;
 
-import at.flauschigesalex.defaultLibrary.utils.Printable;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -10,7 +10,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @SuppressWarnings("unused")
-public final class TimeHandler extends Printable implements Cloneable {
+public final class TimeHandler extends AutoDisplayable implements Cloneable {
 
     private final long epochMillisecond;
 

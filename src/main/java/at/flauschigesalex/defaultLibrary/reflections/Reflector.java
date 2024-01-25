@@ -1,8 +1,8 @@
-package at.flauschigesalex.defaultLibrary.utils.reflections;
+package at.flauschigesalex.defaultLibrary.reflections;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import javax.annotation.CheckReturnValue;
@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Invisible
-public final class Reflector extends Printable {
+public final class Reflector extends AutoDisplayable {
 
     private static Reflector reflector;
     private final HashMap<ArrayList<String>, ReflectionStatement> cache = new HashMap<>();

@@ -8,19 +8,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-@SuppressWarnings("unchecked")
-public abstract class Printable {
+@SuppressWarnings({"unchecked","unused"})
+public abstract class AutoDisplayable {
 
     private boolean displayClassType = true;
     private boolean displayDeepStructure = true;
     private DisplayType displayType = DisplayType.DISPLAY_FIELD;
 
-    protected final <P extends Printable> P setDisplayClassType(boolean displayClassType) {
+    protected final <P extends AutoDisplayable> P setDisplayClassType(boolean displayClassType) {
         this.displayClassType = displayClassType;
         return (P) this;
     }
 
-    protected final <P extends Printable> P setDisplayDeepStructure(boolean displayDeepStructure) {
+    protected final <P extends AutoDisplayable> P setDisplayDeepStructure(boolean displayDeepStructure) {
         this.displayDeepStructure = displayDeepStructure;
         return (P) this;
     }
@@ -28,7 +28,7 @@ public abstract class Printable {
     /**
      * @deprecated There are currently no other {@link DisplayType display-types}.
      */
-    protected final <P extends Printable> P setDisplayType(DisplayType displayType) {
+    protected final <P extends AutoDisplayable> P setDisplayType(DisplayType displayType) {
         this.displayType = displayType;
         return (P) this;
     }
@@ -37,7 +37,7 @@ public abstract class Printable {
         Class<?> THIS = this.getClass();
         final HashMap<Class<?>, HashMap<Field, ?>> list = new HashMap<>();
 
-        while (THIS != Printable.class && THIS != Object.class && displayType.canDisplay(Field.class)) {
+        while (THIS != AutoDisplayable.class && THIS != Object.class && displayType.canDisplay(Field.class)) {
             final HashMap<Field, Object> map = new HashMap<>();
             for (final Field declaredField : THIS.getDeclaredFields()) {
                 declaredField.setAccessible(true);

@@ -1,10 +1,10 @@
 package at.flauschigesalex.defaultLibrary.databases;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
-import at.flauschigesalex.defaultLibrary.utils.file.FileManager;
-import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
-import at.flauschigesalex.defaultLibrary.utils.file.ResourceManager;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
+import at.flauschigesalex.defaultLibrary.fileUtils.FileManager;
+import at.flauschigesalex.defaultLibrary.fileUtils.JsonManager;
+import at.flauschigesalex.defaultLibrary.fileUtils.ResourceManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Getter
 @SuppressWarnings({"unused", "DataFlowIssue"})
-public final class DatabaseCredentials extends Printable {
+public final class DatabaseCredentials extends AutoDisplayable {
 
     private static final int defaultPort = 27017;
     private final ArrayList<String> hostnames;

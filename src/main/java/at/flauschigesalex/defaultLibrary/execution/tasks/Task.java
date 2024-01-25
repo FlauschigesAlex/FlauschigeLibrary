@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.utils.tasks;
+package at.flauschigesalex.defaultLibrary.execution.tasks;
 
 import lombok.Getter;
 import lombok.Setter;

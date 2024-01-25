@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.utils.time;
+package at.flauschigesalex.defaultLibrary.time;
 
 import lombok.Getter;
 

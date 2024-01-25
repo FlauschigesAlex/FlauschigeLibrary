@@ -4,7 +4,7 @@ import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import at.flauschigesalex.defaultLibrary.databases.DatabaseCredentials;
 import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoClass;
 import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoIgnore;
-import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
+import at.flauschigesalex.defaultLibrary.reflections.Reflector;
 import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;

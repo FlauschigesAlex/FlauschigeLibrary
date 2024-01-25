@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.utils.file;
+package at.flauschigesalex.defaultLibrary.fileUtils;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

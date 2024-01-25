@@ -1,7 +1,7 @@
-package at.flauschigesalex.defaultLibrary.utils.file;
+package at.flauschigesalex.defaultLibrary.fileUtils;
 
 import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoIgnore;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 @Getter
 @MongoIgnore
 @SuppressWarnings({"UnusedReturnValue", "unused", "BooleanMethodIsAlwaysInverted"})
-public final class FileManager extends Printable {
+public final class FileManager extends AutoDisplayable {
 
     private final File file;
     @Getter(AccessLevel.NONE)

@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.utils.managers;
+package at.flauschigesalex.defaultLibrary.execution.manager;
 
 import org.jetbrains.annotations.NotNull;
 import java.util.Comparator;

@@ -1,7 +1,7 @@
-package at.flauschigesalex.defaultLibrary.utils.reflections;
+package at.flauschigesalex.defaultLibrary.reflections;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @SuppressWarnings({"unused"})
-public final class ReflectionStatement extends Printable {
+public final class ReflectionStatement extends AutoDisplayable {
 
     private final String[] reflectionPaths;
     private final ArrayList<Class<?>> ignoredClasses = new ArrayList<>();

@@ -1,16 +1,16 @@
-package at.flauschigesalex.defaultLibrary.utils.time.countdown;
+package at.flauschigesalex.defaultLibrary.time.countdown;
 
-import at.flauschigesalex.defaultLibrary.utils.Printable;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static at.flauschigesalex.defaultLibrary.utils.time.countdown.CountdownDisplayType.*;
+import static at.flauschigesalex.defaultLibrary.time.countdown.CountdownDisplayType.*;
 
 @Getter
-public class CountdownFormat extends Printable {
+public class CountdownFormat extends AutoDisplayable {
 
     //TODO CUSTOM
 

@@ -1,16 +1,16 @@
 package at.flauschigesalex.defaultLibrary;
 
 import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
-import at.flauschigesalex.defaultLibrary.utils.managers.ProjectManager;
-import at.flauschigesalex.defaultLibrary.utils.reflections.Reflector;
-import at.flauschigesalex.defaultLibrary.utils.tasks.Task;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
+import at.flauschigesalex.defaultLibrary.execution.manager.ProjectManager;
+import at.flauschigesalex.defaultLibrary.reflections.Reflector;
+import at.flauschigesalex.defaultLibrary.execution.tasks.Task;
 import lombok.Getter;
 import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
 @Getter
-public class FlauschigeLibrary extends Printable {
+public class FlauschigeLibrary extends AutoDisplayable {
     protected static boolean autoRegisterManagers = true;
     private static FlauschigeLibrary flauschigeLibrary;
     private final String ownDirectoryPath;

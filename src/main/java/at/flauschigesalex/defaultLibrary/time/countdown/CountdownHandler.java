@@ -1,7 +1,7 @@
-package at.flauschigesalex.defaultLibrary.utils.time.countdown;
+package at.flauschigesalex.defaultLibrary.time.countdown;
 
-import at.flauschigesalex.defaultLibrary.utils.Printable;
-import at.flauschigesalex.defaultLibrary.utils.time.TimeHandler;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
+import at.flauschigesalex.defaultLibrary.time.TimeHandler;
 import lombok.Getter;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 
 @Getter
 @SuppressWarnings("unused")
-public final class CountdownHandler extends Printable {
+public final class CountdownHandler extends AutoDisplayable {
 
     private final TimeHandler start;
 

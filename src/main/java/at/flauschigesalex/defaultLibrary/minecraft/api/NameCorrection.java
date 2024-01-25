@@ -1,8 +1,8 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.Printable;
-import at.flauschigesalex.defaultLibrary.utils.file.JsonManager;
+import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
+import at.flauschigesalex.defaultLibrary.fileUtils.JsonManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
@@ -11,7 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 @SuppressWarnings("unused")
-public final class NameCorrection extends Printable {
+public final class NameCorrection extends AutoDisplayable {
 
     private final String name;
     private @Invisible MojangAPI mojangAPI;
