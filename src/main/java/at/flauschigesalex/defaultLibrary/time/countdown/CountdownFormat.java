@@ -52,13 +52,13 @@ public class CountdownFormat extends AutoDisplayable {
         final ArrayList<String> back = new ArrayList<>();
         if (visibleTimeUnits.contains(TimeUnit.DAYS) && days != 0)
             back.add(days + "d");
-        if (visibleTimeUnits.contains(TimeUnit.HOURS) && (visibleTimeUnits.contains(TimeUnit.DAYS) || hours != 0))
+        if (visibleTimeUnits.contains(TimeUnit.HOURS) && (days != 0 || hours != 0))
             back.add(hours + "h");
-        if (visibleTimeUnits.contains(TimeUnit.MINUTES) && (visibleTimeUnits.contains(TimeUnit.HOURS) || visibleTimeUnits.contains(TimeUnit.DAYS) || minutes != 0))
+        if (visibleTimeUnits.contains(TimeUnit.MINUTES) && (days != 0 || hours != 0 || minutes != 0))
             back.add(minutes + "m");
-        if (visibleTimeUnits.contains(TimeUnit.SECONDS) && (visibleTimeUnits.contains(TimeUnit.MINUTES) || visibleTimeUnits.contains(TimeUnit.HOURS) || visibleTimeUnits.contains(TimeUnit.DAYS) || seconds != 0))
+        if (visibleTimeUnits.contains(TimeUnit.SECONDS) && (days != 0 || hours != 0 || minutes != 0 || seconds != 0))
             back.add(seconds + "s");
-        if (visibleTimeUnits.contains(TimeUnit.MILLISECONDS) && (visibleTimeUnits.contains(TimeUnit.SECONDS) || visibleTimeUnits.contains(TimeUnit.MINUTES) || visibleTimeUnits.contains(TimeUnit.HOURS) || visibleTimeUnits.contains(TimeUnit.DAYS) || millis != 0))
+        if (visibleTimeUnits.contains(TimeUnit.MILLISECONDS) && (days != 0 || hours != 0 || minutes != 0 || seconds != 0 || millis != 0))
             back.add(millis + "ms");
 
         if (displayType == HIDE_ANY_EMPTY_FIELD_SMART) {
