@@ -118,9 +118,7 @@ public final class JsonManager {
     }
 
     public String asJsonString() {
-        JSONObject jsonObject = asJsonObject();
-        if (asJsonObject() == null) return null;
-        return asJsonObject().toJSONString();
+        return source;
     }
 
     public Object asObject(String sourcePath) {
