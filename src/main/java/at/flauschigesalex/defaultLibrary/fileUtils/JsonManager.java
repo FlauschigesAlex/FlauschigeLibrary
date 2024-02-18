@@ -17,7 +17,7 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
-    private final String source;
+    private String source;
     private FileManager fileManager;
 
     JsonManager(final @NotNull String source) {
@@ -290,7 +290,9 @@ public final class JsonManager {
             return false;
 
         if (!sourcePath.contains(".")) {
-            return manager.put(sourcePath, object) != null;
+            manager.put(sourcePath, object);
+            source = manager.toString();
+            return true;
         }
         if (sourcePath.endsWith("."))
             return false;
