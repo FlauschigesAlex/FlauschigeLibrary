@@ -174,4 +174,8 @@ public final class FileManager extends AutoDisplayable {
     public enum FileType {
         DIRECTORY, FILE, JSONFILE
     }
+
+    public String toString() {
+        return getFile().getPath()+"/";
+    }
 }

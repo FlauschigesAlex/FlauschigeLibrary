@@ -3,7 +3,7 @@ package at.flauschigesalex.defaultLibrary.execution.manager;
 import org.jetbrains.annotations.NotNull;
 import java.util.Comparator;
 
-public class ProjectManagerComparator implements Comparator<ProjectManager> {
+public class ProjectManagerComparator implements Comparator<ProjectManager<?>> {
 
     ProjectManagerComparator() {
     }

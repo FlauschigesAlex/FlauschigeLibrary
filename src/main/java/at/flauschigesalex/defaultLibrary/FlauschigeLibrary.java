@@ -59,7 +59,7 @@ public class FlauschigeLibrary extends AutoDisplayable {
     }
 
     public void executeManagers() {
-        final ArrayList<ProjectManager> managers = new ArrayList<>();
+        final ArrayList<ProjectManager<?>> managers = new ArrayList<>();
         for (Class<? extends ProjectManager> subClass : getReflector().reflect(ownDirectoryPath, workingDirectoryPath.toArray(String[]::new)).getSubClasses(ProjectManager.class)) {
             try {
                 managers.add(subClass.getConstructor().newInstance());

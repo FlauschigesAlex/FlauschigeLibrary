@@ -14,7 +14,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 @Getter
-@SuppressWarnings({"unused", "DataFlowIssue", "DeprecatedIsStillUsed", "unchecked", "UnusedReturnValue"})
+@SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
     private final String source;
@@ -81,10 +81,6 @@ public final class JsonManager {
         return null;
     }
 
-    /**
-     * @return {@link JsonManager} as a {@link JSONObject}
-     * @deprecated check {@link #asJsonObject(String)}
-     */
     public JSONObject asJsonObject() {
         try {
             return (JSONObject) asObject();
@@ -93,10 +89,6 @@ public final class JsonManager {
         return null;
     }
 
-    /**
-     * @return {@link JsonManager} as an {@link Object}
-     * @deprecated check {@link #asObject(String)}
-     */
     public Object asObject() {
         try {
             return new JSONParser().parse(getSource());
@@ -105,10 +97,6 @@ public final class JsonManager {
         return null;
     }
 
-    /**
-     * @return {@link JsonManager} as an {@link Object}
-     * @deprecated check {@link #asObject(String)}
-     */
     public JSONArray asJsonArray() {
         try {
             return (JSONArray) asObject();
@@ -298,7 +286,6 @@ public final class JsonManager {
 
     private boolean write(final @NotNull String sourcePath, final @Nullable JSONObject jsonObject, final @Nullable Object object) {
         final JSONObject manager = jsonObject == null ? asJsonObject() : jsonObject;
-        System.out.println(manager + " # " + sourcePath + " # " + object);
         if (manager == null)
             return false;
 
@@ -345,9 +332,8 @@ public final class JsonManager {
         return aClass.isInstance(asObject(sourcePath));
     }
 
-    @Override
     public String toString() {
-        return asJsonString();
+        return getSource();
     }
 
     JsonManager file(final @NotNull FileManager fileManager) {

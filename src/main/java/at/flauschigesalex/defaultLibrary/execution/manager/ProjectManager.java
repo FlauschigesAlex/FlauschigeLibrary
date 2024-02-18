@@ -2,22 +2,46 @@ package at.flauschigesalex.defaultLibrary.execution.manager;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 @SuppressWarnings("unused")
-public abstract class ProjectManager {
+public abstract class ProjectManager<V> {
 
-    protected ProjectManagerPredicate predicate;
+    private static final ArrayList<ProjectManager<?>> managers = new ArrayList<>();
+    public static @Nullable ProjectManager<?> byName(final @NotNull String name, boolean ignoreCase) {
+        for (final ProjectManager<?> manager : managers) {
+            if (ignoreCase && manager.getClass().getSimpleName().equalsIgnoreCase(name))
+                return manager;
+            if (manager.getClass().getSimpleName().equals(name))
+                return manager;
+        }
+        return null;
+    }
+    public static @Nullable ProjectManager<?> byClass(final @NotNull Class<? extends ProjectManager<?>> source) {
+        for (final ProjectManager<?> manager : managers) {
+            if (manager.getClass() == source)
+                return manager;
+        }
+        return null;
+    }
+
+    protected ProjectManagerPredicate<V> predicate;
+    protected V anything;
     private FlauschigeLibrary library;
 
     protected ProjectManager() {
+        ProjectManager.managers.add(this);
     }
 
-    protected ProjectManager(final @NotNull ProjectManagerPredicate predicate) {
+    protected ProjectManager(final @NotNull ProjectManagerPredicate<V> predicate, final @Nullable V anything) {
         this.predicate = predicate;
+        this.anything = anything;
+        ProjectManager.managers.add(this);
     }
 
-    public static Comparator<ProjectManager> comparator() {
+    public static Comparator<ProjectManager<?>> comparator() {
         return new ProjectManagerComparator();
     }
 
@@ -40,7 +64,7 @@ public abstract class ProjectManager {
     protected abstract boolean execute();
 
     public final boolean matches() {
-        return predicate == null || predicate.matches();
+        return predicate == null || predicate.matches(anything);
     }
 
     protected final FlauschigeLibrary parentLibrary() {

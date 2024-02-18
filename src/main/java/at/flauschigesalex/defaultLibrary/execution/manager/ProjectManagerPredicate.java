@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.execution.manager;
 
 @SuppressWarnings("unused")
-public interface ProjectManagerPredicate {
-    boolean matches();
+public interface ProjectManagerPredicate<V> {
+    boolean matches(V anything);
 }
