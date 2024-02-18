@@ -25,7 +25,7 @@ public abstract class ProjectManager<V> {
         }
         return null;
     }
-    public static <V extends ProjectManager<?>> @Nullable V byClass(final @NotNull Class<? extends ProjectManager<V>> source) {
+    public static <V extends ProjectManager<?>> @Nullable V byClass(final @NotNull Class<? extends ProjectManager<?>> source) {
         for (final ProjectManager<?> manager : managers) {
             if (manager.getClass() == source)
                 try {
