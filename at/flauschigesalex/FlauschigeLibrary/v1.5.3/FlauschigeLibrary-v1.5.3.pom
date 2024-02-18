@@ -6,7 +6,7 @@
 
     <groupId>at.flauschigesalex</groupId>
     <artifactId>FlauschigeLibrary</artifactId>
-    <version>v1.5.0</version>
+    <version>v1.5.3</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>RELEASE</version>
+            <version>1.2.13</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
