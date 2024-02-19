@@ -280,6 +280,45 @@ public final class JsonManager {
         return null;
     }
 
+    public boolean remove(final @NotNull String sourcePath) {
+        if (!this.contains(sourcePath))
+            return true;
+        final String[] splitSourcePath = sourcePath.split("\\.");
+        final String pathPart = splitSourcePath[splitSourcePath.length-1];
+
+        final StringBuilder newPath = new StringBuilder();
+        for (int part = 0; part < splitSourcePath.length-1; part++) {
+            if (part != 0)
+                newPath.append(".");
+            newPath.append(splitSourcePath[part]);
+        }
+
+        final JSONObject jsonObject = sourcePath.contains(".") ? asJsonObject(newPath.toString()) : asJsonObject();
+        if (jsonObject == null)
+            return true;
+        jsonObject.remove(pathPart);
+        source = jsonObject.toJSONString();
+        checkRemoveEmpty();
+
+        return false;
+    }
+
+    public boolean checkRemoveEmpty() {
+        return this.checkRemoveEmpty(asJsonObject(), new StringBuilder());
+    }
+    private boolean checkRemoveEmpty(final @NotNull JSONObject jsonObject, @NotNull StringBuilder path) {
+        for (final Object object : jsonObject.keySet()) {
+            if (!(object instanceof JSONObject newJsonObject))
+                continue;
+            if (!checkRemoveEmpty(newJsonObject, path.append(path.isEmpty()?"":".").append(object)))
+                continue;
+            if (!newJsonObject.isEmpty())
+                continue;
+            jsonObject.remove(object);
+        }
+        return false;
+    }
+
     public boolean writeIfAbsent(final @NotNull String sourcePath, final @Nullable Object object) {
         if (this.contains(sourcePath))
             return true;
@@ -287,38 +326,48 @@ public final class JsonManager {
     }
 
     public boolean write(final @NotNull String sourcePath, final @Nullable Object object) {
-        return this.write(sourcePath, asJsonObject(), object);
+        return this.write(sourcePath, asJsonObject(), object, true) != null;
     }
 
-    private boolean write(final @NotNull String sourcePath, final @Nullable JSONObject jsonObject, final @Nullable Object object) {
+    private JSONObject write(final @NotNull String sourcePath, final @Nullable JSONObject jsonObject, final @Nullable Object object, final boolean source) {
         final JSONObject manager = jsonObject == null ? asJsonObject() : jsonObject;
         if (manager == null)
-            return false;
+            return null;
+
+        if (object == null) {
+            this.remove(sourcePath);
+            return manager;
+        }
 
         if (!sourcePath.contains(".")) {
             manager.put(sourcePath, object);
-            source = manager.toString();
-            return true;
+            if (source)
+                this.source = manager.toJSONString();
+            return manager;
         }
-        if (sourcePath.endsWith("."))
-            return false;
+        if (sourcePath.endsWith(".")) {
+            return null;
+        }
 
         final String[] splitSourcePath = sourcePath.split("\\.");
         final String pathPart = splitSourcePath[0];
 
-        if (!manager.containsKey(pathPart) && object == null)
-            return false;
+        if (manager.containsKey(pathPart) && !(manager.get(pathPart) instanceof JSONObject)) {
+            return null;
+        }
 
-        if (!manager.containsKey(pathPart))
-            manager.put(pathPart, new JSONObject());
+        final StringBuilder newPath = new StringBuilder();
+        for (int part = 1; part < splitSourcePath.length; part++) {
+            newPath.append(splitSourcePath[part]);
+            if (part != splitSourcePath.length-1)
+                newPath.append(".");
+        }
 
-        if (!(manager.get(pathPart) instanceof JSONObject newJsonObject))
-            return false;
-
-        final String newSourcePath = sourcePath.replace(pathPart + ".", "");
-        this.write(newSourcePath, newJsonObject, object);
-
-        return false;
+        final JSONObject newObject = this.write(newPath.toString(), (JSONObject) manager.get(pathPart), object, false);
+        manager.put(pathPart, newObject);
+        if (source)
+            this.source = manager.toString();
+        return newObject;
     }
 
     /**
