@@ -280,6 +280,12 @@ public final class JsonManager {
         return null;
     }
 
+    public boolean writeIfAbsent(final @NotNull String sourcePath, final @Nullable Object object) {
+        if (this.contains(sourcePath))
+            return true;
+        return write(sourcePath, object);
+    }
+
     public boolean write(final @NotNull String sourcePath, final @Nullable Object object) {
         return this.write(sourcePath, asJsonObject(), object);
     }
