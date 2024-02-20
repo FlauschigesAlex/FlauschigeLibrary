@@ -17,11 +17,13 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
-    private String source;
+    private final String originalContent;
+    private String content;
     private FileManager fileManager;
 
-    JsonManager(final @NotNull String source) {
-        this.source = source;
+    JsonManager(final @NotNull String content) {
+        this.originalContent = content;
+        this.content = content;
     }
 
     public static @Nullable JsonManager createNew() {
@@ -91,7 +93,7 @@ public final class JsonManager {
 
     public Object asObject() {
         try {
-            return new JSONParser().parse(getSource());
+            return new JSONParser().parse(getContent());
         } catch (ParseException ignore) {
         }
         return null;
@@ -297,7 +299,7 @@ public final class JsonManager {
         if (jsonObject == null)
             return true;
         jsonObject.remove(pathPart);
-        source = jsonObject.toJSONString();
+        content = jsonObject.toJSONString();
         checkRemoveEmpty();
 
         return false;
@@ -342,7 +344,7 @@ public final class JsonManager {
         if (!sourcePath.contains(".")) {
             manager.put(sourcePath, object);
             if (source)
-                this.source = manager.toJSONString();
+                this.content = manager.toJSONString();
             return manager;
         }
         if (sourcePath.endsWith(".")) {
@@ -366,31 +368,34 @@ public final class JsonManager {
         final JSONObject newObject = this.write(newPath.toString(), (JSONObject) manager.get(pathPart), object, false);
         manager.put(pathPart, newObject);
         if (source)
-            this.source = manager.toString();
+            this.content = manager.toString();
         return newObject;
     }
 
-    /**
-     * Requires this {@link JsonManager} to be created with a {@link FileManager}.
-     *
-     * @return If the file was successfully updated
-     */
+    public boolean updateModifiedFile() {
+        if (isOriginalContent())
+            return false;
+        return updateFile();
+    }
     public boolean updateFile() {
         if (this.fileManager == null || !this.fileManager.isWritable())
             return false;
-        return this.fileManager.write(this.source);
+        return this.fileManager.write(this.content);
     }
 
     public boolean contains(String sourcePath) {
         return asObject(sourcePath) != null;
     }
 
-    public boolean instanceOf(String sourcePath, Class<? super Object> aClass) {
-        return aClass.isInstance(asObject(sourcePath));
+    public boolean isOriginalContent() {
+        return content.equals(originalContent);
+    }
+    public boolean isModifiedContent() {
+        return !isOriginalContent();
     }
 
     public String toString() {
-        return getSource();
+        return getContent();
     }
 
     JsonManager file(final @NotNull FileManager fileManager) {
