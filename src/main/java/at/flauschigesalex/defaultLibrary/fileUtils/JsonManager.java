@@ -13,8 +13,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 
-@Getter
 @SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
+@Getter
 public final class JsonManager {
 
     private final String originalContent;
@@ -26,17 +26,22 @@ public final class JsonManager {
         this.content = content;
     }
 
-    public static @Nullable JsonManager createNew() {
+    public static JsonManager createNew() {
         return parse("{}");
     }
 
-    public static @Nullable JsonManager writeNew(final @NotNull String sourcePath, final Object object) {
+    public static JsonManager writeNew(final @NotNull String sourcePath, final Object object) {
         final JsonManager manager = createNew();
         manager.write(sourcePath, object);
         return manager;
     }
 
     public static @Nullable JsonManager parse(final @NotNull String source) {
+        try {
+            new JSONParser().parse(source);
+        } catch (final Exception e) {
+            return null;
+        }
         return new JsonManager(source);
     }
 
@@ -108,7 +113,7 @@ public final class JsonManager {
     }
 
     public String asJsonString() {
-        return source;
+        return content;
     }
 
     public Object asObject(String sourcePath) {
