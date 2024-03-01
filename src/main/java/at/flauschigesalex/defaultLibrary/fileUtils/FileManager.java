@@ -111,7 +111,7 @@ public final class FileManager extends AutoDisplayable {
     }
 
     public boolean write(final @NotNull JsonManager jsonManager) {
-        return this.write(jsonManager.getSource());
+        return this.write(jsonManager.getContent());
     }
 
     public boolean write(final @NotNull StringBuilder builder) {
@@ -176,6 +176,6 @@ public final class FileManager extends AutoDisplayable {
     }
 
     public String toString() {
-        return getFile().getPath();
+        return getFile().getPath()+"/";
     }
 }

@@ -17,11 +17,13 @@ import java.util.ArrayList;
 @SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
 public final class JsonManager {
 
-    private final String source;
+    private final String originalContent;
+    private String content;
     private FileManager fileManager;
 
-    JsonManager(final @NotNull String source) {
-        this.source = source;
+    JsonManager(final @NotNull String content) {
+        this.originalContent = content;
+        this.content = content;
     }
 
     public static @Nullable JsonManager createNew() {
@@ -91,7 +93,7 @@ public final class JsonManager {
 
     public Object asObject() {
         try {
-            return new JSONParser().parse(getSource());
+            return new JSONParser().parse(getContent());
         } catch (ParseException ignore) {
         }
         return null;
@@ -240,7 +242,7 @@ public final class JsonManager {
 
     public Integer asInteger(final @NotNull String sourcePath) {
         try {
-            return Integer.valueOf(asString(sourcePath));
+            return Integer.parseInt(asString(sourcePath));
         } catch (Exception ignore) {
         }
         return null;
@@ -248,7 +250,7 @@ public final class JsonManager {
 
     public Long asLong(final @NotNull String sourcePath) {
         try {
-            return Long.valueOf(asString(sourcePath));
+            return Long.parseLong(asString(sourcePath));
         } catch (Exception ignore) {
         }
         return null;
@@ -256,7 +258,7 @@ public final class JsonManager {
 
     public Float asFloat(final @NotNull String sourcePath) {
         try {
-            return Float.valueOf(asString(sourcePath));
+            return Float.parseFloat(asString(sourcePath));
         } catch (Exception ignore) {
         }
         return null;
@@ -264,7 +266,7 @@ public final class JsonManager {
 
     public Double asDouble(final @NotNull String sourcePath) {
         try {
-            return Double.valueOf(asString(sourcePath));
+            return Double.parseDouble(asString(sourcePath));
         } catch (Exception ignore) {
         }
         return null;
@@ -272,66 +274,126 @@ public final class JsonManager {
 
     public Boolean asBoolean(final @NotNull String sourcePath) {
         try {
-            return Boolean.valueOf(asString(sourcePath));
+            return Boolean.parseBoolean(asString(sourcePath));
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public boolean write(final @NotNull String sourcePath, final @Nullable Object object) {
-        return this.write(sourcePath, asJsonObject(), object);
-    }
-
-    private boolean write(final @NotNull String sourcePath, final @Nullable JSONObject jsonObject, final @Nullable Object object) {
-        final JSONObject manager = jsonObject == null ? asJsonObject() : jsonObject;
-        if (manager == null)
-            return false;
-
-        if (!sourcePath.contains(".")) {
-            return manager.put(sourcePath, object) != null;
-        }
-        if (sourcePath.endsWith("."))
-            return false;
-
+    public boolean remove(final @NotNull String sourcePath) {
+        if (!this.contains(sourcePath))
+            return true;
         final String[] splitSourcePath = sourcePath.split("\\.");
-        final String pathPart = splitSourcePath[0];
+        final String pathPart = splitSourcePath[splitSourcePath.length-1];
 
-        if (!manager.containsKey(pathPart) && object == null)
-            return false;
+        final StringBuilder newPath = new StringBuilder();
+        for (int part = 0; part < splitSourcePath.length-1; part++) {
+            if (part != 0)
+                newPath.append(".");
+            newPath.append(splitSourcePath[part]);
+        }
 
-        if (!manager.containsKey(pathPart))
-            manager.put(pathPart, new JSONObject());
-
-        if (!(manager.get(pathPart) instanceof JSONObject newJsonObject))
-            return false;
-
-        final String newSourcePath = sourcePath.replace(pathPart + ".", "");
-        this.write(newSourcePath, newJsonObject, object);
+        final JSONObject jsonObject = sourcePath.contains(".") ? asJsonObject(newPath.toString()) : asJsonObject();
+        if (jsonObject == null)
+            return true;
+        jsonObject.remove(pathPart);
+        content = jsonObject.toJSONString();
+        checkRemoveEmpty();
 
         return false;
     }
 
-    /**
-     * Requires this {@link JsonManager} to be created with a {@link FileManager}.
-     *
-     * @return If the file was successfully updated
-     */
+    public boolean checkRemoveEmpty() {
+        return this.checkRemoveEmpty(asJsonObject(), new StringBuilder());
+    }
+    private boolean checkRemoveEmpty(final @NotNull JSONObject jsonObject, @NotNull StringBuilder path) {
+        for (final Object object : jsonObject.keySet()) {
+            if (!(object instanceof JSONObject newJsonObject))
+                continue;
+            if (!checkRemoveEmpty(newJsonObject, path.append(path.isEmpty()?"":".").append(object)))
+                continue;
+            if (!newJsonObject.isEmpty())
+                continue;
+            jsonObject.remove(object);
+        }
+        return false;
+    }
+
+    public boolean writeIfAbsent(final @NotNull String sourcePath, final @Nullable Object object) {
+        if (this.contains(sourcePath))
+            return true;
+        return write(sourcePath, object);
+    }
+
+    public boolean write(final @NotNull String sourcePath, final @Nullable Object object) {
+        return this.write(sourcePath, asJsonObject(), object, true) != null;
+    }
+
+    private JSONObject write(final @NotNull String sourcePath, final @Nullable JSONObject jsonObject, final @Nullable Object object, final boolean source) {
+        final JSONObject manager = jsonObject == null ? asJsonObject() : jsonObject;
+        if (manager == null)
+            return null;
+
+        if (object == null) {
+            this.remove(sourcePath);
+            return manager;
+        }
+
+        if (!sourcePath.contains(".")) {
+            manager.put(sourcePath, object);
+            if (source)
+                this.content = manager.toJSONString();
+            return manager;
+        }
+        if (sourcePath.endsWith(".")) {
+            return null;
+        }
+
+        final String[] splitSourcePath = sourcePath.split("\\.");
+        final String pathPart = splitSourcePath[0];
+
+        if (manager.containsKey(pathPart) && !(manager.get(pathPart) instanceof JSONObject)) {
+            return null;
+        }
+
+        final StringBuilder newPath = new StringBuilder();
+        for (int part = 1; part < splitSourcePath.length; part++) {
+            newPath.append(splitSourcePath[part]);
+            if (part != splitSourcePath.length-1)
+                newPath.append(".");
+        }
+
+        final JSONObject newObject = this.write(newPath.toString(), (JSONObject) manager.get(pathPart), object, false);
+        manager.put(pathPart, newObject);
+        if (source)
+            this.content = manager.toString();
+        return newObject;
+    }
+
+    public boolean updateModifiedFile() {
+        if (isOriginalContent())
+            return false;
+        return updateFile();
+    }
     public boolean updateFile() {
         if (this.fileManager == null || !this.fileManager.isWritable())
             return false;
-        return this.fileManager.write(this.source);
+        return this.fileManager.write(this.content);
     }
 
     public boolean contains(String sourcePath) {
         return asObject(sourcePath) != null;
     }
 
-    public boolean instanceOf(String sourcePath, Class<? super Object> aClass) {
-        return aClass.isInstance(asObject(sourcePath));
+    public boolean isOriginalContent() {
+        return content.equals(originalContent);
+    }
+    public boolean isModifiedContent() {
+        return !isOriginalContent();
     }
 
     public String toString() {
-        return getSource();
+        return getContent();
     }
 
     JsonManager file(final @NotNull FileManager fileManager) {

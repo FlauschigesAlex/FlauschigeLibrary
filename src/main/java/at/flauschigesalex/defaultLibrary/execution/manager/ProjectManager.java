@@ -6,23 +6,32 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "unchecked"})
 public abstract class ProjectManager<V> {
 
     private static final ArrayList<ProjectManager<?>> managers = new ArrayList<>();
-    public static @Nullable ProjectManager<?> byName(final @NotNull String name, boolean ignoreCase) {
+    public static <V extends ProjectManager<?>> @Nullable V byName(final @NotNull String name, boolean ignoreCase) {
         for (final ProjectManager<?> manager : managers) {
             if (ignoreCase && manager.getClass().getSimpleName().equalsIgnoreCase(name))
-                return manager;
+                try {
+                    return (V) manager;
+                } catch (Exception ignore) {
+                }
             if (manager.getClass().getSimpleName().equals(name))
-                return manager;
+                try {
+                    return (V) manager;
+                } catch (Exception ignore) {
+                }
         }
         return null;
     }
-    public static @Nullable ProjectManager<?> byClass(final @NotNull Class<? extends ProjectManager<?>> source) {
+    public static <V extends ProjectManager<?>> @Nullable V byClass(final @NotNull Class<? extends ProjectManager<?>> source) {
         for (final ProjectManager<?> manager : managers) {
             if (manager.getClass() == source)
-                return manager;
+                try {
+                    return (V) manager;
+                } catch (Exception ignore) {
+                }
         }
         return null;
     }
