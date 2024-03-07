@@ -18,8 +18,8 @@ public final class HttpHandler {
     public static HttpHandler get(final @NotNull URI uri) {
         return get(uri, new HashMap<>());
     }
-    public static HttpHandler get(final @NotNull CharSequence uri, final @NotNull HashSet<?> header) {
-        return get(URI.create(uri.toString()));
+    public static HttpHandler get(final @NotNull CharSequence uri, final @NotNull HashMap<String, Object> header) {
+        return get(URI.create(uri.toString()), header);
     }
     public static HttpHandler get(final @NotNull URI uri, final @NotNull Map<String, Object> header) {
         return new HttpHandler(uri, HttpRequestType.GET, JsonManager.createNew(), header);
