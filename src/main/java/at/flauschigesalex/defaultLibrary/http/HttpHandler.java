@@ -18,8 +18,8 @@ public final class HttpHandler {
     public static HttpHandler get(final @NotNull URI uri) {
         return get(uri, new HashMap<>());
     }
-    public static HttpHandler get(final @NotNull CharSequence uri, final @NotNull HashSet<?> header) {
-        return get(URI.create(uri.toString()));
+    public static HttpHandler get(final @NotNull CharSequence uri, final @NotNull Map<String, Object> header) {
+        return get(URI.create(uri.toString()), header);
     }
     public static HttpHandler get(final @NotNull URI uri, final @NotNull Map<String, Object> header) {
         return new HttpHandler(uri, HttpRequestType.GET, JsonManager.createNew(), header);
@@ -64,7 +64,7 @@ public final class HttpHandler {
                     final HttpRequest.Builder builder = HttpRequest.newBuilder(uri).GET();
                     set.forEach((key, value) -> {
                         if (key != null && value != null)
-                            builder.header(key, value.toString());
+                            builder.setHeader(key, value.toString());
                     });
                     final HttpResponse<String> response = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString());
                     this.responseCode = response.statusCode();
