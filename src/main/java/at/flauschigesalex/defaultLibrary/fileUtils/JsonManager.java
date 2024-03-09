@@ -1,6 +1,8 @@
 package at.flauschigesalex.defaultLibrary.fileUtils;
 
 import lombok.Getter;
+import org.bson.BsonDocument;
+import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
@@ -446,6 +448,14 @@ public final class JsonManager {
         if (!jsonObject.containsKey(sourcePath))
             return null;
         return jsonObject.get(sourcePath);
+    }
+
+    public Document toDocument() {
+        return Document.parse(content);
+    }
+
+    public BsonDocument toBsonDocument() {
+        return toDocument().toBsonDocument();
     }
 
     public String toString() {

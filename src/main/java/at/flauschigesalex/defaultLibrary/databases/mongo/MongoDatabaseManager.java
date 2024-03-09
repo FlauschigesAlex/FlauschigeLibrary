@@ -12,6 +12,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -48,7 +49,7 @@ public final class MongoDatabaseManager {
         return getMongoDatabase().getCollection(name, mongoCollectionClass);
     }
 
-    public MongoCollection<?> getCollection(final @NotNull String name) {
+    public MongoCollection<Document> getCollection(final @NotNull String name) {
         return getMongoDatabase().getCollection(name);
     }
 
