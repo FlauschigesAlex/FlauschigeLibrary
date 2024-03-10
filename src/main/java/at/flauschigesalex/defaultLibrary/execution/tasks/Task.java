@@ -16,7 +16,7 @@ import static java.lang.Thread.sleep;
 public sealed class Task permits AsyncTask {
 
     @Setter
-    private static RepeatDelayType defaultDelayType = RepeatDelayType.ALWAYS;
+    private static RepeatDelayType defaultDelayType = RepeatDelayType.ONLY_BETWEEN;
 
     @CheckReturnValue
     public static Task createTask(final @NotNull Consumer<Task> consumer) {
