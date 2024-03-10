@@ -5,32 +5,34 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
+import java.util.function.Consumer;
+
 @Getter(AccessLevel.PRIVATE)
 public final class AsyncTask extends Task {
 
     private boolean async;
-    AsyncTask(final @NotNull TaskAction taskAction) {
-        super(taskAction);
+    AsyncTask(final Consumer<Task> consumer) {
+        super(consumer);
     }
 
     @Override
-    public void execute() {
+    public void start() {
         if (isAsync()) {
-            super.execute();
+            super.start();
             return;
         }
         async = true;
-        new Thread(this::execute).start();
+        new Thread(this::start).start();
     }
 
     @Override
-    public void executeDelayed(@Range(from = 1, to = Long.MAX_VALUE) long delay) {
+    public void startDelayed(@Range(from = 1, to = Long.MAX_VALUE) long delay) {
         if (isAsync()) {
-            super.executeDelayed(delay);
+            super.startDelayed(delay);
             return;
         }
         async = true;
-        new Thread(() -> this.executeDelayed(delay)).start();
+        new Thread(() -> this.startDelayed(delay)).start();
     }
 
     @Override

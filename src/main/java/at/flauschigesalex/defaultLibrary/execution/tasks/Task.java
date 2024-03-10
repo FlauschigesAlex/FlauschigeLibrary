@@ -7,37 +7,51 @@ import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
+import java.util.function.Consumer;
+
 import static java.lang.Thread.sleep;
 
-@SuppressWarnings({"UnusedReturnValue", "unused", "SameParameterValue"})
+@SuppressWarnings({"UnusedReturnValue", "unused", "SameParameterValue", "unchecked"})
 @Getter
-public class Task {
+public sealed class Task permits AsyncTask {
 
     @Setter
     private static RepeatDelayType defaultDelayType = RepeatDelayType.ALWAYS;
 
     @CheckReturnValue
-    public static Task createTask(final @NotNull TaskAction taskAction) {
-        return new Task(taskAction);
+    public static Task createTask(final @NotNull Consumer<Task> consumer) {
+        return new Task(consumer);
     }
     @CheckReturnValue
-    public static AsyncTask createAsyncTask(final @NotNull TaskAction taskAction) {
-        return new AsyncTask(taskAction);
+    public static AsyncTask createAsyncTask(final @NotNull Consumer<Task> consumer) {
+        return new AsyncTask(consumer);
     }
 
-    protected final @NotNull TaskAction taskAction;
-    Task(final @NotNull TaskAction taskAction) {
-        this.taskAction = taskAction;
+    protected final Consumer<Task> consumer;
+    Task(final Consumer<Task> consumer) {
+        this.consumer = consumer;
     }
 
-    public void execute() {
-        taskAction.runTask();
+    private boolean running = true;
+    public void start() {
+        if (!running)
+            return;
+        consumer.accept(this);
+    }
+    public final <T extends Task> T restart(final boolean instant) {
+        running = true;
+        if (instant)
+            this.start();
+        return (T) this;
+    }
+    public final void stop() {
+        running = false;
     }
 
     @SneakyThrows
-    public void executeDelayed(final @Range(from = 1, to = Long.MAX_VALUE) long delay) {
+    public void startDelayed(final @Range(from = 1, to = Long.MAX_VALUE) long delay) {
         sleep(delay);
-        execute();
+        start();
     }
 
     /**
@@ -48,7 +62,7 @@ public class Task {
     }
     public void repeat(final @Range(from = 1, to = Integer.MAX_VALUE) int times) {
         for (int time = 0; time < times; time++) {
-            execute();
+            start();
         }
     }
 
@@ -69,16 +83,16 @@ public class Task {
 
     public void repeatDelayed(@Range(from = 1, to = Integer.MAX_VALUE) int times, final @Range(from = 1, to = Long.MAX_VALUE) long delay, final @NotNull RepeatDelayType delayType) {
         if (delayType.hasInitialDelay())
-            executeDelayed(delay);
+            startDelayed(delay);
         else
-            execute();
+            start();
         times--;
 
         for (int time = 0; time < times; time++) {
             if (delayType.hasBetweenDelay())
-                executeDelayed(delay);
+                startDelayed(delay);
             else
-                execute();
+                start();
         }
     }
 

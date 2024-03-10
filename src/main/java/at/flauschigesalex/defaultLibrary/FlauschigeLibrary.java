@@ -58,6 +58,7 @@ public class FlauschigeLibrary extends AutoDisplayable {
         return flauschigeLibrary;
     }
 
+    @SuppressWarnings("rawtypes")
     public void executeManagers() {
         final ArrayList<ProjectManager<?>> managers = new ArrayList<>();
         for (Class<? extends ProjectManager> subClass : getReflector().reflect(ownDirectoryPath, workingDirectoryPath.toArray(String[]::new)).getSubClasses(ProjectManager.class)) {
@@ -67,7 +68,7 @@ public class FlauschigeLibrary extends AutoDisplayable {
             }
         }
         managers.sort(ProjectManager.comparator());
-        Task.createAsyncTask(() -> managers.forEach(manager -> {
+        Task.createAsyncTask((task) -> managers.forEach(manager -> {
             if (manager.executeManager(this)) {
                 if (manager.successMessage() != null)
                     System.out.println(manager.successMessage());
@@ -75,7 +76,7 @@ public class FlauschigeLibrary extends AutoDisplayable {
                 if (manager.failMessage() != null)
                     System.out.println(manager.failMessage());
             }
-        })).execute();
+        })).start();
     }
 
     public FlauschigeLibrary addWorkingDirectory(String path) {
