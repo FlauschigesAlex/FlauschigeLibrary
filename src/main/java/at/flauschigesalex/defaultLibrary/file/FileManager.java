@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.fileUtils;
+package at.flauschigesalex.defaultLibrary.file;
 
 import at.flauschigesalex.defaultLibrary.databases.mongo.annotations.MongoIgnore;
 import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;

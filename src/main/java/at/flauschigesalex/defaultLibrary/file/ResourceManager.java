@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.fileUtils;
+package at.flauschigesalex.defaultLibrary.file;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
@@ -27,20 +27,27 @@ public final class ResourceManager extends AutoDisplayable {
         return new ResourceManager(url);
     }
 
+    public @Nullable InputStream stream() {
+        try {
+            return url.openStream();
+        } catch (final Exception ignore) {
+        }
+        return null;
+    }
+
     public @Nullable String read() {
         if (!isReadable())
             return null;
+
         final StringBuilder builder = new StringBuilder();
-        int read;
-        try {
-            final InputStream inputStream = url.openStream();
-            while ((read = inputStream.read()) != -1) {
-                builder.append((char) read);
+        final InputStream stream = stream();
+        if (stream != null) {
+            try {
+                for (byte nom : stream.readAllBytes())
+                    builder.append((char) nom);
+                return builder.toString();
+            } catch (final IOException ignore) {
             }
-            inputStream.close();
-            return builder.toString();
-        } catch (final Exception fail) {
-            fail.printStackTrace();
         }
         return null;
     }
@@ -55,15 +62,6 @@ public final class ResourceManager extends AutoDisplayable {
     }
 
     public boolean isReadable() {
-        try {
-            final InputStream stream = url.openStream();
-            if (stream == null)
-                return false;
-            stream.close();
-            return true;
-        } catch (final IOException fail) {
-            fail.printStackTrace();
-        }
-        return false;
+        return stream() != null;
     }
 }

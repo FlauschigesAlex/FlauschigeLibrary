@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.fileUtils;
+package at.flauschigesalex.defaultLibrary.file;
 
 import lombok.Getter;
 import org.bson.BsonDocument;

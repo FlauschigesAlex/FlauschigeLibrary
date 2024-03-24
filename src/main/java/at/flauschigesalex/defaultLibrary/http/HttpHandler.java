@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.http;
 
-import at.flauschigesalex.defaultLibrary.fileUtils.JsonManager;
+import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

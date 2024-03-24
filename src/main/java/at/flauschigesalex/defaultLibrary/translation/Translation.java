@@ -3,7 +3,7 @@ package at.flauschigesalex.defaultLibrary.translation;
 import at.flauschigesalex.defaultLibrary.databases.mongo.MongoDatabaseManager;
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
 import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
-import at.flauschigesalex.defaultLibrary.fileUtils.JsonManager;
+import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

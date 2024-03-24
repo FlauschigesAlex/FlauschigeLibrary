@@ -2,9 +2,9 @@ package at.flauschigesalex.defaultLibrary.databases;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
 import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
-import at.flauschigesalex.defaultLibrary.fileUtils.FileManager;
-import at.flauschigesalex.defaultLibrary.fileUtils.JsonManager;
-import at.flauschigesalex.defaultLibrary.fileUtils.ResourceManager;
+import at.flauschigesalex.defaultLibrary.file.FileManager;
+import at.flauschigesalex.defaultLibrary.file.JsonManager;
+import at.flauschigesalex.defaultLibrary.file.ResourceManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
