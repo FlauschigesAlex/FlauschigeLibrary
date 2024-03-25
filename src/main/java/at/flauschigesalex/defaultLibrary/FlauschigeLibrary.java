@@ -1,10 +1,11 @@
 package at.flauschigesalex.defaultLibrary;
 
-import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
 import at.flauschigesalex.defaultLibrary.execution.manager.ProjectManager;
-import at.flauschigesalex.defaultLibrary.reflections.Reflector;
 import at.flauschigesalex.defaultLibrary.execution.tasks.Task;
+import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
+import at.flauschigesalex.defaultLibrary.reflections.Reflector;
 import lombok.Getter;
+
 import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})

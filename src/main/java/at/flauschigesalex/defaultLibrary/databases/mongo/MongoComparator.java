@@ -1,6 +1,7 @@
 package at.flauschigesalex.defaultLibrary.databases.mongo;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.util.Comparator;
 
 public final class MongoComparator implements Comparator<Class<?>> {

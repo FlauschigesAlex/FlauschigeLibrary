@@ -15,6 +15,7 @@ import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.jetbrains.annotations.NotNull;
+
 import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public final class MongoDatabaseManager {
             for (int credential = 0; credential < getCredentials().getHostnames().size(); credential++) {
                 addresses.add(new ServerAddress(getCredentials().getHostnames().get(credential), getCredentials().getPorts().get(credential)));
             }
-            final MongoCredential credential = MongoCredential.createCredential(getCredentials().getUsername(), getCredentials().getDatabase(), getCredentials().getAccessKey().toCharArray());
+            final MongoCredential credential = MongoCredential.createCredential(getCredentials().getUsername(), getCredentials().getDatabase(), getCredentials().getPassword().toCharArray());
             final MongoClientSettings settings = MongoClientSettings.builder()
                     .credential(credential)
                     .applyToClusterSettings(builder -> builder.hosts(addresses))

@@ -1,9 +1,9 @@
 package at.flauschigesalex.defaultLibrary.reflections;
 
-import at.flauschigesalex.defaultLibrary.databases.mongo.MongoInformation;
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;

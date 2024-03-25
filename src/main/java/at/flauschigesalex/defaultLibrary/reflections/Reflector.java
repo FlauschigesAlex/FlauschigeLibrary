@@ -4,6 +4,7 @@ import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+
 import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;

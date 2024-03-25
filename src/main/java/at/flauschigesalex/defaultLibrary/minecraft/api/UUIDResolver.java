@@ -1,9 +1,9 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
-import at.flauschigesalex.defaultLibrary.utils.Invisible;
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public final class UUIDResolver {
 
     private final String name;
-    private @Invisible MojangAPI mojangAPI;
+    private MojangAPI mojangAPI;
     private boolean subString = false;
 
     UUIDResolver(final @Nullable String name) {

@@ -4,9 +4,14 @@ import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.net.URI;
-import java.net.http.*;
-import java.util.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 @Getter

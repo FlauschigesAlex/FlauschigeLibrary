@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
  * Indicates that a {@link Class class} is not visible to local {@link at.flauschigesalex.defaultLibrary.reflections.Reflector reflectors}.<br>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.FIELD})
+@Target({ElementType.TYPE})
 public @interface Invisible {
 }

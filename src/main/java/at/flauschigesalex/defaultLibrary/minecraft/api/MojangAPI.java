@@ -2,6 +2,7 @@ package at.flauschigesalex.defaultLibrary.minecraft.api;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import javax.annotation.CheckReturnValue;
 import java.util.HashMap;
 import java.util.UUID;

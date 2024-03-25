@@ -1,6 +1,5 @@
 package at.flauschigesalex.defaultLibrary.databases;
 
-import at.flauschigesalex.defaultLibrary.utils.Invisible;
 import at.flauschigesalex.defaultLibrary.file.FileManager;
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import at.flauschigesalex.defaultLibrary.file.ResourceManager;
@@ -8,6 +7,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
+
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,16 +20,16 @@ public final class DatabaseCredentials {
     private static final int defaultPort = 27017;
     private final ArrayList<String> hostnames;
     private final String username;
-    private final @Invisible String accessKey;
+    private final String password;
     private final String database;
     private final ArrayList<Integer> ports;
 
-    DatabaseCredentials(final @Nullable ArrayList<String> hostnames, final @Nullable String username, final @Nullable String accessKey, final @Nullable String database, final @Nullable ArrayList<Integer> ports) {
+    DatabaseCredentials(final @Nullable ArrayList<String> hostnames, final @Nullable String username, final @Nullable String password, final @Nullable String database, final @Nullable ArrayList<Integer> ports) {
         if (hostnames == null || hostnames.isEmpty())
             throw new DatabaseLoginException("hostnames is null or empty");
         if (username == null)
             throw new DatabaseLoginException("username is null");
-        if (accessKey == null)
+        if (password == null)
             throw new DatabaseLoginException("accessKey is null");
         if (database == null)
             throw new DatabaseLoginException("database is null");
@@ -40,7 +40,7 @@ public final class DatabaseCredentials {
         }
         this.hostnames = hostnames;
         this.username = username;
-        this.accessKey = accessKey;
+        this.password = password;
         this.database = database;
         this.ports = ports;
     }
