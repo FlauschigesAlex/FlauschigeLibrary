@@ -1,7 +1,6 @@
 package at.flauschigesalex.defaultLibrary.databases;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import at.flauschigesalex.defaultLibrary.file.FileManager;
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import at.flauschigesalex.defaultLibrary.file.ResourceManager;
@@ -16,7 +15,7 @@ import java.util.List;
 
 @Getter
 @SuppressWarnings({"unused", "DataFlowIssue"})
-public final class DatabaseCredentials extends AutoDisplayable {
+public final class DatabaseCredentials {
 
     private static final int defaultPort = 27017;
     private final ArrayList<String> hostnames;
@@ -46,12 +45,12 @@ public final class DatabaseCredentials extends AutoDisplayable {
         this.ports = ports;
     }
 
-    public static DatabaseCredentials construct(final @NotNull String hostname, final @NotNull String username, final @NotNull CharSequence accessKey, final @NotNull String database) {
-        return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, accessKey.toString(), database, new ArrayList<>(List.of(defaultPort)));
+    public static DatabaseCredentials construct(final @NotNull String hostname, final @NotNull String username, final @NotNull CharSequence password, final @NotNull String database) {
+        return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, password.toString(), database, new ArrayList<>(List.of(defaultPort)));
     }
 
-    public static DatabaseCredentials construct(final @NotNull String hostname, final @NotNull String username, final @NotNull CharSequence accessKey, final @NotNull String database, final int port) {
-        return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, accessKey.toString(), database, new ArrayList<>(List.of(port)));
+    public static DatabaseCredentials construct(final @NotNull String hostname, final @NotNull String username, final @NotNull CharSequence password, final @NotNull String database, final int port) {
+        return new DatabaseCredentials(new ArrayList<>(List.of(hostname)), username, password.toString(), database, new ArrayList<>(List.of(port)));
     }
 
     public static DatabaseCredentials construct(final @NotNull File file) {

@@ -4,9 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!--> clean install install:install-file -Dfile=${project.build.directory}\${project.build.finalName}.jar -DgroupId=${project.groupId} -DartifactId=${project.artifactId} -Dversion=${project.version} -Dpackaging=jar -DlocalRepositoryPath= <-->
+
     <groupId>at.flauschigesalex</groupId>
     <artifactId>FlauschigeLibrary</artifactId>
-    <version>v1.6.2</version>
+    <version>v1.7.0</version>
     <packaging>jar</packaging>
 
     <properties>

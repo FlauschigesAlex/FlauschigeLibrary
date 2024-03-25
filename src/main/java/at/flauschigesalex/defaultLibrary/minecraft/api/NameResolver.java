@@ -1,7 +1,6 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +11,7 @@ import java.net.URL;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
-public final class NameResolver extends AutoDisplayable {
+public final class NameResolver {
 
     private final String uuid;
     private @Invisible MojangAPI mojangAPI;

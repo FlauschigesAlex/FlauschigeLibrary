@@ -1,7 +1,6 @@
 package at.flauschigesalex.defaultLibrary.file;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
-import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +11,7 @@ import java.net.URL;
 
 @Getter
 @SuppressWarnings("unused")
-public final class ResourceManager extends AutoDisplayable {
+public final class ResourceManager {
 
     private final URL url;
     @Getter(AccessLevel.NONE)

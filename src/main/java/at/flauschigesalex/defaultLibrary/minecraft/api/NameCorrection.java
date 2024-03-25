@@ -1,7 +1,6 @@
 package at.flauschigesalex.defaultLibrary.minecraft.api;
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,7 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 @SuppressWarnings("unused")
-public final class NameCorrection extends AutoDisplayable {
+public final class NameCorrection {
 
     private final String name;
     private @Invisible MojangAPI mojangAPI;

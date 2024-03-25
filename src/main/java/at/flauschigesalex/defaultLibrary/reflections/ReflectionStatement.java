@@ -1,7 +1,7 @@
 package at.flauschigesalex.defaultLibrary.reflections;
 
+import at.flauschigesalex.defaultLibrary.databases.mongo.MongoInformation;
 import at.flauschigesalex.defaultLibrary.utils.Invisible;
-import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @SuppressWarnings({"unused"})
-public final class ReflectionStatement extends AutoDisplayable {
+public final class ReflectionStatement {
 
     private final String[] reflectionPaths;
     private final ArrayList<Class<?>> ignoredClasses = new ArrayList<>();
@@ -33,19 +33,17 @@ public final class ReflectionStatement extends AutoDisplayable {
     }
 
     public <C> ArrayList<Class<? extends C>> getSubClasses(final @NotNull Class<C> clazz) {
-        final ArrayList<Class<? extends C>> reflectedClasses = new ArrayList<>();
-        for (final Reflections reflected : getReflected()) {
-            reflectedClasses.addAll(reflected.getSubTypesOf(clazz));
-        }
-        return removeUnnecessary(reflectedClasses);
+        final ArrayList<Class<? extends C>> reflected = new ArrayList<>();
+        for (final Reflections reflections : getReflected())
+            reflected.addAll(reflections.getSubTypesOf(clazz));
+        return removeUnnecessary(reflected);
     }
 
     public <A extends Annotation> ArrayList<Class<?>> getAnnotatedClasses(final @NotNull Class<A> annotation) {
-        final ArrayList<Class<?>> reflectedClasses = new ArrayList<>();
-        for (final Reflections reflected : getReflected()) {
-            reflectedClasses.addAll(reflected.getTypesAnnotatedWith(annotation));
-        }
-        return removeUnnecessary(reflectedClasses);
+        final ArrayList<Class<?>> reflected = new ArrayList<>();
+        for (final Reflections reflections : getReflected())
+            reflected.addAll(reflections.getTypesAnnotatedWith(annotation));
+        return removeUnnecessary(reflected);
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
@@ -56,13 +54,16 @@ public final class ReflectionStatement extends AutoDisplayable {
     }
 
     ArrayList<Reflections> getReflected() {
-        if (this.reflections == null) {
-            reflections = new ArrayList<>();
-            for (final String reflectionPath : reflectionPaths) {
-                if (reflectionPath == null || reflectionPath.isBlank()) continue;
-                reflections.add(new Reflections(reflectionPath));
-            }
+        if (this.reflections != null)
+            return this.reflections;
+
+        this.reflections = new ArrayList<>();
+        for (final String reflectionPath : reflectionPaths) {
+            if (reflectionPath == null || reflectionPath.isEmpty() || reflectionPath.isBlank())
+                continue;
+
+            this.reflections.add(new Reflections(reflectionPath));
         }
-        return reflections;
+        return this.reflections;
     }
 }

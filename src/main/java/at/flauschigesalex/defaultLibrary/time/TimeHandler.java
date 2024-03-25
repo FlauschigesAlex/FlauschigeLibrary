@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.time;
 
-import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
+import at.flauschigesalex.defaultLibrary.databases.mongo.LibraryMongoInformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -10,7 +10,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @SuppressWarnings("unused")
-public final class TimeHandler extends AutoDisplayable implements Cloneable {
+public final class TimeHandler implements Cloneable, LibraryMongoInformation {
 
     private final long epochMillisecond;
 
@@ -93,7 +93,10 @@ public final class TimeHandler extends AutoDisplayable implements Cloneable {
         return handle(timeUnit.perform(getEpochMilli(), length));
     }
 
-    @Override
+    public String toString() {
+        return String.valueOf(epochMillisecond);
+    }
+
     protected TimeHandler clone() throws CloneNotSupportedException {
         return (TimeHandler) super.clone();
     }

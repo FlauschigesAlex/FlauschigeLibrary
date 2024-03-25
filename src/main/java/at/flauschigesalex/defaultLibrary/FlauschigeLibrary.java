@@ -1,7 +1,6 @@
 package at.flauschigesalex.defaultLibrary;
 
 import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
-import at.flauschigesalex.defaultLibrary.utils.AutoDisplayable;
 import at.flauschigesalex.defaultLibrary.execution.manager.ProjectManager;
 import at.flauschigesalex.defaultLibrary.reflections.Reflector;
 import at.flauschigesalex.defaultLibrary.execution.tasks.Task;
@@ -10,7 +9,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
 @Getter
-public class FlauschigeLibrary extends AutoDisplayable {
+public class FlauschigeLibrary {
     protected static boolean autoRegisterManagers = true;
     private static FlauschigeLibrary flauschigeLibrary;
     private final String ownDirectoryPath;
@@ -20,10 +19,13 @@ public class FlauschigeLibrary extends AutoDisplayable {
         this.ownDirectoryPath = getClass().getPackage().getName();
         loop:
         for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
-            if (definedPackage.getName().startsWith(ownDirectoryPath)) continue;
-            for (String workingDirectory : this.workingDirectoryPath) {
-                if (definedPackage.getName().startsWith(workingDirectory)) continue loop;
-            }
+            if (definedPackage.getName().startsWith(ownDirectoryPath))
+                continue;
+
+            for (String workingDirectory : this.workingDirectoryPath)
+                if (definedPackage.getName().startsWith(workingDirectory))
+                    continue loop;
+
             this.workingDirectoryPath.add(definedPackage.getName());
         }
 
@@ -42,7 +44,8 @@ public class FlauschigeLibrary extends AutoDisplayable {
      * @return an instance of the Library
      */
     public static FlauschigeLibrary getLibrary() {
-        if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
+        if (flauschigeLibrary == null)
+            flauschigeLibrary = new FlauschigeLibrary();
         return flauschigeLibrary;
     }
 
@@ -54,7 +57,8 @@ public class FlauschigeLibrary extends AutoDisplayable {
      */
     public static FlauschigeLibrary getLibrary(boolean autoRegisterManagers) {
         FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers;
-        if (flauschigeLibrary == null) flauschigeLibrary = new FlauschigeLibrary();
+        if (flauschigeLibrary == null)
+            flauschigeLibrary = new FlauschigeLibrary();
         return flauschigeLibrary;
     }
 
