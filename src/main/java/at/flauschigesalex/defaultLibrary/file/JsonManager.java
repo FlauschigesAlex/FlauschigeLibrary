@@ -120,7 +120,7 @@ public final class JsonManager {
             return (JSONArray) asObject();
         } catch (Exception ignore) {
         }
-        return null;
+        return new JSONArray();
     }
 
     public String asJsonString() {
