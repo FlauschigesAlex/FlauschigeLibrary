@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.databases;
 
-import at.flauschigesalex.defaultLibrary.exception.LibraryException;
+import at.flauschigesalex.defaultLibrary.utils.LibraryException;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class DatabaseException extends LibraryException {

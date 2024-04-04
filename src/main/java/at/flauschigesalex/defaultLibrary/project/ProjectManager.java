@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.execution.manager;
+package at.flauschigesalex.defaultLibrary.project;
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import org.jetbrains.annotations.NotNull;

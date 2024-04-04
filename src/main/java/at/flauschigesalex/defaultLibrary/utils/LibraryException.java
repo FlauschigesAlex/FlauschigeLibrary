@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.exception;
+package at.flauschigesalex.defaultLibrary.utils;
 
 import org.jetbrains.annotations.Nullable;
 

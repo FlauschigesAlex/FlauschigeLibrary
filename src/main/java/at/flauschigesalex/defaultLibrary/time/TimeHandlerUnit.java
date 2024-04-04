@@ -2,11 +2,10 @@ package at.flauschigesalex.defaultLibrary.time;
 
 import lombok.Getter;
 
-@SuppressWarnings("DeprecatedIsStillUsed")
 @Getter
 public enum TimeHandlerUnit {
 
-    @Deprecated MILLI(1, (milli, length, multiplier) -> Long.sum(milli, length)),
+    MILLI(1, (milli, length, multiplier) -> Long.sum(milli, length)),
     SECOND(1000, (milli, length, multiplier) -> MILLI.perform(milli, length * multiplier)),
     MINUTE(60, (milli, length, multiplier) -> SECOND.perform(milli, length * multiplier)),
     HOUR(60, (milli, length, multiplier) -> MINUTE.perform(milli, length * multiplier)),
@@ -30,11 +29,8 @@ public enum TimeHandlerUnit {
         this.unitAction = unitAction;
     }
 
-    long perform(final long epochMilli, final long length) {
+    public long perform(final long epochMilli, final long length) {
         return unitAction.runAction(epochMilli, length, multiplier);
     }
 }
 
-interface TimeHandlerUnitAction {
-    long runAction(final long milli, final long length, final long multiplier);
-}

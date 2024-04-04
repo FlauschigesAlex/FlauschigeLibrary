@@ -5,11 +5,11 @@ import org.jetbrains.annotations.NotNull;
 
 @Getter
 @SuppressWarnings("unused")
-public final class CountdownStatement {
+public final class Countdown {
 
     private final long trueDifference;
 
-    CountdownStatement(final long trueDifference) {
+    Countdown(final long trueDifference) {
         this.trueDifference = trueDifference;
     }
 
@@ -26,6 +26,16 @@ public final class CountdownStatement {
     }
 
     public boolean hasExpired() {
-        return getTrueDifference() < 0;
+        return getTrueDifference() <= 0;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof Countdown statement)
+            return statement.trueDifference == this.trueDifference;
+        return false;
+    }
+
+    public String toString() {
+        return this.getCountdown();
     }
 }

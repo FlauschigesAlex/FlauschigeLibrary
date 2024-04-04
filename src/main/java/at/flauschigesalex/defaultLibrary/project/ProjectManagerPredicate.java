@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.execution.manager;
+package at.flauschigesalex.defaultLibrary.project;
 
 @SuppressWarnings("unused")
 public interface ProjectManagerPredicate<V> {

@@ -19,7 +19,7 @@ public final class TimeHandler implements Cloneable, LibraryMongoInformation {
         this.epochMillisecond = isEpochMillisecond(value) ? value : value * 1000;
     }
 
-    public static boolean isEpochMillisecond(final long value) {
+    public static boolean isEpochMillisecond(final @NotNull Long value) {
         return value > 100000000000L;
     }
 
@@ -30,7 +30,7 @@ public final class TimeHandler implements Cloneable, LibraryMongoInformation {
     /**
      * @param value Timestamp in S or MS
      */
-    public static TimeHandler handle(final long value) {
+    public static TimeHandler handle(final @NotNull Long value) {
         return new TimeHandler(isEpochMillisecond(value) ? value : value * 1000);
     }
 
@@ -59,7 +59,7 @@ public final class TimeHandler implements Cloneable, LibraryMongoInformation {
     }
 
     public long getEpochSecond() {
-        return getEpochMilli() * 1000;
+        return getEpochMilli() / 1000;
     }
 
     public Instant getInstant() {
@@ -82,7 +82,11 @@ public final class TimeHandler implements Cloneable, LibraryMongoInformation {
         return ZoneId.systemDefault();
     }
 
-    public TimeHandler add(final @NotNull TimeHandlerUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
+    public @Deprecated(forRemoval = true) TimeHandler add(final @NotNull TimeHandlerUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
+        return modify(timeUnit, length);
+    }
+
+    public TimeHandler plus(final @NotNull TimeHandlerUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
         return modify(timeUnit, length);
     }
 

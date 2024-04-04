@@ -5,9 +5,6 @@ import lombok.Getter;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Instant;
-import java.time.ZonedDateTime;
-
 @Getter
 @SuppressWarnings("unused")
 public final class CountdownHandler {
@@ -18,44 +15,24 @@ public final class CountdownHandler {
         this.start = start;
     }
 
-    public static CountdownHandler now() {
-        return handle(TimeHandler.now());
+    public static @Deprecated @CheckReturnValue Countdown countdown(final @NotNull CountdownUnit unit, long number) {
+        number = number >= 0 ? number : 0;
+
+        final TimeHandler now = TimeHandler.now();
+        return handle(now, now.plus(unit.getTimeHandlerUnit(), number));
     }
 
-    public static CountdownHandler handle(final long value) {
-        return handle(TimeHandler.handle(value));
+    public static @CheckReturnValue Countdown until(final @NotNull TimeHandler end) {
+        return handle(TimeHandler.now(), end);
     }
 
-    public static CountdownHandler handle(final @NotNull Instant instant) {
-        return handle(instant.toEpochMilli());
-    }
-
-    public static CountdownHandler handle(final @NotNull ZonedDateTime zonedDateTime) {
-        return handle(zonedDateTime.toInstant());
-    }
-
-    public static CountdownHandler handle(final @NotNull TimeHandler start) {
-        return new CountdownHandler(start);
+    public static @CheckReturnValue Countdown handle(final @NotNull TimeHandler start, final @NotNull TimeHandler end) {
+        return new CountdownHandler(start).createCountdown(end);
     }
 
     @CheckReturnValue
-    public CountdownStatement createCountdown(final @NotNull ZonedDateTime end) {
-        return createCountdown(TimeHandler.handle(end));
-    }
-
-    @CheckReturnValue
-    public CountdownStatement createCountdown(final @NotNull Instant end) {
-        return createCountdown(TimeHandler.handle(end));
-    }
-
-    @CheckReturnValue
-    public CountdownStatement createCountdown(final long end) {
-        return createCountdown(TimeHandler.handle(end));
-    }
-
-    @CheckReturnValue
-    public CountdownStatement createCountdown(final @NotNull TimeHandler end) {
+    public Countdown createCountdown(final @NotNull TimeHandler end) {
         final long difference = end.getEpochMilli() - getStart().getEpochMilli();
-        return new CountdownStatement(difference);
+        return new Countdown(difference);
     }
 }
