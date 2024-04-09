@@ -13,6 +13,7 @@ import java.util.ArrayList;
 public class FlauschigeLibrary {
     protected static boolean autoRegisterManagers = true;
     private static FlauschigeLibrary flauschigeLibrary;
+
     private final String ownDirectoryPath;
     private final ArrayList<String> workingDirectoryPath = new ArrayList<>();
 
@@ -58,9 +59,7 @@ public class FlauschigeLibrary {
      */
     public static FlauschigeLibrary getLibrary(boolean autoRegisterManagers) {
         FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers;
-        if (flauschigeLibrary == null)
-            flauschigeLibrary = new FlauschigeLibrary();
-        return flauschigeLibrary;
+        return getLibrary();
     }
 
     @SuppressWarnings("rawtypes")

@@ -7,7 +7,7 @@ import javax.annotation.CheckReturnValue;
 import java.util.HashMap;
 import java.util.UUID;
 
-@SuppressWarnings({"unused", "ConstantValue"})
+@SuppressWarnings({"unused"})
 public final class MojangAPI {
 
     private static MojangAPI mojangAPI;
@@ -22,42 +22,40 @@ public final class MojangAPI {
     }
 
     @CheckReturnValue
-    public NameResolver nameResolver(final @Nullable UUID uuid) {
-        return new NameResolver(uuid).instanced(this);
+    public NameResolver resolveName(final @Nullable UUID uuid) {
+        return new NameResolver(uuid).api(this);
     }
 
     @CheckReturnValue
-    public NameResolver nameResolver(final @Nullable String uuid) {
-        return new NameResolver(uuid).instanced(this);
+    public NameResolver resolveName(final @Nullable String uuid) {
+        return new NameResolver(uuid).api(this);
     }
 
     @CheckReturnValue
-    public UUIDResolver uuidResolver(final @Nullable String name) {
-        return new UUIDResolver(name).instanced(this);
+    public UUIDResolver resolveUUID(final @Nullable String name) {
+        return new UUIDResolver(name).api(this);
     }
 
     @CheckReturnValue
-    public NameCorrection nameCorrection(final @Nullable String name) {
+    public NameCorrection correctName(final @Nullable String name) {
         return new NameCorrection(name).instanced(this);
     }
 
     public boolean isMinecraftProfile(final @NotNull String value) {
-        return nameResolver(value) != null || uuidResolver(value) != null;
+        return resolveName(value).resolve() != null || resolveUUID(value).resolve() != null;
     }
 
     public boolean isMinecraftProfile(final @NotNull UUID value) {
-        return nameResolver(value) != null;
+        return resolveName(value).resolve() != null;
     }
 
-    public boolean invalidateCache() {
+    public void invalidateCache() {
         this.cache.clear();
-        return this.cache.isEmpty();
     }
 
     public boolean invalidateByName(final @Nullable String name) {
         if (!cache.containsKey(name)) return false;
-        cache.remove(name);
-        return true;
+        return cache.remove(name) != null;
     }
 
     public boolean invalidateByUUID(@Nullable String uuid) {
@@ -71,8 +69,7 @@ public final class MojangAPI {
             break;
         }
         if (toRemove == null) return false;
-        cache.remove(toRemove);
-        return true;
+        return cache.remove(toRemove) != null;
     }
 
     public boolean invalidateByUUID(final @Nullable UUID uuid) {
