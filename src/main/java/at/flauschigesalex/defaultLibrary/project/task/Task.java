@@ -1,11 +1,12 @@
 package at.flauschigesalex.defaultLibrary.project.task;
 
 import at.flauschigesalex.defaultLibrary.time.TimeHandlerUnit;
-import lombok.AccessLevel;
 import lombok.Getter;
-import org.jetbrains.annotations.*;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.CheckReturnValue;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import static java.lang.Thread.sleep;
@@ -26,7 +27,7 @@ public final class Task {
     }
 
     private final Consumer<Task> consumer;
-    private final boolean async;
+    private final @Getter boolean async;
 
     private Thread thread;
     private Boolean repeating;
@@ -41,90 +42,66 @@ public final class Task {
     }
 
     public void execute() {
-        this.execute(1L, null, 0, null, null);
+        this.run(1L, null, 0, null);
     }
 
     public void executeDelayed(final @NotNull TimeHandlerUnit unit, long value) {
-        this.execute(1L, unit, value, TaskDelayType.defaultType(), null);
-    }
-
-    public void executeDelayed(final @NotNull TimeHandlerUnit unit, long value, final @NotNull TaskDelayType type) {
-        this.execute(1L, unit, value, type, null);
+        this.run(1L, unit, value, null);
     }
 
     public void repeat() {
-        this.execute(null, null, 0, null, null);
+        this.run(null, null, 0, null);
     }
 
     public void repeat(final long amount) {
-        this.execute(amount, null, 0, null, null);
+        this.run(amount, null, 0, null);
     }
 
     public void repeatDelayed(final @NotNull TimeHandlerUnit unit, long value) {
-        this.execute(null, unit, value, TaskDelayType.defaultType(), null);
+        this.run(null, unit, value, TaskDelayType.defaultType());
     }
 
     public void repeatDelayed(final long amount, final @NotNull TimeHandlerUnit unit, long value) {
-        this.execute(amount, unit, value, TaskDelayType.defaultType(), null);
+        this.run(amount, unit, value, TaskDelayType.defaultType());
     }
 
     public void repeatDelayed(final @NotNull TimeHandlerUnit unit, long value, final @NotNull TaskDelayType type) {
-        this.execute(null, unit, value, type, null);
+        this.run(null, unit, value, type);
     }
 
     public void repeatDelayed(final long amount, final @NotNull TimeHandlerUnit unit, long value, final @NotNull TaskDelayType type) {
-        this.execute(amount, unit, value, type, null);
+        this.run(amount, unit, value, type);
     }
 
-    private void execute(final @Nullable Long amount, final @Nullable TimeHandlerUnit unit, long value, final @Nullable TaskDelayType type, @Nullable Long originalDelay) {
-        long delay = unit != null ? unit.getMultiplier() * Math.max(0, value) : 0;
-        final long finalDelay = delay;
-        if (originalDelay == null)
-            originalDelay = finalDelay;
-        final Long finalOriginalDelay = originalDelay;
-        final boolean first;
+    @SneakyThrows
+    private void run(final @Nullable Long amount, final @Nullable TimeHandlerUnit unit, long value, final @Nullable TaskDelayType type) {
+        final long[] ms_values = new long[]{unit != null ? unit.perform(0, value) : -1};
+        if (amount != null && amount <= 0)
+            return;
 
-        if (repeating == null) {
-            this.repeating = amount != null;
-            first = true;
-        } else first = false;
-
-        totalTaskCount++;
         if (thread == null) {
+            totalTaskCount++;
             if (async) {
-                thread = new Thread(() -> execute(amount, unit, finalDelay, type, finalOriginalDelay), "Async | Task-Thread | Id: " + totalTaskCount);
+                thread = new Thread(() -> {
+                    this.run(amount, unit, value, type);
+                }, "Async-Task | Thread | id: "+totalTaskCount);
                 thread.start();
                 return;
             }
             thread = Thread.currentThread();
         }
 
-        if (amount != null)
-            if (amount <= 0) {
-                if (isAsync())
-                    thread.interrupt();
-                return;
+        if (unit != null)
+            while (ms_values[0] > 0) {
+                //TODO STOP PREDICATE
+                final long ms_remove = Math.min(ms_values[0], default_delay_ms);
+                ms_values[0] -= ms_remove;
+                sleep(ms_remove);
             }
-
-        while (delay > 0) {
-            if (type != null) {
-                if (first && type == TaskDelayType.ONLY_BETWEEN)
-                    break;
-                if (!first && type == TaskDelayType.ONLY_BEGINNING)
-                    break;
-            }
-
-            final long remove = Math.min(delay, default_delay_ms);
-            delay -= remove;
-        }
 
         consumer.accept(this);
 
-        this.execute(amount != null ? amount - 1 : null, unit, finalDelay, type, finalOriginalDelay);
-    }
-
-    public boolean isAsync() {
-        return thread == Thread.currentThread();
+        this.run(amount != null ? amount-1 : null, unit, value, type);
     }
 
     public boolean isSync() {
