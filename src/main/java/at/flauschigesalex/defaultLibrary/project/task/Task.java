@@ -42,39 +42,39 @@ public final class Task {
     }
 
     public void execute() {
-        this.run(1L, null, 0, null);
+        this.run(1L, null, 0, null, false);
     }
 
     public void executeDelayed(final @NotNull TimeHandlerUnit unit, long value) {
-        this.run(1L, unit, value, null);
+        this.run(1L, unit, value, null, false);
     }
 
     public void repeat() {
-        this.run(null, null, 0, null);
+        this.run(null, null, 0, null, true);
     }
 
     public void repeat(final long amount) {
-        this.run(amount, null, 0, null);
+        this.run(amount, null, 0, null, true);
     }
 
     public void repeatDelayed(final @NotNull TimeHandlerUnit unit, long value) {
-        this.run(null, unit, value, TaskDelayType.defaultType());
+        this.run(null, unit, value, TaskDelayType.defaultType(), true);
     }
 
     public void repeatDelayed(final long amount, final @NotNull TimeHandlerUnit unit, long value) {
-        this.run(amount, unit, value, TaskDelayType.defaultType());
+        this.run(amount, unit, value, TaskDelayType.defaultType(), true);
     }
 
     public void repeatDelayed(final @NotNull TimeHandlerUnit unit, long value, final @NotNull TaskDelayType type) {
-        this.run(null, unit, value, type);
+        this.run(null, unit, value, type, true);
     }
 
     public void repeatDelayed(final long amount, final @NotNull TimeHandlerUnit unit, long value, final @NotNull TaskDelayType type) {
-        this.run(amount, unit, value, type);
+        this.run(amount, unit, value, type, true);
     }
 
     @SneakyThrows
-    private void run(final @Nullable Long amount, final @Nullable TimeHandlerUnit unit, long value, final @Nullable TaskDelayType type) {
+    private void run(final @Nullable Long amount, final @Nullable TimeHandlerUnit unit, long value, final @Nullable TaskDelayType type, final boolean first) {
         final long[] ms_values = new long[]{unit != null ? unit.perform(0, value) : -1};
         if (amount != null && amount <= 0)
             return;
@@ -83,7 +83,7 @@ public final class Task {
             totalTaskCount++;
             if (async) {
                 thread = new Thread(() -> {
-                    this.run(amount, unit, value, type);
+                    this.run(amount, unit, value, type, first);
                 }, "Async-Task | Thread | id: "+totalTaskCount);
                 thread.start();
                 return;
@@ -93,7 +93,11 @@ public final class Task {
 
         if (unit != null)
             while (ms_values[0] > 0) {
-                //TODO STOP PREDICATE
+                if (type == TaskDelayType.ONLY_BETWEEN && first)
+                    break;
+                if (type == TaskDelayType.ONLY_BEGINNING && !first)
+                    break;
+
                 final long ms_remove = Math.min(ms_values[0], default_delay_ms);
                 ms_values[0] -= ms_remove;
                 sleep(ms_remove);
@@ -101,7 +105,7 @@ public final class Task {
 
         consumer.accept(this);
 
-        this.run(amount != null ? amount-1 : null, unit, value, type);
+        this.run(amount != null ? amount-1 : null, unit, value, type, false);
     }
 
     public boolean isSync() {

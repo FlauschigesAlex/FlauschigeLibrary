@@ -368,7 +368,7 @@ public final class JsonManager {
         }
 
         if (!sourcePath.contains(".")) {
-            manager.put(sourcePath, object);
+            manager.put(sourcePath, object instanceof Enum<?> ? object.toString() : object);
             if (source)
                 this.content = manager.toJSONString();
             return manager;
