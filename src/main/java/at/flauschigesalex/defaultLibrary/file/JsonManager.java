@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
 @Getter
@@ -354,48 +355,43 @@ public final class JsonManager {
     }
 
     public boolean write(final @NotNull String sourcePath, final @Nullable Object object) {
-        return this.write(sourcePath, asJsonObject(), object, true) != null;
+        return this.write(sourcePath, asJsonObject(), object) != null;
     }
 
-    private JSONObject write(final @NotNull String sourcePath, final @Nullable JSONObject jsonObject, final @Nullable Object object, final boolean source) {
-        final JSONObject manager = jsonObject == null ? asJsonObject() : jsonObject;
-        if (manager == null)
-            return null;
-
+    private JSONObject write(final @NotNull String path, final @NotNull JSONObject jsonObject, final @Nullable Object object) {
         if (object == null) {
-            this.remove(sourcePath);
-            return manager;
+            this.remove(path);
+            return jsonObject;
         }
 
-        if (!sourcePath.contains(".")) {
-            manager.put(sourcePath, object instanceof Enum<?> ? object.toString() : object);
-            if (source)
-                this.content = manager.toJSONString();
-            return manager;
-        }
-        if (sourcePath.endsWith(".")) {
+        final ArrayList<String> parts = new ArrayList<>(List.of(path.split("\\.")));
+        final JSONObject original = asJsonObject();
+        JSONObject current = original;
+
+        for (int i = 0; i < parts.size(); i++) {
+            final String part = parts.get(i);
+            final @Nullable Object currentObject = current.get(part);
+
+            if (i == parts.size()-1) {
+                current.put(part, object);
+                this.content = original.toJSONString();
+                return current;
+            }
+
+            if (currentObject instanceof JSONObject jObject) {
+                current = jObject;
+                continue;
+            }
+
+            if (currentObject == null) {
+                final JSONObject newObject = new JSONObject();
+                current.put(part, newObject);
+                current = newObject;
+                continue;
+            }
             return null;
         }
-
-        final String[] splitSourcePath = sourcePath.split("\\.");
-        final String pathPart = splitSourcePath[0];
-
-        if (manager.containsKey(pathPart) && !(manager.get(pathPart) instanceof JSONObject)) {
-            return null;
-        }
-
-        final StringBuilder newPath = new StringBuilder();
-        for (int part = 1; part < splitSourcePath.length; part++) {
-            newPath.append(splitSourcePath[part]);
-            if (part != splitSourcePath.length - 1)
-                newPath.append(".");
-        }
-
-        final JSONObject newObject = this.write(newPath.toString(), (JSONObject) manager.get(pathPart), object, false);
-        manager.put(pathPart, newObject);
-        if (source)
-            this.content = manager.toString();
-        return newObject;
+        return null;
     }
 
     public boolean checkRemoveEmpty() {
