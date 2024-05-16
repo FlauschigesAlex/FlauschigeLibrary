@@ -358,7 +358,7 @@ public final class JsonManager {
         return this.write(sourcePath, asJsonObject(), object) != null;
     }
 
-    private JSONObject write(final @NotNull String path, final @NotNull JSONObject jsonObject, final @Nullable Object object) {
+    private JSONObject write(final @NotNull String path, final @NotNull JSONObject jsonObject, @Nullable Object object) {
         if (object == null) {
             this.remove(path);
             return jsonObject;
@@ -373,6 +373,9 @@ public final class JsonManager {
             final @Nullable Object currentObject = current.get(part);
 
             if (i == parts.size()-1) {
+                if (object instanceof Enum<?> anEnum)
+                    object = anEnum.toString();
+
                 current.put(part, object);
                 this.content = original.toJSONString();
                 return current;
