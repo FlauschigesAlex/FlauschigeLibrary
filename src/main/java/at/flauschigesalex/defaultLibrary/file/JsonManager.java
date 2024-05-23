@@ -375,6 +375,8 @@ public final class JsonManager {
             if (i == parts.size()-1) {
                 if (object instanceof Enum<?> anEnum)
                     object = anEnum.toString();
+                if (object instanceof JsonManager json)
+                    object = json.asJsonObject();
 
                 current.put(part, object);
                 this.content = original.toJSONString();
