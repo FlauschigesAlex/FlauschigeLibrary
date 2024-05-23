@@ -5,7 +5,9 @@ import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
 import at.flauschigesalex.defaultLibrary.project.task.Task;
 import at.flauschigesalex.defaultLibrary.reflections.Reflector;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
 @SuppressWarnings({"unused"})
@@ -20,12 +22,12 @@ public class FlauschigeLibrary {
     protected FlauschigeLibrary() {
         this.ownDirectoryPath = getClass().getPackage().getName();
         loop:
-        for (Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
+        for (final Package definedPackage : getClass().getClassLoader().getDefinedPackages()) {
             if (definedPackage.getName().startsWith(ownDirectoryPath))
                 continue;
 
-            for (String workingDirectory : this.workingDirectoryPath)
-                if (definedPackage.getName().startsWith(workingDirectory))
+            for (final String workingDirectory : this.workingDirectoryPath)
+                if (workingDirectory.startsWith(definedPackage.getName()))
                     continue loop;
 
             this.workingDirectoryPath.add(definedPackage.getName());
@@ -57,7 +59,7 @@ public class FlauschigeLibrary {
      *
      * @return an instance of the Library
      */
-    public static FlauschigeLibrary getLibrary(boolean autoRegisterManagers) {
+    public static FlauschigeLibrary getLibrary(final boolean autoRegisterManagers) {
         FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers;
         return getLibrary();
     }
@@ -65,9 +67,11 @@ public class FlauschigeLibrary {
     @SuppressWarnings("rawtypes")
     public void executeManagers() {
         final ArrayList<ProjectManager<?>> managers = new ArrayList<>();
-        for (Class<? extends ProjectManager> subClass : getReflector().reflect(ownDirectoryPath, workingDirectoryPath.toArray(String[]::new)).getSubClasses(ProjectManager.class)) {
+        for (final Class<? extends ProjectManager> subClass : getReflector().reflect(ownDirectoryPath, workingDirectoryPath.toArray(String[]::new)).getSubClasses(ProjectManager.class)) {
             try {
-                managers.add(subClass.getConstructor().newInstance());
+                final Constructor<?> constructor = subClass.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                managers.add((ProjectManager<?>) constructor.newInstance());
             } catch (Exception ignore) {
             }
         }
@@ -83,7 +87,7 @@ public class FlauschigeLibrary {
         })).execute();
     }
 
-    public FlauschigeLibrary addWorkingDirectory(String path) {
+    public FlauschigeLibrary addWorkingDirectory(final @NotNull String path) {
         this.workingDirectoryPath.add(path);
         return this;
     }
@@ -94,5 +98,9 @@ public class FlauschigeLibrary {
 
     public Reflector getReflector() {
         return Reflector.getReflector();
+    }
+
+    public ArrayList<String> getWorkingDirectoryPath() {
+        return new ArrayList<>(workingDirectoryPath);
     }
 }
