@@ -3,6 +3,7 @@ package at.flauschigesalex.defaultLibrary.file;
 import lombok.Getter;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
@@ -14,15 +15,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
 @Getter
 public final class JsonManager {
 
-    public static JsonManager createNew() {
-        return parse("{}");
+    public static JsonManager create() {
+        return of("{}");
     }
 
     public static JsonManager copy(final @NotNull JsonManager json) {
@@ -33,13 +38,12 @@ public final class JsonManager {
         return new JsonManager(json.originalContent);
     }
 
-    public static JsonManager writeNew(final @NotNull String sourcePath, final Object object) {
-        final JsonManager manager = createNew();
-        manager.write(sourcePath, object);
-        return manager;
+    @ApiStatus.Experimental
+    public static @Nullable JsonManager of(final @NotNull Object source) {
+        return of(source.toString());
     }
 
-    public static @Nullable JsonManager parse(final @NotNull String source) {
+    public static @Nullable JsonManager of(final @NotNull String source) {
         try {
             new JSONParser().parse(source);
         } catch (final Exception e) {
@@ -48,27 +52,37 @@ public final class JsonManager {
         return new JsonManager(source);
     }
 
-    public static @Nullable JsonManager parse(final @NotNull StringBuilder source) {
-        return parse(source.toString());
+    public static @Nullable JsonManager of(final @NotNull StringBuilder source) {
+        return of(source.toString());
     }
 
-    public static @Nullable JsonManager parse(final @NotNull FileManager fileManager) {
+    public static JsonManager of(final @NotNull Map<String, Object> map) {
+        final JsonManager json = JsonManager.create();
+        json.writeMany(map);
+        return json;
+    }
+
+    public static @Nullable JsonManager of(final @NotNull HttpResponse<String> response) {
+        return of(response.body());
+    }
+
+    public static @Nullable JsonManager of(final @NotNull FileManager fileManager) {
         final String read = fileManager.read();
         if (read == null) return null;
-        return parse(read);
+        return of(read);
     }
 
-    public static @Nullable JsonManager parse(final @NotNull ResourceManager resourceManager) {
+    public static @Nullable JsonManager of(final @NotNull ResourceManager resourceManager) {
         final String read = resourceManager.read();
         if (read == null) return null;
-        return parse(read);
+        return of(read);
     }
 
-    public static @Nullable JsonManager parse(final @NotNull File file) {
-        return parse(FileManager.getFile(file));
+    public static @Nullable JsonManager of(final @NotNull File file) {
+        return of(FileManager.of(file));
     }
 
-    public static @Nullable JsonManager parse(final @NotNull InputStream fileInputStream) {
+    public static @Nullable JsonManager of(final @NotNull InputStream fileInputStream) {
         StringBuilder builder = new StringBuilder();
         int read;
         while (true) {
@@ -80,12 +94,12 @@ public final class JsonManager {
         }
         if (builder.isEmpty())
             return null;
-        return parse(builder);
+        return of(builder);
     }
 
-    public static @Nullable JsonManager parse(final @NotNull URL resource) {
+    public static @Nullable JsonManager of(final @NotNull URL resource) {
         try {
-            return parse(resource.openStream());
+            return of(resource.openStream());
         } catch (IOException ignore) {
         }
         return null;
@@ -128,22 +142,27 @@ public final class JsonManager {
         return content;
     }
 
-    public Object asObject(String sourcePath) {
+    @ApiStatus.Experimental
+    public <W> W as(final @NotNull String path) {
+        return (W) asObject(path);
+    }
+
+    public Object asObject(final @NotNull String path) {
         JSONObject jsonObject = asJsonObject();
         if (jsonObject == null)
             return null;
 
-        if (!sourcePath.contains(".")) {
-            return get(jsonObject, sourcePath);
+        if (!path.contains(".")) {
+            return get(jsonObject, path);
         }
         JSONObject current = jsonObject;
-        String[] splitSourcePath = sourcePath.split("\\.");
+        String[] splitSourcePath = path.split("\\.");
         for (String splitSource : splitSourcePath) {
             Object object = get(current, splitSource);
             if (object == null)
                 return null;
 
-            if (sourcePath.endsWith(splitSource))
+            if (path.endsWith(splitSource))
                 return current.get(splitSource);
             try {
                 current = (JSONObject) object;
@@ -154,181 +173,202 @@ public final class JsonManager {
         return null;
     }
 
-    public JSONObject asJsonObject(final @NotNull String sourcePath) {
+    public JSONObject asJsonObject(final @NotNull String path) {
         try {
-            return (JSONObject) asObject(sourcePath);
+            return (JSONObject) asObject(path);
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public JsonManager asJsonManager(final @NotNull String sourcePath) {
+    public JsonManager asJsonManager(final @NotNull String path) {
         try {
-            return JsonManager.parse(asJsonObject(sourcePath).toJSONString());
+            return JsonManager.of(asJsonObject(path).toJSONString());
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public JSONArray asJsonArray(final @NotNull String sourcePath) {
+    public JSONArray asJsonArray(final @NotNull String path) {
         try {
-            return (JSONArray) asObject(sourcePath);
+            return (JSONArray) asObject(path);
         } catch (Exception ignore) {
         }
         return new JSONArray();
     }
 
-    public ArrayList<Object> asList(final @NotNull String sourcePath) {
+    @ApiStatus.Experimental
+    public <W> ArrayList<W> asList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<Object>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<W>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public ArrayList<String> asStringList(final @NotNull String sourcePath) {
+    public ArrayList<Object> asObjectList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<String>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<Object>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public ArrayList<Short> asShortList(final @NotNull String sourcePath) {
+    public ArrayList<String> asStringList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<Short>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<String>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public ArrayList<Integer> asIntegerList(final @NotNull String sourcePath) {
+    public ArrayList<Short> asShortList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<Integer>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<Short>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public ArrayList<Long> asLongList(final @NotNull String sourcePath) {
+    public ArrayList<Integer> asIntegerList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<Long>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<Integer>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public ArrayList<Float> asFloatList(final @NotNull String sourcePath) {
+    public ArrayList<Long> asLongList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<Float>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<Long>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public ArrayList<Double> asDoubleList(final @NotNull String sourcePath) {
+    public ArrayList<Float> asFloatList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<Double>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<Float>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public ArrayList<Boolean> asBooleanList(final @NotNull String sourcePath) {
+    public ArrayList<Double> asDoubleList(final @NotNull String path) {
         try {
-            return new ArrayList<>((ArrayList<Boolean>) asObject(sourcePath));
+            return new ArrayList<>((ArrayList<Double>) asObject(path));
         } catch (Exception ignore) {
         }
         return new ArrayList<>();
     }
 
-    public String asString(final @NotNull String sourcePath) {
-        Object object = asObject(sourcePath);
+    public ArrayList<Boolean> asBooleanList(final @NotNull String path) {
+        try {
+            return new ArrayList<>((ArrayList<Boolean>) asObject(path));
+        } catch (Exception ignore) {
+        }
+        return new ArrayList<>();
+    }
+
+    public String asString(final @NotNull String path) {
+        Object object = asObject(path);
         if (object == null)
             return null;
         return object.toString();
     }
 
-    public Short asShort(final @NotNull String sourcePath) {
+    public Short asShort(final @NotNull String path) {
         try {
-            return Short.parseShort(asString(sourcePath));
+            return Short.parseShort(asString(path));
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public Integer asInteger(final @NotNull String sourcePath) {
+    public Integer asInteger(final @NotNull String path) {
         try {
-            return Integer.parseInt(asString(sourcePath));
+            return Integer.parseInt(asString(path));
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public Long asLong(final @NotNull String sourcePath) {
+    public Long asLong(final @NotNull String path) {
         try {
-            return Long.parseLong(asString(sourcePath));
+            return Long.parseLong(asString(path));
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public Float asFloat(final @NotNull String sourcePath) {
+    public Float asFloat(final @NotNull String path) {
         try {
-            return Float.parseFloat(asString(sourcePath));
+            return Float.parseFloat(asString(path));
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public Double asDouble(final @NotNull String sourcePath) {
+    public Double asDouble(final @NotNull String path) {
         try {
-            return Double.parseDouble(asString(sourcePath));
+            return Double.parseDouble(asString(path));
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public Boolean asBoolean(final @NotNull String sourcePath) {
+    public Boolean asBoolean(final @NotNull String path) {
         try {
-            return Boolean.parseBoolean(asString(sourcePath));
+            return Boolean.parseBoolean(asString(path));
         } catch (Exception ignore) {
         }
         return null;
     }
 
-    public boolean copy(final @NotNull String sourcePath, final @NotNull String newPath) {
-        return this.copy(sourcePath, newPath, true);
+    public boolean copy(final @NotNull String path, final @NotNull String newPath) {
+        return this.copy(path, newPath, true);
     }
 
-    public boolean copy(final @NotNull String sourcePath, final @NotNull String newPath, final boolean override) {
-        if (!this.contains(sourcePath) && !override)
+    public boolean copy(final @NotNull String path, final @NotNull String newPath, final boolean override) {
+        if (!this.contains(path) && !override)
             return false;
         if (this.contains(newPath) && !override)
             return false;
 
-        return this.write(newPath, this.asObject(sourcePath));
+        return this.write(newPath, this.asObject(path));
     }
 
-    public boolean move(final @NotNull String sourcePath, final @NotNull String newPath) {
-        return this.move(sourcePath, newPath, true);
+    public boolean move(final @NotNull String path, final @NotNull String newPath) {
+        return this.move(path, newPath, true);
     }
 
-    public boolean move(final @NotNull String sourcePath, final @NotNull String newPath, final boolean override) {
-        if (!this.contains(sourcePath) && !override)
+    public boolean move(final @NotNull String path, final @NotNull String newPath, final boolean override) {
+        if (!this.contains(path) && !override)
             return false;
         if (this.contains(newPath) && !override)
             return false;
 
-        if (!this.write(newPath, this.asObject(sourcePath)))
+        if (!this.write(newPath, this.asObject(path)))
             return false;
-        return this.remove(sourcePath);
+        return this.remove(path);
     }
 
-    public boolean remove(final @NotNull String sourcePath) {
-        if (!this.contains(sourcePath))
+    public boolean removeMany(final @NotNull String... paths) {
+        return this.removeMany(List.of(paths));
+    }
+    public boolean removeMany(final @NotNull Collection<String> paths) {
+        final AtomicBoolean success = new AtomicBoolean(true);
+        for (final String path : paths)
+            if (!this.remove(path))
+                success.set(false);
+
+        return success.get();
+    }
+
+    public boolean remove(final @NotNull String path) {
+        if (!this.contains(path))
             return true;
-        final String[] splitSourcePath = sourcePath.split("\\.");
+        final String[] splitSourcePath = path.split("\\.");
         final String pathPart = splitSourcePath[splitSourcePath.length - 1];
 
         final StringBuilder newPath = new StringBuilder();
@@ -338,7 +378,7 @@ public final class JsonManager {
             newPath.append(splitSourcePath[part]);
         }
 
-        final JSONObject jsonObject = sourcePath.contains(".") ? asJsonObject(newPath.toString()) : asJsonObject();
+        final JSONObject jsonObject = path.contains(".") ? asJsonObject(newPath.toString()) : asJsonObject();
         if (jsonObject == null)
             return true;
         jsonObject.remove(pathPart);
@@ -348,14 +388,24 @@ public final class JsonManager {
         return false;
     }
 
-    public boolean writeIfAbsent(final @NotNull String sourcePath, final @Nullable Object object) {
-        if (this.contains(sourcePath))
+    public boolean writeIfAbsent(final @NotNull String path, final @Nullable Object object) {
+        if (this.contains(path))
             return true;
-        return write(sourcePath, object);
+        return write(path, object);
     }
 
-    public boolean write(final @NotNull String sourcePath, final @Nullable Object object) {
-        return this.write(sourcePath, asJsonObject(), object) != null;
+    public boolean writeMany(final @NotNull Map<String, Object> map) {
+        final AtomicBoolean success = new AtomicBoolean(true);
+        map.forEach((string, object) -> {
+            if (!this.write(string, object))
+                success.set(false);
+        });
+
+        return success.get();
+    }
+
+    public boolean write(final @NotNull String path, final @Nullable Object object) {
+        return this.write(path, asJsonObject(), object) != null;
     }
 
     private JSONObject write(final @NotNull String path, final @NotNull JSONObject jsonObject, @Nullable Object object) {
@@ -428,8 +478,8 @@ public final class JsonManager {
         return this.fileManager.write(this.content);
     }
 
-    public boolean contains(String sourcePath) {
-        return asObject(sourcePath) != null;
+    public boolean contains(String path) {
+        return asObject(path) != null;
     }
 
     public boolean isOriginalContent() {
@@ -445,10 +495,10 @@ public final class JsonManager {
         return this;
     }
 
-    private Object get(final @NotNull JSONObject jsonObject, final @NotNull String sourcePath) {
-        if (!jsonObject.containsKey(sourcePath))
+    private Object get(final @NotNull JSONObject jsonObject, final @NotNull String path) {
+        if (!jsonObject.containsKey(path))
             return null;
-        return jsonObject.get(sourcePath);
+        return jsonObject.get(path);
     }
 
     public Document toDocument() {

@@ -57,7 +57,7 @@ public final class ResourceManager {
         if (read == null)
             return null;
         if (jsonManager == null)
-            jsonManager = JsonManager.parse(read);
+            jsonManager = JsonManager.of(read);
         return jsonManager;
     }
 

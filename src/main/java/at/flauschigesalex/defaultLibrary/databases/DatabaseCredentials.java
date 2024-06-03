@@ -104,7 +104,7 @@ public final class DatabaseCredentials {
     }
 
     public static DatabaseCredentials construct(final @NotNull String jsonString) {
-        final JsonManager jsonManager = JsonManager.parse(jsonString);
+        final JsonManager jsonManager = JsonManager.of(jsonString);
         if (jsonManager == null)
             throw new DatabaseLoginException("Failed to create " + DatabaseCredentials.class.getSimpleName() + " from string: " + jsonString);
         final String[] requiredCredentials = new String[]{"hostname", "username", "accessKey", "database"};

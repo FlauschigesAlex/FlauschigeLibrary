@@ -1,6 +1,5 @@
 package at.flauschigesalex.defaultLibrary.file;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,18 +12,17 @@ import java.util.ArrayList;
 public final class FileManager {
 
     private final File file;
-    @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;
 
     FileManager(final @NotNull File file) {
         this.file = file;
     }
 
-    public static FileManager getFile(final @NotNull File file) {
+    public static FileManager of(final @NotNull File file) {
         return new FileManager(file);
     }
 
-    public static FileManager getFile(final @NotNull String path) {
+    public static FileManager of(final @NotNull String path) {
         return new FileManager(new File(path));
     }
 
@@ -46,23 +44,26 @@ public final class FileManager {
     public boolean createFile() {
         if (file.exists())
             return true;
+
         try {
             return file.createNewFile();
-        } catch (IOException fail) {
+        } catch (final IOException fail) {
             fail.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     public boolean createJsonFile() {
         if (file.exists())
             return true;
+
         return createFile() && write("{}");
     }
 
     public boolean createDirectory() {
         if (file.exists())
             return true;
+
         return file.mkdir();
     }
 
@@ -73,8 +74,10 @@ public final class FileManager {
     public @Nullable String read() {
         if (!isReadable())
             return null;
-        StringBuilder builder = new StringBuilder();
+
+        final StringBuilder builder = new StringBuilder();
         int read;
+
         try {
             InputStream inputStream = new FileInputStream(file);
             while ((read = inputStream.read()) != -1) {
@@ -91,6 +94,7 @@ public final class FileManager {
     public boolean write(final byte[] bytes) {
         if (!isWritable())
             return false;
+
         try {
             OutputStream stream = new FileOutputStream(file);
             stream.write(bytes);
@@ -105,6 +109,7 @@ public final class FileManager {
     public boolean write(final @NotNull String string) {
         if (!isWritable())
             return false;
+
         return write(string.getBytes());
     }
 
@@ -120,15 +125,14 @@ public final class FileManager {
         final ArrayList<Byte> byteArray = new ArrayList<>();
         int read;
         try {
-            while ((read = inputStream.read()) != -1) {
+            while ((read = inputStream.read()) != -1)
                 byteArray.add((byte) read);
-            }
 
             byte[] bytes = new byte[byteArray.size()];
-            for (int bytePosition = 0; bytePosition < byteArray.size(); bytePosition++) {
+            for (int bytePosition = 0; bytePosition < byteArray.size(); bytePosition++)
                 bytes[bytePosition] = byteArray.get(bytePosition);
-            }
-            write(bytes);
+
+            this.write(bytes);
         } catch (Exception fail) {
             fail.printStackTrace();
         }
@@ -138,25 +142,29 @@ public final class FileManager {
     private boolean purge(final @NotNull File file) {
         if (!file.exists())
             return true;
+
         if (file.isDirectory()) {
             final File[] contents = file.listFiles();
-            if (contents != null) {
-                for (File contentFile : contents) {
+            if (contents != null)
+                for (File contentFile : contents)
                     if (!purge(contentFile))
                         return false;
-                }
-            }
         }
         return file.delete();
     }
 
     public @Nullable JsonManager getJsonManager() {
         final String read = read();
+
         if (read == null)
             return null;
+
         if (jsonManager == null)
-            jsonManager = JsonManager.parse(read);
-        if (jsonManager == null) return null;
+            jsonManager = JsonManager.of(read);
+
+        if (jsonManager == null)
+            return null;
+
         jsonManager.file(this);
         return jsonManager;
     }

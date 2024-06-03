@@ -1,111 +1,66 @@
 package at.flauschigesalex.defaultLibrary.http;
 
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
-import lombok.Getter;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("unused")
-@Getter
-public final class HttpHandler {
+public abstract class HttpHandler {
 
-    public static HttpHandler get(final @NotNull CharSequence uri) {
-        return get(URI.create(uri.toString()));
+    public static HttpResponse<String> get(final @NotNull CharSequence uri) {
+        return get(uri, null);
     }
-    public static HttpHandler get(final @NotNull URI uri) {
-        return get(uri, new HashMap<>());
+    public static HttpResponse<String> get(final @NotNull CharSequence uri, final @Nullable Map<String, Object> headers) {
+        return get(URI.create(uri.toString()), headers);
     }
-    public static HttpHandler get(final @NotNull CharSequence uri, final @NotNull Map<String, Object> header) {
-        return get(URI.create(uri.toString()), header);
+    public static HttpResponse<String> get(final @NotNull URI uri) {
+        return get(uri, null);
     }
-    public static HttpHandler get(final @NotNull URI uri, final @NotNull Map<String, Object> header) {
-        return new HttpHandler(uri, HttpRequestType.GET, JsonManager.createNew(), header);
+    public static HttpResponse<String> get(final @NotNull URI uri, final @Nullable Map<String, Object> headers) {
+        return request(uri, HttpRequestType.GET, headers, null);
     }
 
-    public static HttpHandler post(final @NotNull CharSequence uri, final @NotNull JsonManager jsonManager) {
-        return post(URI.create(uri.toString()), new HashMap<>(), jsonManager);
+    public static HttpResponse<String> put(final @NotNull CharSequence uri, final @NotNull JsonManager send) {
+        return put(uri, null, send);
     }
-    public static HttpHandler post(final @NotNull URI uri, final @NotNull JsonManager jsonManager) {
-        return new HttpHandler(uri, HttpRequestType.POST, jsonManager, new HashMap<>());
+    public static HttpResponse<String> put(final @NotNull CharSequence uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+        return put(URI.create(uri.toString()), headers, send);
     }
-    public static HttpHandler post(final @NotNull CharSequence uri, final @NotNull Map<String, Object> header, final @NotNull JsonManager jsonManager) {
-        return post(URI.create(uri.toString()), header, jsonManager);
+    public static HttpResponse<String> put(final @NotNull URI uri, final @NotNull JsonManager send) {
+        return put(uri, null, send);
     }
-    public static HttpHandler post(final @NotNull URI uri, final @NotNull Map<String, Object> header, final @NotNull JsonManager jsonManager) {
-        return new HttpHandler(uri, HttpRequestType.POST, jsonManager, header);
-    }
-
-    public static HttpHandler put(final @NotNull CharSequence uri, final @NotNull JsonManager jsonManager) {
-        return put(URI.create(uri.toString()), new HashMap<>(), jsonManager);
-    }
-    public static HttpHandler put(final @NotNull URI uri, final @NotNull JsonManager jsonManager) {
-        return new HttpHandler(uri, HttpRequestType.PUT, jsonManager, new HashMap<>());
-    }
-    public static HttpHandler put(final @NotNull CharSequence uri, final @NotNull Map<String, Object> header, final @NotNull JsonManager jsonManager) {
-        return put(URI.create(uri.toString()), header, jsonManager);
-    }
-    public static HttpHandler put(final @NotNull URI uri, final @NotNull Map<String, Object> header, final @NotNull JsonManager jsonManager) {
-        return new HttpHandler(uri, HttpRequestType.PUT, jsonManager, header);
+    public static HttpResponse<String> put(final @NotNull URI uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+        return request(uri, HttpRequestType.PUT, headers, send);
     }
 
-    private int responseCode = 0;
-    private String siteBody = "";
-    private @Nullable HttpHeaders siteHeaders = null;
-    private @Nullable HttpRequest siteRequest = null;
+    public static HttpResponse<String> post(final @NotNull CharSequence uri, final @NotNull JsonManager send) {
+        return post(uri, null, send);
+    }
+    public static HttpResponse<String> post(final @NotNull CharSequence uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+        return post(URI.create(uri.toString()), headers, send);
+    }
+    public static HttpResponse<String> post(final @NotNull URI uri, final @NotNull JsonManager send) {
+        return post(uri, null, send);
+    }
+    public static HttpResponse<String> post(final @NotNull URI uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+        return request(uri, HttpRequestType.POST, headers, send);
+    }
 
-    private HttpHandler(final @NotNull URI uri, final @NotNull HttpRequestType type, final @NotNull JsonManager post, final @NotNull Map<String, Object> set) {
+    @SneakyThrows
+    private static HttpResponse<String> request(final @NotNull URI uri, final @NotNull HttpRequestType type, @Nullable Map<String, Object> headers, final @Nullable JsonManager send) {
+        if (headers == null)
+            headers = Map.of();
 
-        try {
-            switch (type) {
-                case GET -> {
-                    final HttpRequest.Builder builder = HttpRequest.newBuilder(uri).GET();
-                    set.forEach((key, value) -> {
-                        if (key != null && value != null)
-                            builder.setHeader(key, value.toString());
-                    });
-                    final HttpResponse<String> response = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString());
-                    this.responseCode = response.statusCode();
-                    this.siteBody = response.body();
-                    this.siteHeaders = response.headers();
-                    this.siteRequest = response.request();
-                }
+        final HttpRequest.Builder builder = HttpRequest.newBuilder(uri);
+        headers.forEach((string, object) -> builder.header(string, object.toString()));
+        builder.method(type.name(), send == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(send.getContent()));
 
-                case POST -> {
-                    final HttpRequest.Builder builder = HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.ofString(post.asJsonString()));
-                    set.forEach((key, value) -> {
-                        if (key != null && value != null)
-                            builder.header(key, value.toString());
-                    });
-                    final HttpResponse<String> response = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString());
-                    this.responseCode = response.statusCode();
-                    this.siteBody = response.body();
-                    this.siteHeaders = response.headers();
-                    this.siteRequest = response.request();
-                }
-
-                case PUT -> {
-                    final HttpRequest.Builder builder = HttpRequest.newBuilder(uri).PUT(HttpRequest.BodyPublishers.ofString(post.asJsonString()));
-                    set.forEach((key, value) -> {
-                        if (key != null && value != null)
-                            builder.header(key, value.toString());
-                    });
-                    final HttpResponse<String> response = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString());
-                    this.responseCode = response.statusCode();
-                    this.siteBody = response.body();
-                    this.siteHeaders = response.headers();
-                    this.siteRequest = response.request();
-                }
-            }
-        } catch (final Exception fail) {
-            fail.printStackTrace();
-        }
+        return HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString());
     }
 }

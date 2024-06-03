@@ -5,7 +5,10 @@ import at.flauschigesalex.defaultLibrary.http.HttpHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.http.HttpResponse;
 import java.util.UUID;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @SuppressWarnings("unused")
 public final class NameResolver {
@@ -41,11 +44,11 @@ public final class NameResolver {
         if (uuid == null)
             return null;
 
-        final HttpHandler site = HttpHandler.get("https://api.mojang.com/user/profile/" + uuid);
-        if (site.getResponseCode() != 200)
+        final HttpResponse<String> site = HttpHandler.get("https://api.mojang.com/user/profile/%s".formatted(uuid));
+        if (site.statusCode() != HTTP_OK)
             return null;
 
-        return JsonManager.parse(site.getSiteBody());
+        return JsonManager.of(site);
     }
 
     public String resolve() {

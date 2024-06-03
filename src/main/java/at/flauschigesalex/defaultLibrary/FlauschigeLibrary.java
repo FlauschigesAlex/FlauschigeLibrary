@@ -27,7 +27,7 @@ public class FlauschigeLibrary {
                 continue;
 
             for (final String workingDirectory : this.workingDirectoryPath)
-                if (workingDirectory.startsWith(definedPackage.getName()))
+                if (definedPackage.getName().startsWith(workingDirectory))
                     continue loop;
 
             this.workingDirectoryPath.add(definedPackage.getName());
