@@ -7,6 +7,8 @@ import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import static java.lang.Thread.sleep;
@@ -28,13 +30,9 @@ public final class Task {
 
     private final Consumer<Task> consumer;
     private final @Getter boolean async;
+    private Executor asyncExecutor;
 
-    private Thread thread;
     private Boolean repeating;
-
-    //MAYBE SOMEDAY
-    //private @Getter(AccessLevel.NONE) int checkAmount = default_check_amount;
-    //private final ArrayList<Consumer<@NotNull Boolean>> stopConditions = new ArrayList<>();
 
     private Task(final @NotNull Consumer<Task> consumer, final boolean async) {
         this.consumer = consumer;
@@ -79,16 +77,12 @@ public final class Task {
         if (amount != null && amount <= 0)
             return;
 
-        if (thread == null) {
-            totalTaskCount++;
-            if (async) {
-                thread = new Thread(() -> {
-                    this.run(amount, unit, value, type, first);
-                }, "Async-Task | Thread | id: "+totalTaskCount);
-                thread.start();
-                return;
-            }
-            thread = Thread.currentThread();
+        if (async && asyncExecutor == null) {
+            asyncExecutor = Executors.newCachedThreadPool();
+            asyncExecutor.execute(() -> {
+                this.run(amount, unit, value, type, first);
+            });
+            return;
         }
 
         if (unit != null)
@@ -110,16 +104,6 @@ public final class Task {
 
     public boolean isSync() {
         return !isAsync();
-    }
-
-    public @Deprecated Thread getThread() {
-        return thread;
-    }
-
-    public boolean isThread(final @Nullable Thread thread) {
-        if (thread == null)
-            return false;
-        return thread.equals(this.thread);
     }
 
     public boolean isRepeating() {
