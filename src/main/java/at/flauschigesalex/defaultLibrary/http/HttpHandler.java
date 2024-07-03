@@ -1,6 +1,5 @@
 package at.flauschigesalex.defaultLibrary.http;
 
-import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,40 +25,40 @@ public abstract class HttpHandler {
         return request(uri, HttpRequestType.GET, headers, null);
     }
 
-    public static HttpResponse<String> put(final @NotNull CharSequence uri, final @NotNull JsonManager send) {
+    public static HttpResponse<String> put(final @NotNull CharSequence uri, final @NotNull Object send) {
         return put(uri, null, send);
     }
-    public static HttpResponse<String> put(final @NotNull CharSequence uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+    public static HttpResponse<String> put(final @NotNull CharSequence uri, final @Nullable Map<String, Object> headers, final @NotNull Object send) {
         return put(URI.create(uri.toString()), headers, send);
     }
-    public static HttpResponse<String> put(final @NotNull URI uri, final @NotNull JsonManager send) {
+    public static HttpResponse<String> put(final @NotNull URI uri, final @NotNull Object send) {
         return put(uri, null, send);
     }
-    public static HttpResponse<String> put(final @NotNull URI uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+    public static HttpResponse<String> put(final @NotNull URI uri, final @Nullable Map<String, Object> headers, final @NotNull Object send) {
         return request(uri, HttpRequestType.PUT, headers, send);
     }
 
-    public static HttpResponse<String> post(final @NotNull CharSequence uri, final @NotNull JsonManager send) {
+    public static HttpResponse<String> post(final @NotNull CharSequence uri, final @NotNull Object send) {
         return post(uri, null, send);
     }
-    public static HttpResponse<String> post(final @NotNull CharSequence uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+    public static HttpResponse<String> post(final @NotNull CharSequence uri, final @Nullable Map<String, Object> headers, final @NotNull Object send) {
         return post(URI.create(uri.toString()), headers, send);
     }
-    public static HttpResponse<String> post(final @NotNull URI uri, final @NotNull JsonManager send) {
+    public static HttpResponse<String> post(final @NotNull URI uri, final @NotNull Object send) {
         return post(uri, null, send);
     }
-    public static HttpResponse<String> post(final @NotNull URI uri, final @Nullable Map<String, Object> headers, final @NotNull JsonManager send) {
+    public static HttpResponse<String> post(final @NotNull URI uri, final @Nullable Map<String, Object> headers, final @NotNull Object send) {
         return request(uri, HttpRequestType.POST, headers, send);
     }
 
     @SneakyThrows
-    private static HttpResponse<String> request(final @NotNull URI uri, final @NotNull HttpRequestType type, @Nullable Map<String, Object> headers, final @Nullable JsonManager send) {
+    private static HttpResponse<String> request(final @NotNull URI uri, final @NotNull HttpRequestType type, @Nullable Map<String, Object> headers, final @Nullable Object send) {
         if (headers == null)
             headers = Map.of();
 
         final HttpRequest.Builder builder = HttpRequest.newBuilder(uri);
         headers.forEach((string, object) -> builder.header(string, object.toString()));
-        builder.method(type.name(), send == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(send.getContent()));
+        builder.method(type.name(), send == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(send.toString()));
 
         return HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString());
     }
