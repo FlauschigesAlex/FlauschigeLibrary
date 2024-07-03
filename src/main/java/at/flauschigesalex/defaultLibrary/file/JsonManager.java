@@ -67,13 +67,13 @@ public final class JsonManager {
     }
 
     public static @Nullable JsonManager of(final @NotNull FileManager fileManager) {
-        final String read = fileManager.read();
+        final String read = fileManager.readString();
         if (read == null) return null;
         return of(read);
     }
 
     public static @Nullable JsonManager of(final @NotNull ResourceManager resourceManager) {
-        final String read = resourceManager.read();
+        final String read = resourceManager.readString();
         if (read == null) return null;
         return of(read);
     }

@@ -71,7 +71,7 @@ public final class FileManager {
         return purge(file);
     }
 
-    public @Nullable String read() {
+    public @Nullable String readString() {
         if (!isReadable())
             return null;
 
@@ -154,7 +154,7 @@ public final class FileManager {
     }
 
     public @Nullable JsonManager getJsonManager() {
-        final String read = read();
+        final String read = readString();
 
         if (read == null)
             return null;

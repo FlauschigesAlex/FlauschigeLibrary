@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 @Getter
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "resource"})
 public final class ResourceManager {
 
     private final URL url;
@@ -27,7 +27,7 @@ public final class ResourceManager {
         return new ResourceManager(url);
     }
 
-    public @Nullable InputStream stream() {
+    public @Nullable InputStream readStream() {
         try {
             return url.openStream();
         } catch (final Exception ignore) {
@@ -35,12 +35,12 @@ public final class ResourceManager {
         return null;
     }
 
-    public @Nullable String read() {
+    public @Nullable String readString() {
         if (!isReadable())
             return null;
 
         final StringBuilder builder = new StringBuilder();
-        final InputStream stream = stream();
+        final InputStream stream = readStream();
         if (stream != null) {
             try {
                 for (byte nom : stream.readAllBytes())
@@ -53,7 +53,7 @@ public final class ResourceManager {
     }
 
     public @Nullable JsonManager getJsonManager() {
-        final String read = read();
+        final String read = readString();
         if (read == null)
             return null;
         if (jsonManager == null)
@@ -62,6 +62,6 @@ public final class ResourceManager {
     }
 
     public boolean isReadable() {
-        return stream() != null;
+        return readStream() != null;
     }
 }

@@ -68,9 +68,9 @@ public final class DatabaseCredentials {
     }
 
     public static DatabaseCredentials construct(final @NotNull FileManager fileManager) {
-        if (fileManager.read() == null)
+        if (fileManager.readString() == null)
             throw new DatabaseLoginException("Failed to read fileInputStream for file " + fileManager.getFile().getName() + " at:" + fileManager.getClass().getSimpleName() + "\n" + fileManager.getFile().getPath());
-        return construct(fileManager.read());
+        return construct(fileManager.readString());
     }
 
     public static DatabaseCredentials construct(final @NotNull ResourceManager resourceManager) {
