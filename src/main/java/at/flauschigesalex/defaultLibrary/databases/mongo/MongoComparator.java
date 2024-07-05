@@ -16,7 +16,7 @@ public final class MongoComparator implements Comparator<Class<?>> {
 
             if (weight[0] != weight[1])
                 return Integer.compare(weight[0], weight[1]);
-            if (size != (min-1))
+            if (size != (min - 1))
                 continue;
             return Integer.compare(m1.getName().length(), m2.getName().length());
         }

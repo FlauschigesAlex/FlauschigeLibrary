@@ -4,5 +4,4 @@ public enum HttpRequestType {
     GET(),
     POST(),
     PUT(),
-    ;
 }

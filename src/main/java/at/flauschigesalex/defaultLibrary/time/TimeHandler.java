@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unused")
 public final class TimeHandler implements Cloneable, LibraryMongoInformation {
@@ -82,20 +83,20 @@ public final class TimeHandler implements Cloneable, LibraryMongoInformation {
         return ZoneId.systemDefault();
     }
 
-    public @Deprecated(forRemoval = true) TimeHandler add(final @NotNull TimeHandlerUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
+    public @Deprecated(forRemoval = true) TimeHandler add(final @NotNull TimeUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
         return modify(timeUnit, length);
     }
 
-    public TimeHandler plus(final @NotNull TimeHandlerUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
+    public TimeHandler plus(final @NotNull TimeUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
         return modify(timeUnit, length);
     }
 
-    public TimeHandler subtract(final @NotNull TimeHandlerUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
+    public TimeHandler subtract(final @NotNull TimeUnit timeUnit, @Range(from = 1, to = Long.MAX_VALUE) final long length) {
         return modify(timeUnit, -length);
     }
 
-    TimeHandler modify(final @NotNull TimeHandlerUnit timeUnit, final long length) {
-        return handle(timeUnit.perform(getEpochMilli(), length));
+    TimeHandler modify(final @NotNull TimeUnit timeUnit, final long value) {
+        return handle(timeUnit.toMillis(value));
     }
 
     public String toString() {

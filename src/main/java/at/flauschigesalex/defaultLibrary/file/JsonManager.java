@@ -356,6 +356,7 @@ public final class JsonManager {
     public boolean removeMany(final @NotNull String... paths) {
         return this.removeMany(List.of(paths));
     }
+
     public boolean removeMany(final @NotNull Collection<String> paths) {
         final AtomicBoolean success = new AtomicBoolean(true);
         for (final String path : paths)
@@ -422,7 +423,7 @@ public final class JsonManager {
             final String part = parts.get(i);
             final @Nullable Object currentObject = current.get(part);
 
-            if (i == parts.size()-1) {
+            if (i == parts.size() - 1) {
                 if (object instanceof Enum<?> anEnum)
                     object = anEnum.toString();
                 if (object instanceof JsonManager json)

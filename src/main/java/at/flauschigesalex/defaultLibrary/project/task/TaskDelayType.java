@@ -2,6 +2,7 @@ package at.flauschigesalex.defaultLibrary.project.task;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import java.util.List;
 public final class TaskDelayType {
 
     private static final List<TaskDelayType> types = new ArrayList<>();
+
     public static TaskDelayType[] values() {
         return types.toArray(TaskDelayType[]::new);
     }

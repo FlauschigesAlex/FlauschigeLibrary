@@ -182,6 +182,6 @@ public final class FileManager {
     }
 
     public String toString() {
-        return getFile().getPath()+"/";
+        return getFile().getPath() + "/";
     }
 }

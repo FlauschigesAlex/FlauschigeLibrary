@@ -17,6 +17,7 @@ public final class ResourceManager {
     private final URL url;
     @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;
+
     ResourceManager(final @NotNull URL url) {
         this.url = url;
     }

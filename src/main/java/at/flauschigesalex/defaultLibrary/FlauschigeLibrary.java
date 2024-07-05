@@ -1,14 +1,16 @@
 package at.flauschigesalex.defaultLibrary;
 
-import at.flauschigesalex.defaultLibrary.project.ProjectManager;
 import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI;
+import at.flauschigesalex.defaultLibrary.project.ProjectManager;
 import at.flauschigesalex.defaultLibrary.project.task.Task;
 import at.flauschigesalex.defaultLibrary.reflections.Reflector;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 @SuppressWarnings({"unused"})
 @Getter
@@ -75,14 +77,19 @@ public class FlauschigeLibrary {
             } catch (Exception ignore) {
             }
         }
-        managers.sort(ProjectManager.comparator());
+        managers.sort(ProjectManager.comparator().reversed());
+
         Task.createAsyncTask((legacyTask) -> managers.forEach(manager -> {
-            if (manager.executeManager(this)) {
-                if (manager.successMessage() != null)
-                    System.out.println(manager.successMessage());
-            } else {
-                if (manager.failMessage() != null)
-                    System.out.println(manager.failMessage());
+            try {
+                if (manager.executeManager(this)) {
+                    if (manager.successMessage() != null)
+                        System.out.println(manager.successMessage());
+                } else {
+                    if (manager.failMessage() != null)
+                        System.out.println(manager.failMessage());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         })).execute();
     }

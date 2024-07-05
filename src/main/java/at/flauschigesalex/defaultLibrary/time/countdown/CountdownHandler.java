@@ -15,13 +15,6 @@ public final class CountdownHandler {
         this.start = start;
     }
 
-    public static @Deprecated @CheckReturnValue Countdown countdown(final @NotNull CountdownUnit unit, long number) {
-        number = number >= 0 ? number : 0;
-
-        final TimeHandler now = TimeHandler.now();
-        return handle(now, now.plus(unit.getTimeHandlerUnit(), number));
-    }
-
     public static @CheckReturnValue Countdown until(final @NotNull TimeHandler end) {
         return handle(TimeHandler.now(), end);
     }

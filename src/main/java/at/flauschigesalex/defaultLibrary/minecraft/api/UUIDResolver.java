@@ -92,7 +92,8 @@ public final class UUIDResolver {
 
         try {
             return UUID.fromString(uuid);
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         return null;
     }
 
