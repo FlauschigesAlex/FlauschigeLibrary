@@ -181,7 +181,6 @@ public final class Task {
 
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Getter
-    @ApiStatus.Experimental
     public static final class Controller {
 
         private static @Getter long totalControllerCount;
