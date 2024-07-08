@@ -96,7 +96,7 @@ public final class TimeHandler implements Cloneable, LibraryMongoInformation {
     }
 
     TimeHandler modify(final @NotNull TimeUnit timeUnit, final long value) {
-        return handle(timeUnit.toMillis(value));
+        return handle(getEpochMilli()+timeUnit.toMillis(value));
     }
 
     public String toString() {
