@@ -4,8 +4,6 @@ public enum CountdownDisplayType {
     HIDE_ANY_EMPTY_FIELD_SMART,
     HIDE_ANY_EMPTY_FIELD,
     DISPLAY_ANY_FIELD,
-    /**
-     * @deprecated This feature will be used in future development.<br>
-     */
-    CUSTOM
+    CUSTOM_DISPLAY_EMPTY_FIELD,
+    CUSTOM_HIDE_EMPTY_FIELD
 }
