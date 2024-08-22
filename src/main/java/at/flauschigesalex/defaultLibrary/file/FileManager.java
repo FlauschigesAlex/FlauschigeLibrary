@@ -14,16 +14,11 @@ public final class FileManager {
     private final File file;
     private JsonManager jsonManager;
 
-    FileManager(final @NotNull File file) {
+    public FileManager(final @NotNull String path) {
+        this(new File(path));
+    }
+    public FileManager(final @NotNull File file) {
         this.file = file;
-    }
-
-    public static FileManager of(final @NotNull File file) {
-        return new FileManager(file);
-    }
-
-    public static FileManager of(final @NotNull String path) {
-        return new FileManager(new File(path));
     }
 
     public boolean create(final @NotNull FileType fileType) {
@@ -151,22 +146,6 @@ public final class FileManager {
                         return false;
         }
         return file.delete();
-    }
-
-    public @Nullable JsonManager getJsonManager() {
-        final String read = readString();
-
-        if (read == null)
-            return null;
-
-        if (jsonManager == null)
-            jsonManager = JsonManager.of(read);
-
-        if (jsonManager == null)
-            return null;
-
-        jsonManager.file(this);
-        return jsonManager;
     }
 
     public boolean isReadable() {

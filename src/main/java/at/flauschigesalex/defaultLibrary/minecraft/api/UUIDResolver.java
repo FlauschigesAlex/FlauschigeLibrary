@@ -42,7 +42,7 @@ public final class UUIDResolver {
         if (site.statusCode() != HTTP_OK)
             return null;
 
-        return JsonManager.of(site);
+        return new JsonManager(site);
     }
 
     public String resolveString() {

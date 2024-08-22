@@ -48,7 +48,7 @@ public final class NameResolver {
         if (site.statusCode() != HTTP_OK)
             return null;
 
-        return JsonManager.of(site);
+        return new JsonManager(site);
     }
 
     public String resolve() {

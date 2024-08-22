@@ -3,7 +3,6 @@ package at.flauschigesalex.defaultLibrary.file;
 import lombok.Getter;
 import org.bson.BsonDocument;
 import org.bson.Document;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
@@ -12,23 +11,13 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "DataFlowIssue", "unchecked", "UnusedReturnValue"})
 @Getter
-public final class JsonManager {
-
-    public static JsonManager create() {
-        return of("{}");
-    }
+public class JsonManager {
 
     public static JsonManager copy(final @NotNull JsonManager json) {
         return new JsonManager(json.content);
@@ -38,78 +27,46 @@ public final class JsonManager {
         return new JsonManager(json.originalContent);
     }
 
-    @ApiStatus.Experimental
-    public static @Nullable JsonManager of(final @NotNull Object source) {
-        return of(source.toString());
-    }
-
-    public static @Nullable JsonManager of(final @NotNull String source) {
-        try {
-            new JSONParser().parse(source);
-        } catch (final Exception e) {
-            return null;
-        }
-        return new JsonManager(source);
-    }
-
-    public static @Nullable JsonManager of(final @NotNull StringBuilder source) {
-        return of(source.toString());
-    }
-
-    public static JsonManager of(final @NotNull Map<String, Object> map) {
-        final JsonManager json = JsonManager.create();
-        json.writeMany(map);
-        return json;
-    }
-
-    public static @Nullable JsonManager of(final @NotNull HttpResponse<String> response) {
-        return of(response.body());
-    }
-
-    public static @Nullable JsonManager of(final @NotNull FileManager fileManager) {
-        final String read = fileManager.readString();
-        if (read == null) return null;
-        return of(read);
-    }
-
-    public static @Nullable JsonManager of(final @NotNull ResourceManager resourceManager) {
-        final String read = resourceManager.readString();
-        if (read == null) return null;
-        return of(read);
-    }
-
-    public static @Nullable JsonManager of(final @NotNull File file) {
-        return of(FileManager.of(file));
-    }
-
-    public static @Nullable JsonManager of(final @NotNull InputStream fileInputStream) {
-        StringBuilder builder = new StringBuilder();
-        int read;
-        while (true) {
-            try {
-                if ((read = fileInputStream.read()) == -1) break;
-                builder.append((char) read);
-            } catch (IOException ignore) {
-            }
-        }
-        if (builder.isEmpty())
-            return null;
-        return of(builder);
-    }
-
-    public static @Nullable JsonManager of(final @NotNull URL resource) {
-        try {
-            return of(resource.openStream());
-        } catch (IOException ignore) {
-        }
-        return null;
-    }
-
     private final String originalContent;
     private String content;
     private FileManager fileManager;
 
+    public JsonManager() {
+        this("{}");
+    }
+
+    public JsonManager(final @NotNull Object content) {
+        this(content.toString());
+    }
+
+    public JsonManager(final @NotNull Map<String, Object> map) {
+        this();
+        this.writeMany(map);
+    }
+
+    public JsonManager(final @NotNull Document document) {
+        this(document.toJson());
+    }
+
+    public JsonManager(final @NotNull HttpResponse<String> response) {
+        this(response.body());
+    }
+
+    public JsonManager(final @NotNull File file) {
+        this(new FileManager(file).readString());
+    }
+
+    public JsonManager(final @NotNull ResourceHandler resource) {
+        this(resource.readString());
+    }
+
     JsonManager(final @NotNull String content) {
+        try {
+            new JSONParser().parse(content);
+        } catch (final Exception e) {
+            throw new IllegalArgumentException("Failed to read json from string:\n"+content);
+        }
+
         this.originalContent = content;
         this.content = content;
     }
@@ -142,12 +99,10 @@ public final class JsonManager {
         return content;
     }
 
-    @ApiStatus.Experimental
-    public <W> W as(final @NotNull String path) {
-        return (W) asObject(path);
-    }
-
     public Object asObject(final @NotNull String path) {
+        if (path.isEmpty())
+            return asObject();
+
         JSONObject jsonObject = asJsonObject();
         if (jsonObject == null)
             return null;
@@ -174,6 +129,9 @@ public final class JsonManager {
     }
 
     public JSONObject asJsonObject(final @NotNull String path) {
+        if (path.isEmpty())
+            return asJsonObject();
+
         try {
             return (JSONObject) asObject(path);
         } catch (Exception ignore) {
@@ -183,7 +141,7 @@ public final class JsonManager {
 
     public JsonManager asJsonManager(final @NotNull String path) {
         try {
-            return JsonManager.of(asJsonObject(path).toJSONString());
+            return new JsonManager(asJsonObject(path));
         } catch (Exception ignore) {
         }
         return null;
@@ -195,15 +153,6 @@ public final class JsonManager {
         } catch (Exception ignore) {
         }
         return new JSONArray();
-    }
-
-    @ApiStatus.Experimental
-    public <W> ArrayList<W> asList(final @NotNull String path) {
-        try {
-            return new ArrayList<>((ArrayList<W>) asObject(path));
-        } catch (Exception ignore) {
-        }
-        return new ArrayList<>();
     }
 
     public ArrayList<Object> asObjectList(final @NotNull String path) {
@@ -325,11 +274,11 @@ public final class JsonManager {
         return null;
     }
 
-    public boolean copy(final @NotNull String path, final @NotNull String newPath) {
-        return this.copy(path, newPath, true);
+    public boolean copyOf(final @NotNull String path, final @NotNull String newPath) {
+        return this.copyOf(path, newPath, true);
     }
 
-    public boolean copy(final @NotNull String path, final @NotNull String newPath, final boolean override) {
+    public boolean copyOf(final @NotNull String path, final @NotNull String newPath, final boolean override) {
         if (!this.contains(path) && !override)
             return false;
         if (this.contains(newPath) && !override)
@@ -369,24 +318,26 @@ public final class JsonManager {
     public boolean remove(final @NotNull String path) {
         if (!this.contains(path))
             return true;
-        final String[] splitSourcePath = path.split("\\.");
-        final String pathPart = splitSourcePath[splitSourcePath.length - 1];
 
-        final StringBuilder newPath = new StringBuilder();
-        for (int part = 0; part < splitSourcePath.length - 1; part++) {
-            if (part != 0)
-                newPath.append(".");
-            newPath.append(splitSourcePath[part]);
+        if (!path.contains(".")) {
+            final var jsonObject = this.asJsonObject();
+            jsonObject.remove(path);
+            this.content = jsonObject.toString();
+
+            this.checkRemoveEmpty();
+            return true;
         }
 
-        final JSONObject jsonObject = path.contains(".") ? asJsonObject(newPath.toString()) : asJsonObject();
-        if (jsonObject == null)
-            return true;
-        jsonObject.remove(pathPart);
-        content = jsonObject.toJSONString();
-        checkRemoveEmpty();
+        final var child = List.of(path.split("\\.")).getLast();
+        final var parent = path.substring(0, path.length() - (child.length() + 1));
 
-        return false;
+        final var jsonObject = this.asJsonObject(parent);
+        jsonObject.remove(child);
+        this.write(parent, jsonObject);
+
+        this.checkRemoveEmpty();
+
+        return true;
     }
 
     public boolean writeIfAbsent(final @NotNull String path, final @Nullable Object object) {
@@ -467,18 +418,6 @@ public final class JsonManager {
         return false;
     }
 
-    public boolean updateModifiedFile() {
-        if (isOriginalContent())
-            return false;
-        return updateFile();
-    }
-
-    public boolean updateFile() {
-        if (this.fileManager == null || !this.fileManager.isWritable())
-            return false;
-        return this.fileManager.write(this.content);
-    }
-
     public boolean contains(String path) {
         return asObject(path) != null;
     }
@@ -489,11 +428,6 @@ public final class JsonManager {
 
     public boolean isModifiedContent() {
         return !isOriginalContent();
-    }
-
-    JsonManager file(final @NotNull FileManager fileManager) {
-        this.fileManager = fileManager;
-        return this;
     }
 
     private Object get(final @NotNull JSONObject jsonObject, final @NotNull String path) {

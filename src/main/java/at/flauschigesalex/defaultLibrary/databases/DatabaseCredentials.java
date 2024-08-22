@@ -2,7 +2,7 @@ package at.flauschigesalex.defaultLibrary.databases;
 
 import at.flauschigesalex.defaultLibrary.file.FileManager;
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
-import at.flauschigesalex.defaultLibrary.file.ResourceManager;
+import at.flauschigesalex.defaultLibrary.file.ResourceHandler;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -73,8 +73,8 @@ public final class DatabaseCredentials {
         return construct(fileManager.readString());
     }
 
-    public static DatabaseCredentials construct(final @NotNull ResourceManager resourceManager) {
-        return construct(resourceManager.getUrl());
+    public static DatabaseCredentials construct(final @NotNull ResourceHandler resourceHandler) {
+        return construct(resourceHandler.getUrl());
     }
 
     public static DatabaseCredentials construct(final @NotNull URL resource) {
@@ -104,9 +104,7 @@ public final class DatabaseCredentials {
     }
 
     public static DatabaseCredentials construct(final @NotNull String jsonString) {
-        final JsonManager jsonManager = JsonManager.of(jsonString);
-        if (jsonManager == null)
-            throw new DatabaseLoginException("Failed to create " + DatabaseCredentials.class.getSimpleName() + " from string: " + jsonString);
+        final JsonManager jsonManager = new JsonManager(jsonString);
         final String[] requiredCredentials = new String[]{"hostname", "username", "accessKey", "database"};
 
         String username = null;

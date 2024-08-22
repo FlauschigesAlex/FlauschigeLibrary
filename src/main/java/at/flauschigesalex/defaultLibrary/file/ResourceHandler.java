@@ -8,24 +8,28 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 
 @Getter
 @SuppressWarnings({"unused", "resource"})
-public final class ResourceManager {
+public final class ResourceHandler {
 
     private final URL url;
     @Getter(AccessLevel.NONE)
     private JsonManager jsonManager;
 
-    ResourceManager(final @NotNull URL url) {
+    public ResourceHandler(final @NotNull String string) {
+        final URL url = FlauschigeLibrary.getLibrary().getClass().getClassLoader().getResource(string);
+
+        if (url == null)
+            throw new NullPointerException("URL cannot be null!");
+
         this.url = url;
     }
 
-    public static @Nullable ResourceManager getResource(final @NotNull String sourcePath) {
-        final URL url = FlauschigeLibrary.getLibrary().getClass().getClassLoader().getResource(sourcePath);
-        if (url == null) return null;
-        return new ResourceManager(url);
+    public ResourceHandler(final @NotNull URL url) {
+        this.url = url;
     }
 
     public @Nullable InputStream readStream() {
@@ -51,15 +55,6 @@ public final class ResourceManager {
             }
         }
         return null;
-    }
-
-    public @Nullable JsonManager getJsonManager() {
-        final String read = readString();
-        if (read == null)
-            return null;
-        if (jsonManager == null)
-            jsonManager = JsonManager.of(read);
-        return jsonManager;
     }
 
     public boolean isReadable() {
