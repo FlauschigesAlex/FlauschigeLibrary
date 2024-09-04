@@ -15,44 +15,51 @@ import java.util.stream.Stream
 
 @Suppress("MemberVisibilityCanBePrivate")
 @Getter
-class TranslatedLocale private constructor(val locale: Locale, val isFallbackLocale: Boolean) {
+class TranslatedLocale private constructor(val locale: Locale) {
 
     @Suppress("unused")
     companion object {
         private val locales = HashMap<Locale, TranslatedLocale?>()
 
-        val english: TranslatedLocale = TranslatedLocale(Locale.US, true)
-        val german: TranslatedLocale = TranslatedLocale(Locale.GERMAN, false)
+        private var fallbackLocale: TranslatedLocale? = null
 
-        private var cachedFallbackLocale: TranslatedLocale? = null
+        /**
+         * @see TranslatedLocale.register
+         * @throws TranslationException provided locale is unknown.
+         */
+        fun setFallbackLocale(locale: Locale) {
+            val translatedLocale = locales[locale]
+                ?: throw TranslationException("The provided locale could not be identified, maybe you forgot registering it?")
+
+            this.setFallbackLocale(translatedLocale)
+        }
+        fun setFallbackLocale(locale: TranslatedLocale) {
+            fallbackLocale = locale
+        }
 
         @JvmStatic
         fun fallbackLocale(): TranslatedLocale {
-            if (cachedFallbackLocale != null)
-                return cachedFallbackLocale!!
-
-            val fallbackLocale = AtomicReference<TranslatedLocale?>()
-            locales.entries.stream()
-                .filter { entry: Map.Entry<Locale, TranslatedLocale?> -> entry.value!!.isFallbackLocale }
-                .forEach { translatedLocale: Map.Entry<Locale, TranslatedLocale?> ->
-                    if (fallbackLocale.get() != null) throw TranslationException("Only one " + TranslatedLocale::class.java.simpleName + " can be marked as fallback.")
-                    fallbackLocale.set(translatedLocale.value)
-                }
-
-            if (fallbackLocale.get() == null) throw TranslationException("Fallback locale cannot be null!")
-
-            cachedFallbackLocale = fallbackLocale.get()
-            return cachedFallbackLocale!!
+            return fallbackLocale
+                ?: throw TranslationException("Could not access the fallback locale, maybe you forgot registering it?")
         }
 
         @JvmStatic
         fun of(locale: Locale): TranslatedLocale {
             return locales.getOrDefault(locale, fallbackLocale())!!
         }
+
+        @JvmStatic
+        fun register(locale: Locale): TranslatedLocale {
+            return TranslatedLocale(locale).also {
+                if (fallbackLocale == null)
+                    fallbackLocale = it
+            }
+        }
     }
 
     init {
-        if (locales.containsKey(locale)) throw TranslationException("Duplicate locale \"" + locale.toLanguageTag() + "\" is not allowed.")
+        if (locales.containsKey(locale))
+            throw TranslationException("Duplicate locale \"" + locale.toLanguageTag() + "\" is not allowed.")
 
         locales[locale] = this
     }
@@ -131,7 +138,6 @@ class TranslatedLocale private constructor(val locale: Locale, val isFallbackLoc
 
             val resource = ResourceHandler("translations/" + locale.toLanguageTag() + "/" + fileName + ".json")
             try {
-
                 val json = JsonManager(resource)
 
                 fileCache[fileName] = json
@@ -155,7 +161,7 @@ class TranslatedLocale private constructor(val locale: Locale, val isFallbackLoc
     }
 
     private fun fallback(translationKey: String, replacements: Map<String, Any>): List<String> {
-        if (this.isFallbackLocale) {
+        if (fallbackLocale == this) {
             return listOf(translationKey)
         }
 
