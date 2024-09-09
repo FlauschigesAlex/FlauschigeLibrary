@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.databases;
 
-import at.flauschigesalex.defaultLibrary.file.FileManager;
+import at.flauschigesalex.defaultLibrary.file.FileHandler;
 import at.flauschigesalex.defaultLibrary.file.JsonManager;
 import at.flauschigesalex.defaultLibrary.file.ResourceHandler;
 import lombok.Getter;
@@ -67,10 +67,10 @@ public final class DatabaseCredentials {
         }
     }
 
-    public static DatabaseCredentials construct(final @NotNull FileManager fileManager) {
-        if (fileManager.readString() == null)
-            throw new DatabaseLoginException("Failed to read fileInputStream for file " + fileManager.getFile().getName() + " at:" + fileManager.getClass().getSimpleName() + "\n" + fileManager.getFile().getPath());
-        return construct(fileManager.readString());
+    public static DatabaseCredentials construct(final @NotNull FileHandler fileHandler) {
+        if (fileHandler.readString() == null)
+            throw new DatabaseLoginException("Failed to read fileInputStream for file " + fileHandler.getFile().getName() + " at:" + fileHandler.getClass().getSimpleName() + "\n" + fileHandler.getFile().getPath());
+        return construct(fileHandler.readString());
     }
 
     public static DatabaseCredentials construct(final @NotNull ResourceHandler resourceHandler) {

@@ -9,31 +9,16 @@ import java.util.ArrayList;
 
 @Getter
 @SuppressWarnings({"UnusedReturnValue", "unused", "BooleanMethodIsAlwaysInverted"})
-public final class FileManager {
+public final class FileHandler {
 
     private final File file;
     private JsonManager jsonManager;
 
-    public FileManager(final @NotNull String path) {
+    public FileHandler(final @NotNull String path) {
         this(new File(path));
     }
-    public FileManager(final @NotNull File file) {
+    public FileHandler(final @NotNull File file) {
         this.file = file;
-    }
-
-    public boolean create(final @NotNull FileType fileType) {
-        switch (fileType) {
-            case FILE -> {
-                return createFile();
-            }
-            case JSONFILE -> {
-                return createJsonFile();
-            }
-            case DIRECTORY -> {
-                return createDirectory();
-            }
-        }
-        return false;
     }
 
     public boolean createFile() {
@@ -66,24 +51,40 @@ public final class FileManager {
         return purge(file);
     }
 
+    public @Nullable InputStream readStream() {
+        try {
+            return new FileInputStream(file);
+        } catch (final Exception ignore) {
+        }
+        return null;
+    }
+
     public @Nullable String readString() {
         if (!isReadable())
             return null;
 
         final StringBuilder builder = new StringBuilder();
-        int read;
-
-        try {
-            InputStream inputStream = new FileInputStream(file);
-            while ((read = inputStream.read()) != -1) {
-                builder.append((char) read);
+        final InputStream stream = readStream();
+        if (stream != null) {
+            try {
+                for (byte nom : stream.readAllBytes())
+                    builder.append((char) nom);
+                return builder.toString();
+            } catch (final IOException ignore) {
             }
-            inputStream.close();
-            return builder.toString();
-        } catch (Exception fail) {
-            fail.printStackTrace();
         }
         return null;
+    }
+
+    public boolean write(final @NotNull Object object) {
+        return this.write(object.toString().getBytes());
+    }
+
+    public boolean write(final @NotNull InputStream inputStream) {
+        try {
+            this.write(inputStream.readAllBytes());
+        } catch (Exception ignore) {}
+        return false;
     }
 
     public boolean write(final byte[] bytes) {
@@ -95,39 +96,6 @@ public final class FileManager {
             stream.write(bytes);
             stream.close();
             return true;
-        } catch (Exception fail) {
-            fail.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean write(final @NotNull String string) {
-        if (!isWritable())
-            return false;
-
-        return write(string.getBytes());
-    }
-
-    public boolean write(final @NotNull JsonManager jsonManager) {
-        return this.write(jsonManager.getContent());
-    }
-
-    public boolean write(final @NotNull StringBuilder builder) {
-        return this.write(builder.toString());
-    }
-
-    public boolean write(final @NotNull InputStream inputStream) {
-        final ArrayList<Byte> byteArray = new ArrayList<>();
-        int read;
-        try {
-            while ((read = inputStream.read()) != -1)
-                byteArray.add((byte) read);
-
-            byte[] bytes = new byte[byteArray.size()];
-            for (int bytePosition = 0; bytePosition < byteArray.size(); bytePosition++)
-                bytes[bytePosition] = byteArray.get(bytePosition);
-
-            this.write(bytes);
         } catch (Exception fail) {
             fail.printStackTrace();
         }
@@ -154,10 +122,6 @@ public final class FileManager {
 
     public boolean isWritable() {
         return this.isReadable() && file.canWrite();
-    }
-
-    public enum FileType {
-        DIRECTORY, FILE, JSONFILE
     }
 
     public String toString() {

@@ -29,7 +29,7 @@ public class JsonManager {
 
     private final String originalContent;
     private String content;
-    private FileManager fileManager;
+    private FileHandler fileHandler;
 
     public JsonManager() {
         this("{}");
@@ -53,7 +53,7 @@ public class JsonManager {
     }
 
     public JsonManager(final @NotNull File file) {
-        this(new FileManager(file).readString());
+        this(new FileHandler(file).readString());
     }
 
     public JsonManager(final @NotNull ResourceHandler resource) {
