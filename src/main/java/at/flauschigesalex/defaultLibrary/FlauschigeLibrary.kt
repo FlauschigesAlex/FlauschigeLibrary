@@ -2,7 +2,7 @@
 
 package at.flauschigesalex.defaultLibrary
 
-import at.flauschigesalex.defaultLibrary.minecraft.api.MojangAPI
+import at.flauschigesalex.defaultLibrary.external.MojangAPI
 import at.flauschigesalex.defaultLibrary.project.ProjectManager
 import at.flauschigesalex.defaultLibrary.project.task.Task
 import at.flauschigesalex.defaultLibrary.reflections.Reflector
@@ -99,7 +99,7 @@ open class FlauschigeLibrary protected constructor() {
     }
 
     val mojangAPI: MojangAPI
-        get() = MojangAPI.mojangAPI()
+        get() = MojangAPI.access()
 
     val reflector: Reflector
         get() = Reflector.getReflector()
