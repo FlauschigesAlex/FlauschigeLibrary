@@ -108,7 +108,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
                 return list
             }
 
-            val value = json.asObject(translationKey)
+            val value = json.getObject(translationKey)
             if (value == null) {
                 val list = this.fallback(translationKey, replacements)
                 cache[translationKey] = list

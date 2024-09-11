@@ -179,7 +179,6 @@ public final class Task {
         return true;
     }
 
-    @SuppressWarnings("DeprecatedIsStillUsed")
     @Getter
     public static final class Controller {
 
@@ -224,6 +223,7 @@ public final class Task {
         private Controller(final @NotNull String name) {
             this.name = name;
 
+            controllerList.add(this);
             totalControllerCount++;
         }
 

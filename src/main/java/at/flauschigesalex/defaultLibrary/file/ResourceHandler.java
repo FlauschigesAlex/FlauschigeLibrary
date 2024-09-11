@@ -39,7 +39,6 @@ public final class ResourceHandler {
         }
         return null;
     }
-
     public @Nullable String readString() {
         if (!isReadable())
             return null;

@@ -108,24 +108,24 @@ public final class DatabaseCredentials {
         final String[] requiredCredentials = new String[]{"hostname", "username", "accessKey", "database"};
 
         String username = null;
-        final Object userObject = jsonManager.asObject("username");
+        final Object userObject = jsonManager.getObject("username");
         if (userObject instanceof String string)
             username = string;
 
         String accessKey = null;
-        final Object accessObject = jsonManager.asObject("accessKey");
+        final Object accessObject = jsonManager.getObject("accessKey");
         if (accessObject instanceof String string)
             accessKey = string;
 
         String database = null;
-        final Object databaseObject = jsonManager.asObject("database");
+        final Object databaseObject = jsonManager.getObject("database");
         if (databaseObject instanceof String string)
             database = string;
 
 
         final ArrayList<Integer> ports = new ArrayList<>();
-        if (jsonManager.contains("port")) {
-            final Object portObject = jsonManager.asObject("port");
+        if (jsonManager.has("port")) {
+            final Object portObject = jsonManager.getObject("port");
             if (portObject instanceof Integer portShort)
                 ports.add(portShort);
             if (portObject instanceof JSONArray jsonArray)
@@ -139,8 +139,8 @@ public final class DatabaseCredentials {
         }
 
         final ArrayList<String> hosts = new ArrayList<>();
-        if (jsonManager.contains("hostname")) {
-            final Object hostObject = jsonManager.asObject("hostname");
+        if (jsonManager.has("hostname")) {
+            final Object hostObject = jsonManager.getObject("hostname");
             if (hostObject instanceof String hostString)
                 hosts.add(hostString);
             if (hostObject instanceof JSONArray jsonArray)

@@ -86,13 +86,13 @@ class MojangAPI private constructor() {
             return null
         }
         val json = JsonManager(response)
-        if (!json.contains("id") || !json.contains("name")) {
+        if (!json.has("id") || !json.has("name")) {
             invalid.add(any)
             return null
         }
 
-        val uuidS = json.asString("id")
-        val item = Pair(json.asString("name"), uuidS.toUUID())
+        val uuidS = json.getString("id")
+        val item = Pair(json.getString("name"), uuidS.toUUID())
         cache.add(item)
         return item
     }

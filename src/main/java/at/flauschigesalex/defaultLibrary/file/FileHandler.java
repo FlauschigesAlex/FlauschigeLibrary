@@ -32,23 +32,17 @@ public final class FileHandler {
         }
         return false;
     }
-
     public boolean createJsonFile() {
         if (file.exists())
             return true;
 
         return createFile() && write("{}");
     }
-
     public boolean createDirectory() {
         if (file.exists())
             return true;
 
         return file.mkdir();
-    }
-
-    public boolean delete() {
-        return purge(file);
     }
 
     public @Nullable InputStream readStream() {
@@ -58,7 +52,6 @@ public final class FileHandler {
         }
         return null;
     }
-
     public @Nullable String readString() {
         if (!isReadable())
             return null;
@@ -79,14 +72,12 @@ public final class FileHandler {
     public boolean write(final @NotNull Object object) {
         return this.write(object.toString().getBytes());
     }
-
     public boolean write(final @NotNull InputStream inputStream) {
         try {
             this.write(inputStream.readAllBytes());
         } catch (Exception ignore) {}
         return false;
     }
-
     public boolean write(final byte[] bytes) {
         if (!isWritable())
             return false;
@@ -115,11 +106,13 @@ public final class FileHandler {
         }
         return file.delete();
     }
+    public boolean delete() {
+        return purge(file);
+    }
 
     public boolean isReadable() {
         return file.exists() && file.isFile() && file.canRead();
     }
-
     public boolean isWritable() {
         return this.isReadable() && file.canWrite();
     }
