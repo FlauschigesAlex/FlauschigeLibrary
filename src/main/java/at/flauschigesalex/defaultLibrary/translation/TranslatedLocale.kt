@@ -89,7 +89,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
 
     fun findList(translationKey: String, replacements: Map<String, Any> = mapOf()): List<String> {
 
-        if (FlauschigeLibrary.getLibrary().mainThread == Thread.currentThread())
+        if (FlauschigeLibrary.library.mainThread == Thread.currentThread())
             throw TranslationException("Method \"findList\" may only be used asynchronously.")
 
         val response = TranslationValidator.validateKey(translationKey)

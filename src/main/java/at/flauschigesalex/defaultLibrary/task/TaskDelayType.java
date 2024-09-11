@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.project.task;
+package at.flauschigesalex.defaultLibrary.task;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

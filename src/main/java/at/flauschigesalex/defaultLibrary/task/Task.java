@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.project.task;
+package at.flauschigesalex.defaultLibrary.task;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -7,7 +7,6 @@ import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
