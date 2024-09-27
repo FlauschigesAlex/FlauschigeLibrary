@@ -5,8 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 @SuppressWarnings({"unused"})
 public final class ReflectionStatement {
@@ -32,25 +31,25 @@ public final class ReflectionStatement {
         return this;
     }
 
-    public <C> ArrayList<Class<? extends C>> getSubClasses(final @NotNull Class<C> clazz) {
-        final ArrayList<Class<? extends C>> reflected = new ArrayList<>();
+    public <C> List<Class<? extends C>> getSubClasses(final @NotNull Class<C> clazz) {
+        final HashSet<Class<? extends C>> reflected = new HashSet<>();
         for (final Reflections reflections : getReflected())
             reflected.addAll(reflections.getSubTypesOf(clazz));
-        return removeUnnecessary(reflected);
+        return removeUnnecessary(new HashSet<>(reflected));
     }
 
-    public <A extends Annotation> ArrayList<Class<?>> getAnnotatedClasses(final @NotNull Class<A> annotation) {
-        final ArrayList<Class<?>> reflected = new ArrayList<>();
+    public <A extends Annotation> List<Class<?>> getAnnotatedClasses(final @NotNull Class<A> annotation) {
+        final HashSet<Class<?>> reflected = new HashSet<>();
         for (final Reflections reflections : getReflected())
             reflected.addAll(reflections.getTypesAnnotatedWith(annotation));
         return removeUnnecessary(reflected);
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
-    private <C> ArrayList<Class<? extends C>> removeUnnecessary(final @NotNull ArrayList<Class<? extends C>> arrayList) {
-        arrayList.removeIf(aClass -> aClass.isAnnotationPresent(Invisible.class));
-        arrayList.removeAll(ignoredClasses);
-        return arrayList;
+    private <C> List<Class<? extends C>> removeUnnecessary(final @NotNull HashSet<Class<? extends C>> set) {
+        set.removeIf(aClass -> aClass.isAnnotationPresent(Invisible.class));
+        ignoredClasses.forEach(set::remove);
+        return new ArrayList<>(set);
     }
 
     ArrayList<Reflections> getReflected() {

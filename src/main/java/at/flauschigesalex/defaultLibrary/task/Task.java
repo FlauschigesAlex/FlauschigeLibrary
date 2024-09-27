@@ -1,5 +1,6 @@
 package at.flauschigesalex.defaultLibrary.task;
 
+import at.flauschigesalex.defaultLibrary.FlauschigeLibrary;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.ApiStatus;
@@ -43,6 +44,7 @@ public final class Task {
     private ThreadPoolExecutor executor;
 
     private @Getter Controller controller;
+    private final @Getter Thread parentThread;
 
     private int resets = 0;
     private int executed = 0;
@@ -60,6 +62,8 @@ public final class Task {
 
         this.controller = controller;
         this.controller.addTask(this);
+
+        this.parentThread = FlauschigeLibrary.getLibrary().getMainThread();
 
         totalTaskCount++;
     }
