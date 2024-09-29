@@ -120,7 +120,7 @@ public class JsonManager {
             if (object == null)
                 return null;
 
-            if (path.endsWith(splitSource))
+            if (path.endsWith("." + splitSource))
                 return current.get(splitSource);
             try {
                 current = (JSONObject) object;
