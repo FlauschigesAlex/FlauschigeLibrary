@@ -3,10 +3,10 @@
   <groupId>at.flauschigesalex</groupId>
   <artifactId>FlauschigeLibrary</artifactId>
   <versioning>
-    <release>v1.11.7</release>
+    <release>v1.11.8</release>
     <versions>
-      <version>v1.11.7</version>
+      <version>v1.11.8</version>
     </versions>
-    <lastUpdated>20240930000141</lastUpdated>
+    <lastUpdated>20240930233215</lastUpdated>
   </versioning>
 </metadata>

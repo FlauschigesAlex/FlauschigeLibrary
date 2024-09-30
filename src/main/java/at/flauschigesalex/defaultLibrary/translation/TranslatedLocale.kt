@@ -72,7 +72,8 @@ class TranslatedLocale private constructor(val locale: Locale) {
         try {
             val found = find(translationKey)
             return found != translationKey
-        } catch (ignore: Exception) {
+        } catch (fail: Exception) {
+            fail.printStackTrace()
         }
 
         return false
@@ -97,7 +98,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
             return listOf(response.translationKey)
 
         if (cache.containsKey(translationKey))
-            return cache[translationKey]!!
+            return cache[translationKey]!!.map { modify(it, replacements) }
 
         val fileName = fileName(translationKey)
         if (fileCache.containsKey(fileName)) {
@@ -123,15 +124,16 @@ class TranslatedLocale private constructor(val locale: Locale) {
                     return l
                 }
 
+                cache[translationKey] = value.map { it.toString() }
                 val l: List<String> = ArrayList(value.stream()
                     .map { modify(it.toString(), replacements) }.toList()
                 )
-                cache[translationKey] = l
                 return l
             }
 
             if (value is JSONObject) return findList("$translationKey._", replacements)
 
+            cache[translationKey] = listOf(value.toString())
             return listOf(modify(value.toString(), replacements))
         }
 
