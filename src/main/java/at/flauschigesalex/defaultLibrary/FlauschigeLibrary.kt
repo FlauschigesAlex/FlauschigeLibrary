@@ -49,7 +49,7 @@ open class FlauschigeLibrary protected constructor() {
         mainThread = Thread.currentThread()
     }
 
-    val mojangAPI = MojangAPI.access()
+    @Deprecated("MojangAPI was migrated to an object, defining is redundant.") val mojangAPI = MojangAPI
     val reflector = Reflector.getReflector()
 
     fun addWorkingDirectory(path: String): FlauschigeLibrary {

@@ -5,17 +5,7 @@ import at.flauschigesalex.defaultLibrary.http.HttpHandler
 import java.util.*
 
 @Suppress("MemberVisibilityCanBePrivate", "DEPRECATION", "unused", "KDocUnresolvedReference")
-class MojangAPI private constructor() {
-
-    companion object {
-        private var instance: MojangAPI? = null
-        fun access(): MojangAPI {
-            if (instance == null)
-                instance = MojangAPI()
-
-            return instance!!
-        }
-    }
+object MojangAPI {
 
     private val cache = HashSet<Pair<String, UUID>>()
     private val invalid = HashSet<Any>()
