@@ -66,9 +66,14 @@ public final class MongoDatabaseManager {
         try {
             final ArrayList<ServerAddress> addresses = new ArrayList<>();
             for (int credential = 0; credential < getCredentials().getHostnames().size(); credential++) {
-                addresses.add(new ServerAddress(getCredentials().getHostnames().get(credential), getCredentials().getPorts().get(credential)));
+                addresses.add(new ServerAddress(getCredentials().getHostnames().get(credential),
+                        getCredentials().getPorts().get(credential)));
             }
-            final MongoCredential credential = MongoCredential.createCredential(getCredentials().getUsername(), getCredentials().getDatabase(), getCredentials().getPassword().toCharArray());
+            final MongoCredential credential = MongoCredential.createCredential(
+                    getCredentials().getUsername(),
+                    getCredentials().getDatabase(),
+                    getCredentials().getPassword().toCharArray());
+
             final MongoClientSettings settings = MongoClientSettings.builder()
                     .credential(credential)
                     .applyToClusterSettings(builder -> builder.hosts(addresses))
@@ -76,29 +81,28 @@ public final class MongoDatabaseManager {
                     .build();
 
             final PojoCodecProvider.Builder pojoCodecProviderBuilder = PojoCodecProvider.builder();
-            this.mongoClasses.addAll(Reflector.getReflector().reflect().getSubClasses(MongoInformation.class));
+            this.mongoClasses.addAll(Reflector.INSTANCE.reflect().getSubTypes(MongoInformation.class, false));
 
             if (!mongoClasses.isEmpty()) {
                 pojoCodecProviderBuilder.register(mongoClasses.toArray(Class[]::new));
 
                 final ArrayList<Class<?>> informationClasses = new ArrayList<>(this.mongoClasses);
+                informationClasses.removeIf(c -> List.of(c.getInterfaces()).contains(LibraryMongoInformation.class)
+                        || c == LibraryMongoInformation.class);
                 informationClasses.sort(new MongoComparator());
 
                 final StringBuilder outBuilder = new StringBuilder();
-                outBuilder.append("\n").append(mongoClasses.size()).append(" class").append(mongoClasses.size() > 1 ? "es are" : " is").append(" now available in your MongoDatabase.");
+                outBuilder.append("\n").append(informationClasses.size()).append(" class")
+                        .append(informationClasses.size() > 1 ? "es are" : " is")
+                        .append(" now available in your MongoDatabase.");
 
-                for (final Class<?> informationClass : informationClasses) {
-                    if (List.of(informationClass.getInterfaces()).contains(LibraryMongoInformation.class))
-                        continue;
-                    if (informationClass == LibraryMongoInformation.class)
-                        continue;
-
+                for (final Class<?> informationClass : informationClasses)
                     outBuilder.append("\n - ").append(informationClass.getName());
-                }
 
                 System.out.println(outBuilder.append("\n"));
             }
-            final CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProviderBuilder.build()));
+            final CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(),
+                    fromProviders(pojoCodecProviderBuilder.build()));
 
             mongoClient = MongoClients.create(settings);
             mongoDatabase = mongoClient.getDatabase(getCredentials().getDatabase()).withCodecRegistry(pojoCodecRegistry);
