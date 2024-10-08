@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import static at.flauschigesalex.defaultLibrary.time.countdown.CountdownDisplayType.*;
 import static java.util.concurrent.TimeUnit.*;
 
+@SuppressWarnings("unused")
 @Getter
 public class CountdownFormat {
 

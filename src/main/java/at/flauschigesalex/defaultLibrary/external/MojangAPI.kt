@@ -82,7 +82,7 @@ object MojangAPI {
         }
 
         val uuidS = json.getString("id")
-        val item = Pair(json.getString("name"), uuidS.toUUID())
+        val item = Pair(json.getString("name")!!, uuidS!!.toUUID())
         cache.add(item)
         return item
     }
@@ -184,7 +184,7 @@ object MojangAPI {
     }
 }
 
-fun CharSequence.toUUID(): UUID {
+internal fun CharSequence.toUUID(): UUID {
     if (this.length != 32)
         throw IllegalArgumentException("String is not 32 chars long.")
 

@@ -22,6 +22,6 @@ object TranslationValidator {
     }
 
     data class KeyResponse(val success: Boolean, val translationKey: String) {
-        val failure get() = !success
+        val failure = !success
     }
 }
