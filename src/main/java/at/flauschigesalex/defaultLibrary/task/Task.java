@@ -101,7 +101,7 @@ public final class Task {
     }
 
     @SneakyThrows
-    private void run(final @Nullable Long amount, final @Nullable TimeUnit unit, long value, final @Nullable TaskDelayType type, final boolean first) {
+    private void run(final @Nullable Long amount, final @Nullable TimeUnit unit, long value, final @Nullable TaskDelayType type, final boolean repeating) {
         long valueMilli = unit != null ? unit.toMillis(value) : -1;
 
         if (unit != null)
@@ -118,9 +118,9 @@ public final class Task {
             return;
         }
 
-        if (repeating == null) {
-            repeating = first;
-            if (!repeating)
+        if (this.repeating == null) {
+            this.repeating = repeating;
+            if (!this.repeating && value <= 0)
                 controller = null;
         }
 
@@ -132,7 +132,7 @@ public final class Task {
                 executor.shutdownNow();
 
             executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-            executor.execute(() -> this.run(amount, unit, value, type, first));
+            executor.execute(() -> this.run(amount, unit, value, type, repeating));
             return;
         }
 
@@ -141,9 +141,9 @@ public final class Task {
 
         if (unit != null)
             while (valueMilli > 0) {
-                if (type == TaskDelayType.ONLY_BETWEEN && first)
+                if (type == TaskDelayType.ONLY_BETWEEN && repeating)
                     break;
-                if (type == TaskDelayType.ONLY_BEGINNING && !first)
+                if (type == TaskDelayType.ONLY_BEGINNING && !repeating)
                     break;
 
                 final var removeValue = Math.min(valueMilli, default_delay_ms);
@@ -153,6 +153,9 @@ public final class Task {
                 if (this.checkStop())
                     return;
             }
+
+        if (this.checkStop())
+            return;
 
         consumer.accept(Optional.ofNullable(this.controller));
         this.executed++;
