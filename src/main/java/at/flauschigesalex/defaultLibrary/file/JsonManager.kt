@@ -69,17 +69,22 @@ class JsonManager internal constructor(content: String) {
         if (!path.contains("."))
             return get(jsonObject, path)
 
-        var current = jsonObject
-        val splitSourcePath = path.split("/").toList()
-        for (splitSource in splitSourcePath) {
-            val obj = get(current, splitSource) ?: return null
+        val completed = arrayListOf<String>()
+        var currentJO = jsonObject
 
-            if (path.endsWith(".$splitSource"))
-                return current[splitSource]
+        val splitSourcePath = path.split(".").toList()
+        for (splitSource in splitSourcePath) {
+            val obj = get(currentJO, splitSource) ?: return null
+            val currentPath = completed.joinToString(separator = ".")+"."+splitSource
+
+            if (currentPath == path)
+                return obj
 
             try {
-                current = obj as JSONObject
-            } catch (ignore: Exception) {
+                completed.add(splitSource)
+                currentJO = obj as JSONObject
+            } catch (fail: Exception) {
+                fail.printStackTrace()
                 break
             }
         }
