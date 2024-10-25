@@ -100,6 +100,18 @@ class JsonManager internal constructor(content: String) {
         return null
     }
 
+    fun values(path: String = ""): Collection<Any> {
+        val jsonObject = getJsonObject(path) ?: return listOf()
+        return jsonObject.values.filterNotNull()
+    }
+
+    fun random(path: String = ""): Any {
+        return this.randomOrNull(path)!!
+    }
+    fun randomOrNull(path: String = ""): Any? {
+        return values(path).randomOrNull()
+    }
+
     fun getJsonManager(path: String): JsonManager? {
         try {
             return JsonManager(getJsonObject(path)!!)
@@ -107,19 +119,7 @@ class JsonManager internal constructor(content: String) {
         return null
     }
 
-    @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
-    fun <W> getList(path: String, cast: Class<W>, nullable: Boolean = true): List<W>? {
-        try {
-            return getObjectList(path)?.map { it as W }
-        } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
-
-        return listOf()
-    }
-
-    fun getObjectList(path: String, nullable: Boolean = true): List<Any>? {
+    fun getList(path: String, nullable: Boolean = true): List<Any>? {
         try {
             return getObject(path).let { it as List<*> }.map { it as Any }
         } catch (ignore: Exception) {}
@@ -143,7 +143,7 @@ class JsonManager internal constructor(content: String) {
 
     fun getStringList(path: String, nullable: Boolean = true): List<String>? {
         try {
-            return getObjectList(path)?.map { it.toString() }
+            return getList(path)?.map { it.toString() }
         } catch (ignore: Exception) {}
 
         if (nullable)
@@ -193,7 +193,7 @@ class JsonManager internal constructor(content: String) {
         if (nullable)
             return null
 
-        return ArrayList()
+        return listOf()
     }
 
     fun getFloatList(path: String, nullable: Boolean = true): List<Float>? {
@@ -204,18 +204,18 @@ class JsonManager internal constructor(content: String) {
         if (nullable)
             return null
 
-        return ArrayList()
+        return listOf()
     }
 
     fun getBooleanList(path: String, nullable: Boolean = true): List<Boolean>? {
         try {
-            return getObjectList(path)?.map { it as Boolean }
+            return getList(path)?.map { it as Boolean }
         } catch (ignore: Exception) {}
 
         if (nullable)
             return null
 
-        return ArrayList()
+        return listOf()
     }
 
     fun getString(path: String): String? {
@@ -348,7 +348,7 @@ class JsonManager internal constructor(content: String) {
             return jsonObject
         }
 
-        val parts = path.split("\\.").toMutableList()
+        val parts = path.split(".").toList()
         val original = asJsonObject()
         var current = original
 
