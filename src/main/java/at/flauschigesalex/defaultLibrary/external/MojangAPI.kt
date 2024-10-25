@@ -1,7 +1,7 @@
 package at.flauschigesalex.defaultLibrary.external
 
 import at.flauschigesalex.defaultLibrary.file.JsonManager
-import at.flauschigesalex.defaultLibrary.http.HttpHandler
+import at.flauschigesalex.defaultLibrary.http.HttpRequestHandler
 import java.util.*
 
 @Suppress("MemberVisibilityCanBePrivate", "DEPRECATION", "unused", "KDocUnresolvedReference")
@@ -70,7 +70,7 @@ object MojangAPI {
     }
 
     private fun find(any: Any, url: String): Pair<String, UUID>? {
-        val response = HttpHandler.get(url)
+        val response = HttpRequestHandler.get(url)
         if (response.statusCode() != 200) {
             invalid.add(any)
             return null
