@@ -11,9 +11,7 @@ class ResourceHandler(val url: URL) : DataHandler() {
     )
 
     override fun readStream(): InputStream? {
-        return tryCatch({
-            url.openStream()
-        })
+        return tryCatch { url.openStream() }
     }
 
     override fun isReadable(): Boolean {

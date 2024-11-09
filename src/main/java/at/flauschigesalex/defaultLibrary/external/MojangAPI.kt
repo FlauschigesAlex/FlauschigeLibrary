@@ -75,8 +75,8 @@ object MojangAPI {
             invalid.add(any)
             return null
         }
-        val json = JsonManager(response)
-        if (!json.has("id") || !json.has("name")) {
+        val json = JsonManager(response)!!
+        if (!json.contains("id") || !json.contains("name")) {
             invalid.add(any)
             return null
         }

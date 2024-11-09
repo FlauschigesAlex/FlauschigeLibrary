@@ -9,31 +9,50 @@ import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
 import java.io.File
 import java.net.http.HttpResponse
-import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("unused") @Getter
-class JsonManager internal constructor(content: String) {
+class JsonManager private constructor(content: String) {
+
+    companion object {
+
+        operator fun invoke() : JsonManager {
+            return JsonManager("{}")
+        }
+
+        operator fun invoke(jsonString: String?) : JsonManager? {
+            try {
+                JSONParser().parse(jsonString)
+                return JsonManager(jsonString!!)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return null
+        }
+        operator fun invoke(jsonObject: Any?) : JsonManager? {
+            return invoke(jsonObject.toString())
+        }
+        operator fun invoke(map: Map<String, Any?>) : JsonManager {
+            return this().apply { this.writeMany(map) }
+        }
+        operator fun invoke(data: DataHandler) : JsonManager? {
+            return invoke(data.readString())
+        }
+        operator fun invoke(file: File) : JsonManager? {
+            return this(FileHandler(file))
+        }
+
+        @Deprecated("legacy") operator fun invoke(document: Document) : JsonManager? {
+            return this(document.toJson())
+        }
+        @Deprecated("legacy") operator fun invoke(response: HttpResponse<String>) : JsonManager? {
+            return this(response.body())
+        }
+    }
 
     var originalContent: String
         private set
     var content: String
         private set
-
-    constructor() : this("{}")
-
-    constructor(content: Any) : this(content.toString())
-
-    constructor(map: Map<String?, Any?>) : this() {
-        this.writeMany(map)
-    }
-
-    constructor(document: Document) : this(document.toJson())
-
-    constructor(response: HttpResponse<String>) : this(response.body())
-
-    constructor(file: File) : this(FileHandler(file).readString()!!)
-
-    constructor(resource: ResourceHandler) : this(resource.readString()!!)
 
     init {
         try {
@@ -46,14 +65,6 @@ class JsonManager internal constructor(content: String) {
         this.content = content
     }
 
-    fun asObject(): Any {
-        return JSONParser().parse(content)
-    }
-
-    fun asJsonObject(): JSONObject {
-        return asObject() as JSONObject
-    }
-
     private fun get(jsonObject: JSONObject, path: String): Any? {
         if (!jsonObject.containsKey(path))
             return null
@@ -62,9 +73,9 @@ class JsonManager internal constructor(content: String) {
     }
 
     fun getObject(path: String): Any? {
-        if (path.isEmpty()) return asObject()
+        if (path.isEmpty()) return toObject()
 
-        val jsonObject = asJsonObject()
+        val jsonObject = toJsonObject()
 
         if (!path.contains("."))
             return get(jsonObject, path)
@@ -92,7 +103,7 @@ class JsonManager internal constructor(content: String) {
     }
 
     fun getJsonObject(path: String): JSONObject? {
-        if (path.isEmpty()) return asJsonObject()
+        if (path.isEmpty()) return toJsonObject()
 
         try {
             return getObject(path) as JSONObject?
@@ -265,21 +276,21 @@ class JsonManager internal constructor(content: String) {
         return null
     }
 
-    @JvmOverloads fun copyTo(path: String, newPath: String, override: Boolean = true): Boolean {
-        if (!this.has(path) && !override)
+    fun copyTo(path: String, newPath: String, override: Boolean = true): Boolean {
+        if (!this.contains(path) && !override)
             return false
 
-        if (this.has(newPath) && !override)
+        if (this.contains(newPath) && !override)
             return false
 
         return this.write(newPath, this.getObject(path))
     }
 
-    @JvmOverloads fun move(path: String, newPath: String, override: Boolean = true): Boolean {
-        if (!this.has(path) && !override)
+    fun move(path: String, newPath: String, override: Boolean = true): Boolean {
+        if (!this.contains(path) && !override)
             return false
 
-        if (this.has(newPath) && !override)
+        if (this.contains(newPath) && !override)
             return false
 
         if (!this.write(newPath, this.getObject(path)))
@@ -299,11 +310,11 @@ class JsonManager internal constructor(content: String) {
     }
 
     fun remove(path: String) {
-        if (!this.has(path))
+        if (!this.contains(path))
             return
 
         if (!path.contains(".")) {
-            val jsonObject = this.asJsonObject()
+            val jsonObject = this.toJsonObject()
             jsonObject.remove(path)
             this.content = jsonObject.toString()
 
@@ -324,21 +335,16 @@ class JsonManager internal constructor(content: String) {
     }
 
     fun writeIfAbsent(path: String, obj: Any?): Boolean {
-        if (this.has(path)) return true
+        if (this.contains(path)) return true
         return write(path, obj)
     }
 
-    fun writeMany(map: Map<String?, Any?>): Boolean {
-        val success = AtomicBoolean(true)
-        map.forEach { (string: String?, `object`: Any?) ->
-            if (!this.write(string!!, `object`)) success.set(false)
-        }
-
-        return success.get()
+    fun writeMany(map: Map<String, Any?>): Boolean {
+        return map.map { (path, obj) -> this.write(path, obj) }.all { it }
     }
 
     fun write(path: String, obj: Any?): Boolean {
-        return this.write(path, asJsonObject(), obj) != null
+        return this.write(path, toJsonObject(), obj) != null
     }
 
     private fun write(path: String, jsonObject: JSONObject, obj: Any?): JSONObject? {
@@ -349,7 +355,7 @@ class JsonManager internal constructor(content: String) {
         }
 
         val parts = path.split(".").toList()
-        val original = asJsonObject()
+        val original = toJsonObject()
         var current = original
 
         for (i in parts.indices) {
@@ -358,7 +364,7 @@ class JsonManager internal constructor(content: String) {
 
             if (i == parts.size - 1) {
                 if (o is Enum<*>) o = o.toString()
-                if (o is JsonManager) o = o.asJsonObject()
+                if (o is JsonManager) o = o.toJsonObject()
 
                 current[part] = o
                 this.content = original.toJSONString()
@@ -382,7 +388,7 @@ class JsonManager internal constructor(content: String) {
     }
 
     private fun checkRemoveEmpty(
-        jsonObject: JSONObject = asJsonObject(),
+        jsonObject: JSONObject = toJsonObject(),
         path: StringBuilder = StringBuilder()
     ): Boolean {
         for (obj in jsonObject.keys) {
@@ -392,7 +398,7 @@ class JsonManager internal constructor(content: String) {
             if (!checkRemoveEmpty(obj, path.append(if (path.isEmpty()) "" else ".").append(obj)))
                 continue
 
-            if (!obj.isEmpty())
+            if (obj.isNotEmpty())
                 continue
 
             jsonObject.remove(obj)
@@ -400,11 +406,8 @@ class JsonManager internal constructor(content: String) {
         return false
     }
 
-    fun has(path: String): Boolean {
-        return getObject(path) != null
-    }
     fun contains(path: String): Boolean {
-        return this.has(path)
+        return getObject(path) != null
     }
 
     fun isOriginalContent(): Boolean {
@@ -413,25 +416,34 @@ class JsonManager internal constructor(content: String) {
     fun isModifiedContent(): Boolean {
         return !isOriginalContent()
     }
-
+    
+    fun toObject(): Any {
+        return JSONParser().parse(content)
+    }
+    fun toJsonObject(): JSONObject {
+        return toObject() as JSONObject
+    }
     fun toDocument(): Document {
         return Document.parse(content)
     }
     fun toBsonDocument(): BsonDocument {
         return toDocument().toBsonDocument()
     }
+    override fun toString(): String {
+        return content
+    }
 
-    fun clone(): JsonManager {
+    fun copy(): JsonManager {
         val json = JsonManager(content)
         json.originalContent = originalContent
 
         return json
     }
-    fun cloneOriginal(): JsonManager {
+    fun copyOriginal(): JsonManager {
         return JsonManager(originalContent)
     }
-
-    override fun toString(): String {
-        return content
-    }
+    
+    @Deprecated("legacy", level = DeprecationLevel.ERROR) fun has(path: String): Boolean = contains(path)
+    @Deprecated("legacy") fun clone(): JsonManager = copy()
+    @Deprecated("legacy") fun cloneOriginal(): JsonManager = copyOriginal()
 }

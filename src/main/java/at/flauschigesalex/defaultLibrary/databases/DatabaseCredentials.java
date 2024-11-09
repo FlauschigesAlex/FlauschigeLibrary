@@ -104,7 +104,7 @@ public final class DatabaseCredentials {
     }
 
     public static DatabaseCredentials construct(final @NotNull String jsonString) {
-        final JsonManager jsonManager = new JsonManager(jsonString);
+        final JsonManager jsonManager = JsonManager.Companion.invoke(jsonString);
         final String[] requiredCredentials = new String[]{"hostname", "username", "accessKey", "database"};
 
         String username = null;
@@ -124,7 +124,7 @@ public final class DatabaseCredentials {
 
 
         final ArrayList<Integer> ports = new ArrayList<>();
-        if (jsonManager.has("port")) {
+        if (jsonManager.contains("port")) {
             final Object portObject = jsonManager.getObject("port");
             if (portObject instanceof Integer portShort)
                 ports.add(portShort);
@@ -139,7 +139,7 @@ public final class DatabaseCredentials {
         }
 
         final ArrayList<String> hosts = new ArrayList<>();
-        if (jsonManager.has("hostname")) {
+        if (jsonManager.contains("hostname")) {
             final Object hostObject = jsonManager.getObject("hostname");
             if (hostObject instanceof String hostString)
                 hosts.add(hostString);

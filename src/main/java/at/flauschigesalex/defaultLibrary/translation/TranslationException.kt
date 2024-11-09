@@ -1,3 +1,3 @@
 package at.flauschigesalex.defaultLibrary.translation
 
-class TranslationException constructor(message: String?) : RuntimeException(message)
+class TranslationException(message: String?) : RuntimeException(message)

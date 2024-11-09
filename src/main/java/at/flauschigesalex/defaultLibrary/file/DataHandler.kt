@@ -15,14 +15,12 @@ abstract class DataHandler protected constructor() {
     abstract fun isReadable(): Boolean
     abstract fun isWritable(): Boolean
 
-    protected fun <A> tryCatch(func: () -> A?, displayException: Boolean = true): A? {
+    protected fun <A> tryCatch(displayException: Boolean = true, func: () -> A?): A? {
         try {
             return func.invoke()
         } catch (fail: Exception) {
-            if (displayException)
-                fail.printStackTrace()
+            if (displayException) fail.printStackTrace()
         }
-
         return null
     }
 }

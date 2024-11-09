@@ -5,6 +5,7 @@ package at.flauschigesalex.defaultLibrary.translation
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
 import at.flauschigesalex.defaultLibrary.file.JsonManager
 import at.flauschigesalex.defaultLibrary.file.ResourceHandler
+import at.flauschigesalex.defaultLibrary.utils.InputValidator
 import lombok.Getter
 import org.json.simple.JSONObject
 import java.util.*
@@ -55,6 +56,30 @@ class TranslatedLocale private constructor(val locale: Locale) {
                     fallbackLocale = it
             }
         }
+
+        private fun validateKey(input: String): InputValidator<String> {
+            var translationKey = input
+
+            if (translationKey.isEmpty() || translationKey.isBlank())
+                return InputValidator(translationKey, false, "TranslationKey cannot be empty.")
+
+            translationKey = translationKey.trim()
+            if (!translationKey.contains("."))
+                return InputValidator(
+                    translationKey,
+                    false,
+                    "TranslationKey must have sub-key: Required : main.sub -> Provided : $translationKey"
+                )
+
+            if (translationKey.startsWith(".") || translationKey.endsWith("."))
+                return InputValidator(
+                    translationKey,
+                    false,
+                    "TranslationKey is malformed: Cannot start or end with \".\""
+                )
+
+            return InputValidator(translationKey, true)
+        }
     }
 
     init {
@@ -93,9 +118,10 @@ class TranslatedLocale private constructor(val locale: Locale) {
         if (FlauschigeLibrary.library.mainThread == Thread.currentThread())
             throw TranslationException("Method \"findList\" may only be used asynchronously.")
 
-        val response = TranslationValidator.validateKey(translationKey)
-        if (response.failure)
-            return listOf(response.translationKey)
+        val response = validateKey(translationKey)
+        if (response.isValid)
+            return listOf(response.input)
+        else response.reason.let { if (it != null) System.err.println(it) }
 
         if (cache.containsKey(translationKey))
             return cache[translationKey]!!.map { modify(it, replacements) }
@@ -141,7 +167,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
 
             val resource = ResourceHandler("translations/" + locale.toLanguageTag() + "/" + fileName + ".json")
             try {
-                val json = JsonManager(resource)
+                val json = JsonManager(resource)!!
 
                 fileCache[fileName] = json
                 return this.findList(translationKey, replacements)
