@@ -1,6 +1,6 @@
 package at.flauschigesalex.defaultLibrary.time;
 
-import at.flauschigesalex.defaultLibrary.databases.mongo.LibraryMongoInformation;
+import at.flauschigesalex.defaultLibrary.database.mongodb.MongoLibInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unused")
-public final class TimeHandler implements Cloneable, LibraryMongoInformation {
+public final class TimeHandler implements Cloneable, MongoLibInfo {
 
     private final long epochMillisecond;
 
