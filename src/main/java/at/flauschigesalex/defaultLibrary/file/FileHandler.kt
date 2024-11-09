@@ -10,31 +10,23 @@ class FileHandler(val file: File) : DataHandler() {
     constructor(filePath: String) : this(File(filePath))
 
     fun createJsonFile(): File? {
-        return this.createFile()?.apply {
-            write("{}")
-        }
+        return this.createFile()?.apply { write("{}") }
     }
     fun createFile(): File? {
         if (file.exists())
             return file
 
-        return tryCatch({
-            if (file.createNewFile()) file else null
-        })
+        return tryCatch { if (file.createNewFile()) file else null }
     }
     fun createDirectory(): File? {
         if (file.exists() && file.isDirectory)
             return file
 
-        return tryCatch({
-            if (file.mkdir()) file else null
-        })
+        return tryCatch { if (file.mkdir()) file else null }
     }
 
     override fun readStream(): InputStream? {
-        return tryCatch({
-            file.inputStream()
-        })
+        return tryCatch { file.inputStream() }
     }
 
     fun write(obj: Any): Boolean {
@@ -47,12 +39,10 @@ class FileHandler(val file: File) : DataHandler() {
         if (!this.isWritable())
             return false
 
-        return tryCatch({
-            FileOutputStream(file).apply {
-                this.write(bytes)
-                this.close()
-            }
-        }) != null
+        return tryCatch { FileOutputStream(file).apply {
+            this.write(bytes)
+            this.close()
+        } } != null
     }
 
     private fun delete(file: File, deep: Boolean = true): Boolean {
@@ -60,11 +50,10 @@ class FileHandler(val file: File) : DataHandler() {
             return true
 
         if (file.isDirectory && deep) {
-            val files = file.listFiles()
-            if (files != null)
-                for (dirFile in files)
-                    if (!delete(dirFile))
-                        return false
+            val files = file.listFiles() ?: return file.delete()
+
+            for (dirFile in files)
+                if (!this.delete(dirFile)) return false
         }
 
         return file.delete()

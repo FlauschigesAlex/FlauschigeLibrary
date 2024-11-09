@@ -31,6 +31,9 @@ class ReflectionStatement internal constructor(private val packageNames: Set<Str
             set.add(clazz)
 
         packageNames.forEach {
+            if (it.isEmpty())
+                return@forEach
+
             cache.putIfAbsent(it, Reflections(it))
             set.addAll(cache[it]!!.getSubTypesOf(clazz)
                 .filter { !it.isAnnotationPresent(Invisible::class.java) })
