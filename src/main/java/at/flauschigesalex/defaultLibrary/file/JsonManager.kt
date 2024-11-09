@@ -21,7 +21,8 @@ class JsonManager private constructor(content: String) {
 
         operator fun invoke(jsonString: String?) : JsonManager? {
             try {
-                return JsonManager(JSONParser().parse(jsonString))
+                JSONParser().parse(jsonString)
+                return JsonManager(jsonString!!)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
