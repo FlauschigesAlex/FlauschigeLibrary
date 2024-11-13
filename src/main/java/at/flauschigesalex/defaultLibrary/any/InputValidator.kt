@@ -1,6 +1,6 @@
-@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+@file:Suppress("unused")
 
-package at.flauschigesalex.defaultLibrary.utils
+package at.flauschigesalex.defaultLibrary.any
 
 class InputValidator<T>(val input: T, val isValid: Boolean, val reason: String? = null) {
 

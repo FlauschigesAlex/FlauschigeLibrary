@@ -2,8 +2,8 @@
 
 package at.flauschigesalex.defaultLibrary
 
-import at.flauschigesalex.defaultLibrary.external.MojangAPI
-import at.flauschigesalex.defaultLibrary.reflections.Reflector
+import at.flauschigesalex.defaultLibrary.any.MojangAPI
+import at.flauschigesalex.defaultLibrary.any.Reflector
 
 @Suppress("unused")
 open class FlauschigeLibrary protected constructor() {

@@ -1,10 +1,9 @@
-package at.flauschigesalex.defaultLibrary.external
+package at.flauschigesalex.defaultLibrary.any
 
 import at.flauschigesalex.defaultLibrary.file.JsonManager
-import at.flauschigesalex.defaultLibrary.http.HttpRequestHandler
 import java.util.*
 
-@Suppress("MemberVisibilityCanBePrivate", "DEPRECATION", "unused", "KDocUnresolvedReference")
+@Suppress("MemberVisibilityCanBePrivate", "DEPRECATION", "unused")
 object MojangAPI {
 
     private val cache = HashSet<Pair<String, UUID>>()

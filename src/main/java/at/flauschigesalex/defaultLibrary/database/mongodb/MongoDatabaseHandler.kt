@@ -2,8 +2,8 @@
 
 package at.flauschigesalex.defaultLibrary.database.mongodb
 
+import at.flauschigesalex.defaultLibrary.any.Reflector
 import at.flauschigesalex.defaultLibrary.database.DatabaseHandler
-import at.flauschigesalex.defaultLibrary.reflections.Reflector
 import com.mongodb.MongoClientSettings
 import com.mongodb.MongoCredential
 import com.mongodb.ServerAddress

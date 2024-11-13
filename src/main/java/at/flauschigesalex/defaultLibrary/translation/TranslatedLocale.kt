@@ -3,9 +3,9 @@
 package at.flauschigesalex.defaultLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
+import at.flauschigesalex.defaultLibrary.any.InputValidator
 import at.flauschigesalex.defaultLibrary.file.JsonManager
 import at.flauschigesalex.defaultLibrary.file.ResourceHandler
-import at.flauschigesalex.defaultLibrary.utils.InputValidator
 import lombok.Getter
 import org.json.simple.JSONObject
 import java.util.*
@@ -57,7 +57,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
             }
         }
 
-        private fun validateKey(input: String): InputValidator<String> {
+        fun validateKey(input: String): InputValidator<String> {
             var translationKey = input
 
             if (translationKey.isEmpty() || translationKey.isBlank())

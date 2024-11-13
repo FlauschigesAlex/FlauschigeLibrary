@@ -4,11 +4,24 @@ import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
 import java.io.InputStream
 import java.net.URL
 
-class ResourceHandler(val url: URL) : DataHandler() {
+class ResourceHandler private constructor(val url: URL) : DataHandler() {
 
-    constructor(urlString: String) : this(
-        FlauschigeLibrary::class.java.classLoader.getResource(urlString)!!
-    )
+    companion object {
+        operator fun invoke(url: URL) : ResourceHandler? {
+            try {
+                return ResourceHandler(url)
+            } catch (fail: Exception) { fail.printStackTrace() }
+            return null
+        }
+
+        operator fun invoke(urlString: String) : ResourceHandler? {
+            try {
+                val url = FlauschigeLibrary::class.java.classLoader.getResource(urlString)!!
+                return this(url)
+            } catch (fail: Exception) { fail.printStackTrace() }
+            return null
+        }
+    }
 
     override fun readStream(): InputStream? {
         return tryCatch { url.openStream() }
