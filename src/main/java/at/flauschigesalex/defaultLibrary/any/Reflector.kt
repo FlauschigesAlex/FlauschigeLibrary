@@ -1,6 +1,6 @@
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package at.flauschigesalex.defaultLibrary.reflections
+package at.flauschigesalex.defaultLibrary.any
 
 import at.flauschigesalex.defaultLibrary.utils.Invisible
 import at.flauschigesalex.defaultLibrary.utils.LibraryException

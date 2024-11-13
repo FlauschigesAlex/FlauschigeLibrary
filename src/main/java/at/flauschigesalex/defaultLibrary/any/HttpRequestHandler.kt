@@ -1,4 +1,4 @@
-package at.flauschigesalex.defaultLibrary.http
+package at.flauschigesalex.defaultLibrary.any
 
 import java.net.URI
 import java.net.http.HttpClient
