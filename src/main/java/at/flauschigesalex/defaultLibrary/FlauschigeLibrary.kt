@@ -9,15 +9,7 @@ import at.flauschigesalex.defaultLibrary.any.Reflector
 open class FlauschigeLibrary protected constructor() {
 
     companion object {
-
-        private var flauschigeLibrary: FlauschigeLibrary? = null
-
-        @JvmStatic
-        val library: FlauschigeLibrary get() {
-            if (flauschigeLibrary == null)
-                flauschigeLibrary = FlauschigeLibrary()
-            return flauschigeLibrary!!
-        }
+        @JvmStatic val library = FlauschigeLibrary()
     }
 
     var mainThread: Thread
