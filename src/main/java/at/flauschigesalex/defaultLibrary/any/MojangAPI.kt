@@ -6,7 +6,7 @@ import java.util.*
 @Suppress("MemberVisibilityCanBePrivate", "DEPRECATION", "unused")
 object MojangAPI {
 
-    private val cache = HashSet<Pair<String, UUID>>()
+    private val cache = HashSet<MojangProfile>()
     private val invalid = HashSet<Any>()
 
     /**
@@ -31,32 +31,32 @@ object MojangAPI {
      */
     @Deprecated("Variable is used as default operation, proceed with caution.")
     var uuidToNameFunction = { uuid: UUID ->
-        profile(uuid)?.first
+        profile(uuid)?.name
     }
     /**
      * Called when a UUID is resolved via name.
      */
     @Deprecated("Variable is used as default operation, proceed with caution.")
     var nameToUuidFunction = { name: String ->
-        profile(name)?.second
+        profile(name)?.uuid
     }
     /**
      * Called when a name is corrected.
      */
     @Deprecated("Variable is used as default operation, proceed with caution.")
     var caseCorrectFunction = { name: String ->
-        profile(name)?.first
+        profile(name)?.name
     }
 
-    private val uuidToNameLookup = ArrayList<Pair<LookupCall, (UUID) -> Triple<String, UUID, Boolean>?>>()
-    private val nameToUuidLookup = ArrayList<Pair<LookupCall, (String) -> Triple<String, UUID, Boolean>?>>()
+    private val uuidToNameLookup = ArrayList<Pair<LookupCall, (UUID) -> CacheableMojangProfile?>>()
+    private val nameToUuidLookup = ArrayList<Pair<LookupCall, (String) -> CacheableMojangProfile?>>()
 
     /**
      * @param String Name of the profile
      * @param UUID UniqueId of the profile
      * @param Boolean Determines if the profile should be cached.
      */
-    fun addNameLookup(lookupCall: LookupCall = LookupCall.BEFORE, function: (UUID) -> Triple<String, UUID, Boolean>) {
+    fun addNameLookup(lookupCall: LookupCall = LookupCall.BEFORE, function: (UUID) -> CacheableMojangProfile?) {
         this.uuidToNameLookup.add(Pair(lookupCall, function))
     }
     /**
@@ -64,11 +64,11 @@ object MojangAPI {
      * @param UUID UniqueId of the profile
      * @param Boolean Determines if the profile should be cached.
      */
-    fun addUuidLookup(lookupCall: LookupCall = LookupCall.BEFORE, function: (String) -> Triple<String, UUID, Boolean>) {
+    fun addUuidLookup(lookupCall: LookupCall = LookupCall.BEFORE, function: (String) -> CacheableMojangProfile?) {
         this.nameToUuidLookup.add(Pair(lookupCall, function))
     }
 
-    private fun find(any: Any, url: String): Pair<String, UUID>? {
+    private fun find(any: Any, url: String): MojangProfile? {
         val response = HttpRequestHandler.get(url)
         if (response.statusCode() != 200) {
             invalid.add(any)
@@ -89,7 +89,7 @@ object MojangAPI {
         }
 
         val uuidS = json.getString("id")
-        val item = Pair(json.getString("name")!!, uuidS!!.toUUID())
+        val item = MojangProfile(json.getString("name")!!, uuidS!!.toUUID())
         cache.add(item)
         return item
     }
@@ -97,20 +97,20 @@ object MojangAPI {
     /**
      * @return The profile belonging to the provided UUID
      */
-    fun profile(playerUUID: UUID): Pair<String, UUID>? {
+    fun profile(playerUUID: UUID): MojangProfile? {
         if (invalid.contains(playerUUID))
             return null
 
-        val cached = cache.firstOrNull { it.second == playerUUID }
+        val cached = cache.firstOrNull { it.uuid == playerUUID }
         if (cached != null)
             return cached
 
         for (pair in uuidToNameLookup.filter { it.first == LookupCall.BEFORE }) {
             val value = pair.second.invoke(playerUUID)
             if (value != null)
-                return Pair(value.first, value.second).also {
-                    if (value.third)
-                        cache.add(it)
+                return value.profile.apply {
+                    if (value.shouldCache)
+                        cache.add(this)
                 }
         }
 
@@ -121,9 +121,9 @@ object MojangAPI {
         for (pair in uuidToNameLookup.filter { it.first == LookupCall.AFTER }) {
             val value = pair.second.invoke(playerUUID)
             if (value != null)
-                return Pair(value.first, value.second).also {
-                    if (value.third)
-                        cache.add(it)
+                return value.profile.apply {
+                    if (value.shouldCache)
+                        cache.add(this)
                 }
         }
 
@@ -132,20 +132,20 @@ object MojangAPI {
     /**
      * @return The profile belonging to the provided name
      */
-    fun profile(playerName: String): Pair<String, UUID>? {
+    fun profile(playerName: String): MojangProfile? {
         if (invalid.contains(playerName))
             return null
 
-        val cached = cache.firstOrNull { it.first.equals(playerName, true) }
+        val cached = cache.firstOrNull { it.name.equals(playerName, true) }
         if (cached != null)
             return cached
 
         for (pair in nameToUuidLookup.filter { it.first == LookupCall.BEFORE }) {
             val value = pair.second.invoke(playerName)
             if (value != null)
-                return Pair(value.first, value.second).also {
-                    if (value.third)
-                        cache.add(it)
+                return return value.profile.apply {
+                    if (value.shouldCache)
+                        cache.add(this)
                 }
         }
 
@@ -156,9 +156,9 @@ object MojangAPI {
         for (pair in nameToUuidLookup.filter { it.first == LookupCall.AFTER }) {
             val value = pair.second.invoke(playerName)
             if (value != null)
-                return Pair(value.first, value.second).also {
-                    if (value.third)
-                        cache.add(it)
+                return return value.profile.apply {
+                    if (value.shouldCache)
+                        cache.add(this)
                 }
         }
 
@@ -190,6 +190,9 @@ object MojangAPI {
         AFTER;
     }
 }
+
+data class MojangProfile(val name: String, val uuid: UUID)
+data class CacheableMojangProfile(val profile: MojangProfile, internal val shouldCache: Boolean = true)
 
 internal fun CharSequence.toUUID(): UUID {
     if (this.length != 32)

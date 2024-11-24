@@ -23,4 +23,8 @@ abstract class DataHandler protected constructor() {
         }
         return null
     }
+
+    override fun toString(): String {
+        return this.readString() ?: super.toString()
+    }
 }

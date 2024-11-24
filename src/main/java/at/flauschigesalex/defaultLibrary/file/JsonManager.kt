@@ -1,8 +1,7 @@
-@file:Suppress("MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package at.flauschigesalex.defaultLibrary.file
 
-import lombok.Getter
 import org.bson.BsonDocument
 import org.bson.Document
 import org.json.simple.JSONObject
@@ -10,7 +9,6 @@ import org.json.simple.parser.JSONParser
 import java.io.File
 import java.net.http.HttpResponse
 
-@Suppress("unused") @Getter
 class JsonManager private constructor(content: String) {
 
     companion object {
