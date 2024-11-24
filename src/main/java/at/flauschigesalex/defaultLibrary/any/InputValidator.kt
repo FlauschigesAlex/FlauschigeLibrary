@@ -21,7 +21,7 @@ class InputValidator<T>(val input: T, val isValid: Boolean, val reason: String? 
         if (!isValid) invalidConsumer.invoke(input)
     }
 
-    @Deprecated("legacy")
+    @Deprecated("legacy", ReplaceWith("unlessValid(invalidConsumer)"))
     fun ifInvalid(invalidConsumer: (T) -> Unit) = unlessValid(invalidConsumer)
 
     fun ifValidOrElse(validConsumer: (T) -> Unit, invalidConsumer: (T) -> Unit) {

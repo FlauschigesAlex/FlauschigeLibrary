@@ -2,9 +2,6 @@
 
 package at.flauschigesalex.defaultLibrary
 
-import at.flauschigesalex.defaultLibrary.any.MojangAPI
-import at.flauschigesalex.defaultLibrary.any.Reflector
-
 @Suppress("unused")
 open class FlauschigeLibrary protected constructor() {
 
@@ -18,10 +15,4 @@ open class FlauschigeLibrary protected constructor() {
     init {
         mainThread = Thread.currentThread()
     }
-
-    @Deprecated("MojangAPI was migrated to an object.", level = DeprecationLevel.ERROR)
-    val mojangAPI = MojangAPI
-
-    @Deprecated("Reflector was migrated to an object.", level = DeprecationLevel.ERROR)
-    val reflector = Reflector
 }

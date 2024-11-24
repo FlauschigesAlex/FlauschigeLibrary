@@ -5,15 +5,18 @@ package at.flauschigesalex.defaultLibrary.time
 import at.flauschigesalex.defaultLibrary.time.countdown.Countdown
 import at.flauschigesalex.defaultLibrary.time.countdown.CountdownFormat
 import at.flauschigesalex.defaultLibrary.time.countdown.CountdownFormat.Companion.default
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.time.*
 import java.util.concurrent.TimeUnit
 
 class TimeHandler private constructor(private val originalMilliSecond: Long) {
 
     companion object {
-        val defaultZoneId: ZoneId get() = ZoneId.systemDefault()
+        /**
+         * Default [ZoneId] used by all TimeHandlers unless explicitly instructed otherwise.
+         * @see [TimeHandler.toLocalDateTime]
+         * @see [TimeHandler.toZonedDateTime]
+         */
+        var defaultZoneId: ZoneId = ZoneId.systemDefault()
 
         /**
          * Creates a TimeHandler with the current time as its value.
@@ -71,9 +74,20 @@ class TimeHandler private constructor(private val originalMilliSecond: Long) {
     fun toInstant(): Instant {
         return Instant.ofEpochMilli(epochMillisecond)
     }
-    fun toCountdown(formatter: CountdownFormat = default, start: TimeHandler = now()): String {
-        return Countdown.create(start, this, formatter)
+    fun toDuration(other: TimeHandler): Duration {
+        return Duration.ofMillis(this.epochMillisecond - other.epochMillisecond)
     }
+    fun toCountdown(other: TimeHandler = now(), formatter: CountdownFormat = default): String {
+        return Countdown.create(this.toDuration(other), formatter)
+    }
+
+    fun toZonedDateTime(zoneId: ZoneId = defaultZoneId): ZonedDateTime {
+        return ZonedDateTime.of(this.toLocalDateTime(zoneId), zoneId)
+    }
+    fun toLocalDateTime(zoneId: ZoneId = defaultZoneId): LocalDateTime {
+        return LocalDateTime.ofInstant(this.toInstant(), zoneId)
+    }
+
     override fun toString(): String {
         return epochMillisecond.toString()
     }

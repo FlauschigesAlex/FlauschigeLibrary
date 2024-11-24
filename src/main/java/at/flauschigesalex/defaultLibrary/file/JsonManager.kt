@@ -41,10 +41,11 @@ class JsonManager private constructor(content: String) {
             return this(FileHandler(file))
         }
 
-        @Deprecated("legacy") operator fun invoke(document: Document) : JsonManager? {
+        @Deprecated("legacy", level = DeprecationLevel.ERROR)
+        operator fun invoke(document: Document) : JsonManager? {
             return this(document.toJson())
         }
-        @Deprecated("legacy") operator fun invoke(response: HttpResponse<String>) : JsonManager? {
+        @Deprecated("legacy", level = DeprecationLevel.ERROR) operator fun invoke(response: HttpResponse<String>) : JsonManager? {
             return this(response.body())
         }
     }
@@ -442,8 +443,13 @@ class JsonManager private constructor(content: String) {
     fun copyOriginal(): JsonManager {
         return JsonManager(originalContent)
     }
-    
-    @Deprecated("legacy", level = DeprecationLevel.ERROR) fun has(path: String): Boolean = contains(path)
-    @Deprecated("legacy") fun clone(): JsonManager = copy()
-    @Deprecated("legacy") fun cloneOriginal(): JsonManager = copyOriginal()
+
+    @Deprecated("legacy", ReplaceWith("contains(path)"), DeprecationLevel.ERROR)
+    fun has(path: String): Boolean = contains(path)
+
+    @Deprecated("legacy", ReplaceWith("copy()"), DeprecationLevel.ERROR)
+    fun clone(): JsonManager = copy()
+
+    @Deprecated("legacy", ReplaceWith("copyOriginal()"), DeprecationLevel.ERROR)
+    fun cloneOriginal(): JsonManager = copyOriginal()
 }

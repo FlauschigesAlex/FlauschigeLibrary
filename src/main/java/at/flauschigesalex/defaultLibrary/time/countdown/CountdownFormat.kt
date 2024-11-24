@@ -1,22 +1,27 @@
 package at.flauschigesalex.defaultLibrary.time.countdown
 
-import at.flauschigesalex.defaultLibrary.time.TimeHandler
 import at.flauschigesalex.defaultLibrary.time.countdown.CountdownFieldDisplay.FIRST_NOT_NULL
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.*
 import kotlin.math.abs
 
 @Suppress("unused")
 /**
- * @param display Defines the visible [timeunits][TimeUnit] by mapping them with a suffix.
- * @param countdownFieldDisplay Defines the visibility of fields depending on its value.
- * @param spacer Defines the characters put between a value and its suffix.
+ * @param display Determines the visible [timeunits][TimeUnit] by mapping them with a suffix.
+ * @param countdownFieldDisplay Determines the visibility of fields depending on its value.
+ * @param spacer Determines the characters put between a value and its suffix.
+ * @param absoluteValue Determines if the duration should be handled as absolute.
+ * @param allowEmptyReturn Determines if the returned value can be empty.
  *
  * @see [CountdownFieldDisplay]
  */
 open class CountdownFormat(internal val display: Map<TimeUnit, String>,
                            private val countdownFieldDisplay: CountdownFieldDisplay,
-                           internal val spacer: String = "") {
+                           internal val spacer: String = "",
+                           internal val absoluteValue: Boolean = false,
+                           internal val allowEmptyReturn: Boolean = false
+) {
 
     companion object {
         val default = CountdownFormat(
@@ -25,7 +30,7 @@ open class CountdownFormat(internal val display: Map<TimeUnit, String>,
                 HOURS to "h",
                 MINUTES to "m",
                 SECONDS to "s",
-            ), FIRST_NOT_NULL)
+            ), FIRST_NOT_NULL, absoluteValue = true)
 
         val defaultMS = CountdownFormat(
             mapOf(
@@ -34,16 +39,19 @@ open class CountdownFormat(internal val display: Map<TimeUnit, String>,
                 MINUTES to "m",
                 SECONDS to "s",
                 MILLISECONDS to "ms",
-            ), FIRST_NOT_NULL)
+            ), FIRST_NOT_NULL, absoluteValue = true)
     }
 
     init {
         if (display.containsKey(MICROSECONDS))
             throw IllegalArgumentException("${this::class.java.simpleName} contains illegal argument '$MICROSECONDS'")
+
+        if (display.isEmpty())
+            throw IllegalArgumentException("${this::class.java.simpleName} requires at least one field to display.")
     }
 
-    internal fun format(start: TimeHandler, end: TimeHandler): String {
-        var millis = abs(end.epochMillisecond - start.epochMillisecond)
+    internal fun format(duration: Duration): String {
+        var millis = if (absoluteValue) abs(duration.toMillis()) else duration.toMillis()
         val builder = StringBuilder()
 
         if (display.containsKey(DAYS)) {
@@ -76,6 +84,9 @@ open class CountdownFormat(internal val display: Map<TimeUnit, String>,
         }
         if (display.containsKey(MILLISECONDS))
             countdownFieldDisplay.appendIfRequired(millis, builder, display[MILLISECONDS], this)
+
+        if (builder.isEmpty() && !allowEmptyReturn)
+            builder.append("0${spacer}${display.values.last()}")
 
         return builder.toString().trim()
     }
