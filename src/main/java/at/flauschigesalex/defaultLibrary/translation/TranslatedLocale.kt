@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package at.flauschigesalex.defaultLibrary.translation
 
@@ -6,7 +6,6 @@ import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
 import at.flauschigesalex.defaultLibrary.any.InputValidator
 import at.flauschigesalex.defaultLibrary.file.JsonManager
 import at.flauschigesalex.defaultLibrary.file.ResourceHandler
-import lombok.Getter
 import org.json.simple.JSONObject
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -14,12 +13,17 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 import java.util.stream.Stream
 
-@Suppress("MemberVisibilityCanBePrivate")
-@Getter
 class TranslatedLocale private constructor(val locale: Locale) {
 
     @Suppress("unused")
     companion object {
+        /**
+         * To ensure that the performance of the program is not affecting the main thread, an exception will be thrown.
+         * Set this variable's value to false to allow synchronous translation lookups.
+         * @see TranslatedLocale.findList
+         */
+        @JvmStatic var requireAsyncThread = true
+
         private val locales = HashMap<Locale, TranslatedLocale?>()
 
         private var fallbackLocale: TranslatedLocale? = null
@@ -57,7 +61,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
             }
         }
 
-        private fun validateKey(input: String): InputValidator<String> {
+        fun validateKey(input: String): InputValidator<String> {
             var translationKey = input
 
             if (translationKey.isEmpty() || translationKey.isBlank())
@@ -93,7 +97,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
     private val fileCache = HashMap<String, JsonManager>()
     private val cache = HashMap<String, List<String>>()
 
-    fun has(translationKey: String): Boolean {
+    fun contains(translationKey: String): Boolean {
         try {
             val found = find(translationKey)
             return found != translationKey
@@ -103,6 +107,9 @@ class TranslatedLocale private constructor(val locale: Locale) {
 
         return false
     }
+
+    @Deprecated("legacy", ReplaceWith("contains(translationKey)"), DeprecationLevel.ERROR)
+    fun has(translationKey: String): Boolean = contains(translationKey)
 
     fun find(translationKey: String, replacements: Map<String, Any> = mapOf()): String {
         val builder = StringBuilder()
@@ -115,7 +122,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
 
     fun findList(translationKey: String, replacements: Map<String, Any> = mapOf()): List<String> {
 
-        if (FlauschigeLibrary.library.mainThread == Thread.currentThread())
+        if (FlauschigeLibrary.library.mainThread == Thread.currentThread() && requireAsyncThread)
             throw TranslationException("Method \"findList\" may only be used asynchronously.")
 
         val response = validateKey(translationKey)
