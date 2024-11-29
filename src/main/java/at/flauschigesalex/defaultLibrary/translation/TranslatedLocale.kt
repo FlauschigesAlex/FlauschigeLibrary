@@ -172,7 +172,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
 
         try {
 
-            val resource = ResourceHandler("translations/" + locale.toLanguageTag() + "/" + fileName + ".json")
+            val resource = ResourceHandler("translations/" + locale.toLanguageTag() + "/" + fileName + ".json")!!
             try {
                 val json = JsonManager(resource)!!
 

@@ -10,16 +10,13 @@ class ResourceHandler private constructor(val url: URL) : DataHandler() {
         operator fun invoke(url: URL) : ResourceHandler? {
             try {
                 return ResourceHandler(url)
-            } catch (fail: Exception) { fail.printStackTrace() }
+            } catch (_: Exception) {}
             return null
         }
 
         operator fun invoke(urlString: String) : ResourceHandler? {
-            try {
-                val url = FlauschigeLibrary::class.java.classLoader.getResource(urlString)!!
-                return this(url)
-            } catch (fail: Exception) { fail.printStackTrace() }
-            return null
+            val url = FlauschigeLibrary::class.java.classLoader.getResource(urlString) ?: return null
+            return this(url)
         }
     }
 
