@@ -158,6 +158,7 @@ class Task private constructor(private val controller: TaskController, private v
                 if (status == TaskStatus.STOPPING)
                     return stopTask()
 
+                sleep -= sleepFraction
                 Thread.sleep(sleepFraction)
             }
         }
