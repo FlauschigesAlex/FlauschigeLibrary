@@ -5,7 +5,6 @@ package at.flauschigesalex.defaultLibrary.translation
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
 import at.flauschigesalex.defaultLibrary.any.InputValidator
 import at.flauschigesalex.defaultLibrary.file.JsonManager
-import at.flauschigesalex.defaultLibrary.file.ResourceHandler
 import org.json.simple.JSONObject
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -22,43 +21,43 @@ class TranslatedLocale private constructor(val locale: Locale) {
          * Set this variable's value to false to allow synchronous translation lookups.
          * @see TranslatedLocale.findList
          */
-        @JvmStatic var requireAsyncThread = true
+        @JvmStatic var requireAsyncThread: Boolean = true
+
+        /**
+         * @since [Version 1.14.0](https://github.com/FlauschigesAlex/FlauschigeLibrary/releases/tag/v1.14.0)
+         * @see TranslationSource
+         */
+        @JvmStatic var translationSource: TranslationSource = TranslationSource.RESOURCE
+
+        private var _fallbackLocale : TranslatedLocale? = null
+        /**
+         * This locale is used when a locale is not translated or a translation-value is missing.
+         */
+        @JvmStatic var fallbackLocale: TranslatedLocale
+            get() = _fallbackLocale!!
+            set(value) {
+                _fallbackLocale = value
+                println("Translation-Fallback-Locale is now set to '${value}'")
+            }
 
         private val locales = HashMap<Locale, TranslatedLocale?>()
 
-        private var fallbackLocale: TranslatedLocale? = null
-
-        /**
-         * @see TranslatedLocale.register
-         * @throws TranslationException provided locale is unknown.
-         */
-        fun setFallbackLocale(locale: Locale) {
-            val translatedLocale = locales[locale]
-                ?: throw TranslationException("The provided locale could not be identified, maybe you forgot registering it?")
-
-            this.setFallbackLocale(translatedLocale)
-        }
-        fun setFallbackLocale(locale: TranslatedLocale) {
-            fallbackLocale = locale
-        }
-
-        @JvmStatic
-        fun fallbackLocale(): TranslatedLocale {
-            return fallbackLocale
-                ?: throw TranslationException("Could not access the fallback locale, maybe you forgot registering it?")
-        }
-
         @JvmStatic
         fun of(locale: Locale): TranslatedLocale {
-            return locales.getOrDefault(locale, fallbackLocale())!!
+            return locales.getOrDefault(locale, fallbackLocale)!!
         }
 
         @JvmStatic
-        fun register(locale: Locale): TranslatedLocale {
-            return TranslatedLocale(locale).also {
-                if (fallbackLocale == null)
-                    fallbackLocale = it
-            }
+        @Deprecated("Requires a collection of locales.", level = DeprecationLevel.ERROR)
+        fun register() = Unit
+        
+        @JvmStatic
+        fun register(vararg locales: Locale) {
+            this.register(locales.toList())
+        }
+        @JvmStatic
+        fun register(locales: Collection<Locale>) {
+            locales.forEach { TranslatedLocale(it) }
         }
 
         fun validateKey(input: String): InputValidator<String> {
@@ -89,6 +88,9 @@ class TranslatedLocale private constructor(val locale: Locale) {
     init {
         if (locales.containsKey(locale))
             throw TranslationException("Duplicate locale \"" + locale.toLanguageTag() + "\" is not allowed.")
+        
+        if (_fallbackLocale == null)
+            _fallbackLocale = this
 
         locales[locale] = this
     }
@@ -107,9 +109,6 @@ class TranslatedLocale private constructor(val locale: Locale) {
 
         return false
     }
-
-    @Deprecated("legacy", ReplaceWith("contains(translationKey)"), DeprecationLevel.ERROR)
-    fun has(translationKey: String): Boolean = contains(translationKey)
 
     fun find(translationKey: String, replacements: Map<String, Any> = mapOf()): String {
         val builder = StringBuilder()
@@ -170,22 +169,18 @@ class TranslatedLocale private constructor(val locale: Locale) {
             return listOf(modify(value.toString(), replacements))
         }
 
+        val json = translationSource.invoke(locale, fileName)
+        if (json == null) {
+            val list = this.fallback(translationKey, replacements)
+            cache[translationKey] = list
+            return list
+        }
+        
         try {
+            fileCache[fileName] = json
+            return this.findList(translationKey, replacements)
 
-            val resource = ResourceHandler("translations/" + locale.toLanguageTag() + "/" + fileName + ".json")!!
-            try {
-                val json = JsonManager(resource)!!
-
-                fileCache[fileName] = json
-                return this.findList(translationKey, replacements)
-
-            } catch (jFail: Exception) {
-                val list = this.fallback(translationKey, replacements)
-                cache[translationKey] = list
-                return list
-            }
-
-        } catch (fail: Exception) {
+        } catch (jFail: Exception) {
             val list = this.fallback(translationKey, replacements)
             cache[translationKey] = list
             return list
@@ -193,7 +188,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
     }
 
     private fun fileName(translationKey: String): String {
-        return translationKey.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+        return translationKey.split(".").dropLastWhile { it.isEmpty() }.toTypedArray().first()
     }
 
     private fun fallback(translationKey: String, replacements: Map<String, Any>): List<String> {
@@ -201,7 +196,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
             return listOf(translationKey)
         }
 
-        return fallbackLocale().findList(translationKey, replacements)
+        return fallbackLocale.findList(translationKey, replacements)
     }
 
     private fun throwException(notEnough: Boolean, key: String, correct: String, found: String, source: String) {
@@ -238,7 +233,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
         return atomicString.get()
     }
 
-    val map: Map<String, (Modifier) -> String> = mapOf(
+    private val map: Map<String, (Modifier) -> String> = mapOf(
         Pair("var") { modifier: Modifier ->
             val key = AtomicReference<String?>(null)
             val fallback = AtomicReference<String?>(null)
@@ -293,7 +288,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
         }
     )
 
-    data class Modifier(
+    private data class Modifier(
         val key: String, val input: String, val provided: String,
         val strings: Stream<String>, val replacements: Map<String, Any>
     )
