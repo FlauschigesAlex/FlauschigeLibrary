@@ -1,15 +1,16 @@
 package at.flauschigesalex.defaultLibrary.file
 
 import java.io.InputStream
+import java.io.InputStreamReader
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 abstract class DataHandler protected constructor() {
 
     abstract fun readStream(): InputStream?
-    open fun readString(): String? {
+    open fun readString(charset: Charset = StandardCharsets.UTF_8): String? {
         val stream = this.readStream() ?: return null
-        return StringBuilder().apply {
-            stream.readAllBytes().forEach { this.append(it.toInt().toChar()) }
-        }.toString()
+        return InputStreamReader(stream, charset).readText()
     }
 
     abstract fun isReadable(): Boolean
