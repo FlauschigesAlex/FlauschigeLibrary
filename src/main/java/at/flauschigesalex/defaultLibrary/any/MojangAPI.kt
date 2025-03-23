@@ -1,3 +1,5 @@
+@file:Suppress("KDocUnresolvedReference")
+
 package at.flauschigesalex.defaultLibrary.any
 
 import at.flauschigesalex.defaultLibrary.file.JsonManager
@@ -38,7 +40,7 @@ object MojangAPI {
      */
     @Deprecated("Variable is used as default operation, proceed with caution.")
     var nameToUuidFunction = { name: String ->
-        profile(name)?.uuid
+        profile(name)?.uniqueId
     }
     /**
      * Called when a name is corrected.
@@ -101,7 +103,7 @@ object MojangAPI {
         if (invalid.contains(playerUUID))
             return null
 
-        val cached = cache.firstOrNull { it.uuid == playerUUID }
+        val cached = cache.firstOrNull { it.uniqueId == playerUUID }
         if (cached != null)
             return cached
 
@@ -143,7 +145,7 @@ object MojangAPI {
         for (pair in nameToUuidLookup.filter { it.first == LookupCall.BEFORE }) {
             val value = pair.second.invoke(playerName)
             if (value != null)
-                return return value.profile.apply {
+                return value.profile.apply {
                     if (value.shouldCache)
                         cache.add(this)
                 }
@@ -156,7 +158,7 @@ object MojangAPI {
         for (pair in nameToUuidLookup.filter { it.first == LookupCall.AFTER }) {
             val value = pair.second.invoke(playerName)
             if (value != null)
-                return return value.profile.apply {
+                return value.profile.apply {
                     if (value.shouldCache)
                         cache.add(this)
                 }
@@ -191,7 +193,7 @@ object MojangAPI {
     }
 }
 
-data class MojangProfile(val name: String, val uuid: UUID)
+data class MojangProfile(val name: String, val uniqueId: UUID)
 data class CacheableMojangProfile(val profile: MojangProfile, internal val shouldCache: Boolean = true)
 
 internal fun CharSequence.toUUID(): UUID {
