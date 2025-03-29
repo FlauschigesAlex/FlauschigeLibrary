@@ -78,20 +78,24 @@ object MojangAPI {
         }
 
         val body = response.body() ?: ""
-        val json = JsonManager(body)
+        val profileJson = JsonManager(body)
 
-        if (json == null) {
+        profileJson ?: run {
             invalid.add(any)
             return null
         }
 
-        if (!json.contains("id") || !json.contains("name")) {
+        if (!profileJson.contains("id") || !profileJson.contains("name")) {
             invalid.add(any)
             return null
         }
-
-        val uuidS = json.getString("id")
-        val item = MojangProfile(json.getString("name")!!, uuidS!!.toUUID())
+        
+        val uuidS = profileJson.getString("id")
+        
+        val properties = HttpRequestHandler.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuidS").body().let { JsonManager(it)?.getJsonList("properties") }
+        val texture = properties?.firstOrNull { it.getString("name") == "textures" }?.getString("value")
+        
+        val item = MojangProfile(profileJson.getString("name")!!, uuidS!!.toUUID(), texture)
         cache.add(item)
         return item
     }
@@ -193,7 +197,7 @@ object MojangAPI {
     }
 }
 
-data class MojangProfile(val name: String, val uniqueId: UUID)
+data class MojangProfile(val name: String, val uniqueId: UUID, val texture: String?)
 data class CacheableMojangProfile(val profile: MojangProfile, internal val shouldCache: Boolean = true)
 
 internal fun CharSequence.toUUID(): UUID {
