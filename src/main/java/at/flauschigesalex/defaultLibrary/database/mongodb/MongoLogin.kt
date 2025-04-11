@@ -1,8 +1,10 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package at.flauschigesalex.defaultLibrary.database.mongodb
 
 import at.flauschigesalex.defaultLibrary.database.DatabaseLogin
+import at.flauschigesalex.defaultLibrary.file.DataHandler
 import at.flauschigesalex.defaultLibrary.file.JsonManager
-import at.flauschigesalex.defaultLibrary.file.ResourceHandler
 import com.mongodb.ServerAddress
 
 class MongoLogin(
@@ -25,12 +27,12 @@ class MongoLogin(
             vararg moreHosts: ServerAddress
         ) : MongoLogin = MongoLogin(host, username, password, database, moreHosts.toList())
 
-        operator fun invoke(jsonResource: ResourceHandler) : MongoLogin? {
+        operator fun invoke(jsonResource: DataHandler) : MongoLogin? {
             val string = jsonResource.readString() ?: return null
             val json = JsonManager(string) ?: return null
             return MongoLogin(json)
         }
-        operator fun invoke(json: JsonManager) : MongoLogin? {
+        operator fun invoke(json: JsonManager) : MongoLogin {
             val hostnameList: List<String> = json.getObject("hostname")?.let {
                 if (it is List<*>) it.map { it.toString() }
                 else listOf(it.toString())
