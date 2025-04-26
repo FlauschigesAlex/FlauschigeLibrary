@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "type": "maven",
+            "name": "install-local",
+            "tasks": ["clean", "install"]
+        },
+        {
+            "type": "maven",
+            "name": "install-fully",
+            "dependsOn": ["install-local"],
+            "tasks": ["install:install-file","-Dfile=${project.build.directory}\\${project.build.finalName}.jar","-DgroupId=${project.groupId}","-DartifactId=${project.artifactId}","-Dversion=${project.version}","-Dpackaging=jar","-DlocalRepositoryPath="]
+        }
+    ]
+}

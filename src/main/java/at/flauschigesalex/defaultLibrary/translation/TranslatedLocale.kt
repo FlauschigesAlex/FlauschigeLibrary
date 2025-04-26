@@ -3,14 +3,10 @@
 package at.flauschigesalex.defaultLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
-import at.flauschigesalex.defaultLibrary.any.InputValidator
+import at.flauschigesalex.defaultLibrary.any.Validator
 import at.flauschigesalex.defaultLibrary.file.JsonManager
 import org.json.simple.JSONObject
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
-import java.util.stream.Stream
 
 class TranslatedLocale private constructor(val locale: Locale) {
 
@@ -60,28 +56,28 @@ class TranslatedLocale private constructor(val locale: Locale) {
             locales.forEach { TranslatedLocale(it) }
         }
 
-        fun validateKey(input: String): InputValidator<String> {
+        fun validateKey(input: String): Validator<String> {
             var translationKey = input
 
             if (translationKey.isEmpty() || translationKey.isBlank())
-                return InputValidator(translationKey, false, "TranslationKey cannot be empty.")
+                return Validator(translationKey, false, "TranslationKey cannot be empty.")
 
             translationKey = translationKey.trim()
             if (!translationKey.contains("."))
-                return InputValidator(
+                return Validator(
                     translationKey,
                     false,
                     "TranslationKey must have sub-key: Required : main.sub -> Provided : $translationKey"
                 )
 
             if (translationKey.startsWith(".") || translationKey.endsWith("."))
-                return InputValidator(
+                return Validator(
                     translationKey,
                     false,
                     "TranslationKey is malformed: Cannot start or end with \".\""
                 )
 
-            return InputValidator(translationKey, true)
+            return Validator(translationKey, true)
         }
     }
 
@@ -102,7 +98,7 @@ class TranslatedLocale private constructor(val locale: Locale) {
     fun contains(translationKey: String): Boolean {
         try {
             val found = find(translationKey)
-            return found != translationKey
+            return found.isValid
         } catch (fail: Exception) {
             fail.printStackTrace()
         }
@@ -110,70 +106,71 @@ class TranslatedLocale private constructor(val locale: Locale) {
         return false
     }
 
-    fun find(translationKey: String, replacements: Map<String, Any> = mapOf()): String {
+    fun find(translationKey: String, replacements: Map<String, Any?> = mapOf()): Validator<String> {
         val builder = StringBuilder()
-        for (value in findList(translationKey, replacements)) {
+        val validator = findList(translationKey, replacements);
+        for (value in validator.value) {
             builder.append(value).append("\n")
         }
 
-        return builder.toString().trim()
+        return Validator(builder.toString().trim(), validator.isValid)
     }
 
-    fun findList(translationKey: String, replacements: Map<String, Any> = mapOf()): List<String> {
+    fun findList(translationKey: String, replacements: Map<String, Any?> = mapOf()): Validator<List<String>> {
 
         if (FlauschigeLibrary.library.mainThread == Thread.currentThread() && requireAsyncThread)
             throw TranslationException("Method \"findList\" may only be used asynchronously.")
 
         val response = validateKey(translationKey)
         if (!response.isValid)
-            return listOf(response.input)
+            return Validator(listOf(response.value), false)
         else response.reason.let { if (it != null) System.err.println(it) }
 
         if (cache.containsKey(translationKey))
-            return cache[translationKey]!!.map { modify(it, replacements) }
+            return Validator(cache[translationKey]!!.map { modify(it, replacements) }, true)
 
         val fileName = fileName(translationKey)
         if (fileCache.containsKey(fileName)) {
             val json = fileCache[fileName]
             if (json == null) {
-                val list = this.fallback(translationKey, replacements)
-                cache[translationKey] = list
-                return list
+                val validator = this.fallback(translationKey, replacements)
+                cache[translationKey] = validator.value
+                return validator
             }
 
             val value = json.getObject(translationKey)
 
             if (value == null) {
-                val list = this.fallback(translationKey, replacements)
-                cache[translationKey] = list
-                return list
+                val validator = this.fallback(translationKey, replacements)
+                cache[translationKey] = validator.value
+                return validator
             }
 
             if (value is List<*>) {
                 if (value.isEmpty()) {
-                    val l = this.fallback(translationKey, replacements)
-                    cache[translationKey] = l
-                    return l
+                    val validator = this.fallback(translationKey, replacements)
+                    cache[translationKey] = validator.value
+                    return validator
                 }
 
                 cache[translationKey] = value.map { it.toString() }
-                val l: List<String> = ArrayList(value.stream()
+                val list: List<String> = ArrayList(value.stream()
                     .map { modify(it.toString(), replacements) }.toList()
                 )
-                return l
+                return Validator(list, true)
             }
 
             if (value is JSONObject) return findList("$translationKey._", replacements)
 
             cache[translationKey] = listOf(value.toString())
-            return listOf(modify(value.toString(), replacements))
+            return Validator(listOf(modify(value.toString(), replacements)), true)
         }
 
         val json = translationSource.invoke(locale, fileName)
         if (json == null) {
-            val list = this.fallback(translationKey, replacements)
-            cache[translationKey] = list
-            return list
+            val validator = this.fallback(translationKey, replacements)
+            cache[translationKey] = validator.value
+            return validator
         }
         
         try {
@@ -181,9 +178,9 @@ class TranslatedLocale private constructor(val locale: Locale) {
             return this.findList(translationKey, replacements)
 
         } catch (jFail: Exception) {
-            val list = this.fallback(translationKey, replacements)
-            cache[translationKey] = list
-            return list
+            val validator = this.fallback(translationKey, replacements)
+            cache[translationKey] = validator.value
+            return validator
         }
     }
 
@@ -191,9 +188,9 @@ class TranslatedLocale private constructor(val locale: Locale) {
         return translationKey.split(".").dropLastWhile { it.isEmpty() }.toTypedArray().first()
     }
 
-    private fun fallback(translationKey: String, replacements: Map<String, Any>): List<String> {
+    private fun fallback(translationKey: String, replacements: Map<String, Any?>): Validator<List<String>> {
         if (fallbackLocale == this) {
-            return listOf(translationKey)
+            return Validator(listOf(translationKey), false)
         }
 
         return fallbackLocale.findList(translationKey, replacements)
@@ -204,92 +201,51 @@ class TranslatedLocale private constructor(val locale: Locale) {
         throw TranslationException("Key \"$key\" requires fewer arguments: $correct but found: <$found>\nsource: $source")
     }
 
-    private fun modify(input: String, replacements: Map<String, Any>): String {
-        val atomicString = AtomicReference(input)
-        for ((key, value) in map) {
-            if (!atomicString.get().contains("<$key:")) continue
+    fun modify(value: String, replacements: Map<String, Any?> = mapOf()): String {
 
-            val skipFirst = AtomicBoolean(true)
-            for (string in atomicString.get().split(("<$key:").toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()) {
-                if (skipFirst.getAndSet(false)) continue
+        var result = value
+        Modifiers.entries.forEach { modifier ->
 
-                val provided = string.split(">".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+            val items = result.split("<").filter { it.startsWith(modifier.name.lowercase()) }.map { it.split(">")[0] }
+            if (items.isEmpty())
+                return@forEach
 
-                atomicString.set(
-                    atomicString.get().replace(
-                        "<$key:$provided>", value.invoke(
-                            Modifier(
-                                key, atomicString.get(), provided,
-                                Arrays.stream(provided.split(":".toRegex()).dropLastWhile { it.isEmpty() }
-                                    .toTypedArray()),
-                                replacements
-                            )
-                        )
-                    )
-                )
+            val tags = items.map { Pair("<"+it+">", it.split(":").drop(1)) }
+            tags.forEach { (tag, args) ->
+                val modified = modifier.func.invoke(args, TranslationData(this, replacements))
+                result = result.replace(tag, modified)
             }
         }
-        return atomicString.get()
+
+        return result
     }
 
-    private val map: Map<String, (Modifier) -> String> = mapOf(
-        Pair("var") { modifier: Modifier ->
-            val key = AtomicReference<String?>(null)
-            val fallback = AtomicReference<String?>(null)
-            modifier.strings.forEach { string: String? ->
-                if (key.get() == null) {
-                    key.set(string)
-                } else if (fallback.get() == null) {
-                    fallback.set(string)
-                } else throwException(
-                    false,
-                    modifier.key,
-                    "<" + modifier.key + ":[key]>",
-                    modifier.provided,
-                    modifier.input
-                )
+    enum class Modifiers(internal val func: (List<String>, TranslationData) -> String) {
+        TRANSLATE ({ list, data ->
+            var result: String? = null
+
+            for (item: String in list) {
+                val validator = data.locale.find(item, data.replacements)
+                if (!validator.isValid)
+                    continue
+
+                result = validator.value
+                break
             }
+            result ?: list.first()
+        }),
+        VAR ({ list, data ->
+            var result: String? = null
 
-            if (key.get() == null) throwException(
-                true,
-                modifier.key,
-                "<" + modifier.key + ":[key]>",
-                modifier.provided,
-                modifier.input
-            )
-            modifier.replacements.getOrDefault(key.get(), key.get()).toString()
-        },
-        Pair("translate") { modifier: Modifier ->
-            val key: AtomicReference<String> = AtomicReference(null)
-            modifier.strings.forEach { string: String ->
-                if (key.get() == null) {
-                    key.set(string)
-                } else throwException(
-                    false,
-                    modifier.key,
-                    "<" + modifier.key + ":[key]>",
-                    modifier.provided,
-                    modifier.input
-                )
+            for (item: String in list) {
+                val replacement = data.replacements[item] ?: continue
+
+                result = replacement.toString()
+                break
             }
-
-            if (key.get() == null) throwException(
-                true,
-                modifier.key,
-                "<" + modifier.key + ":[key]>",
-                modifier.provided,
-                modifier.input
-            )
-
-            val builder = StringBuilder()
-            findList(key.get()).forEach(Consumer { string: String? -> builder.append(string).append("\n") })
-            builder.toString().trim()
-        }
-    )
-
-    private data class Modifier(
-        val key: String, val input: String, val provided: String,
-        val strings: Stream<String>, val replacements: Map<String, Any>
-    )
+            result ?: list.first()
+        })
+        ;
+    }
+    data class TranslationData(val locale: TranslatedLocale, val replacements: Map<String, Any?>)
 }

@@ -19,8 +19,6 @@ import org.bson.codecs.pojo.PojoCodecProvider
 @Suppress("unused")
 class MongoDatabaseHandler(override val loginData: MongoLogin) : DatabaseHandler<MongoLogin, MongoDatabaseHandler>() {
 
-    val registeredClasses = HashSet<Class<*>>()
-
     var client: MongoClient? = null
         private set
     var database: MongoDatabase? = null
@@ -49,22 +47,6 @@ class MongoDatabaseHandler(override val loginData: MongoLogin) : DatabaseHandler
                 .build()
 
             val pojoBuilder = PojoCodecProvider.builder()
-            this.registeredClasses.addAll(Reflector.reflect().getSubTypes(MongoInformation::class.java))
-
-            val displayClasses = HashSet<Class<*>>(this.registeredClasses.filter {
-                    !it.interfaces.contains(MongoLibInfo::class.java) && it != MongoLibInfo::class.java
-                }).sortedBy { it.name }
-
-            if (displayClasses.isNotEmpty()) {
-
-                val out = StringBuilder("\n ${displayClasses.size} class")
-                    .append(if (displayClasses.size > 1) "es are" else " is")
-                    .append(" now available in your Mongo-Database:")
-
-                out.append(displayClasses.joinToString { "\n - ${it.name}" }).append("\n")
-                println(out)
-            }
-
             val pojoRegistry = CodecRegistries.fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
                 CodecRegistries.fromProviders(pojoBuilder.build())
