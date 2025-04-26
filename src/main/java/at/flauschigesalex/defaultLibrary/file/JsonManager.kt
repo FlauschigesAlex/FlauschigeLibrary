@@ -32,6 +32,12 @@ class JsonManager private constructor(content: String) {
         operator fun invoke(map: Map<String, Any?>) : JsonManager {
             return this().apply { this.writeMany(map) }
         }
+        operator fun invoke(vararg pairs: Pair<String, Any>) : JsonManager {
+            return this(mapOf(*pairs))
+        }
+        operator fun invoke(pairs: Collection<Pair<String, Any>>) : JsonManager {
+            return this(pairs.toMap())
+        }
         operator fun invoke(data: DataHandler?) : JsonManager? {
             if (data == null)
                 return null
@@ -43,9 +49,6 @@ class JsonManager private constructor(content: String) {
         }
         operator fun invoke(document: Document) : JsonManager? {
             return this(document.toJson())
-        }
-        operator fun invoke(response: HttpResponse<String>) : JsonManager? {
-            return this(response.body())
         }
     }
 
@@ -85,15 +88,15 @@ class JsonManager private constructor(content: String) {
 
         val splitSourcePath = path.split(".").toList()
         for (splitSource in splitSourcePath) {
-            val obj = get(currentJO, splitSource) ?: return null
+            val obj = get(currentJO, splitSource)
             val currentPath = completed.joinToString(separator = ".")+"."+splitSource
 
             if (currentPath == path)
-                return obj
+                return obj ?: if (path.endsWith("._")) null else this.getObject("$path._")
 
             try {
                 completed.add(splitSource)
-                currentJO = obj as JSONObject
+                currentJO = obj as? JSONObject ?: return null
             } catch (fail: Exception) {
                 fail.printStackTrace()
                 break
@@ -103,7 +106,8 @@ class JsonManager private constructor(content: String) {
     }
 
     fun getJsonObject(path: String): JSONObject? {
-        if (path.isEmpty()) return toJsonObject()
+        if (path.isEmpty())
+            return toJsonObject()
 
         try {
             return getObject(path) as JSONObject?
@@ -130,101 +134,74 @@ class JsonManager private constructor(content: String) {
         return null
     }
 
-    fun getList(path: String, nullable: Boolean = true): List<Any>? {
+    fun getObjectList(path: String): List<Any> {
         try {
             return getObject(path).let { it as List<*> }.map { it as Any }
         } catch (ignore: Exception) {}
 
-        if (nullable)
-            return null
+        return listOf()
+    }
+
+    fun getJsonList(path: String): List<JsonManager> {
+        try {
+            return getStringList(path).map { JsonManager(it) }
+        } catch (ignore: Exception) {}
 
         return listOf()
     }
 
-    fun getJsonList(path: String, nullable: Boolean = true): List<JsonManager>? {
+    fun getStringList(path: String): List<String> {
         try {
-            return getStringList(path)?.map { JsonManager(it) }
+            return getObjectList(path).map { it.toString() }
         } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
 
         return listOf()
     }
 
-    fun getStringList(path: String, nullable: Boolean = true): List<String>? {
+    fun getIntegerList(path: String): List<Int> {
         try {
-            return getList(path)?.map { it.toString() }
+            return getStringList(path).map { it.toInt() }
         } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
 
         return listOf()
     }
 
-    fun getIntegerList(path: String, nullable: Boolean = true): List<Int>? {
+    fun getLongList(path: String): List<Long> {
         try {
-            return getStringList(path)?.map { it.toInt() }
+            return getStringList(path).map { it.toLong() }
         } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
 
         return listOf()
     }
 
-    fun getLongList(path: String, nullable: Boolean = true): List<Long>? {
+    fun getShortList(path: String): List<Short> {
         try {
-            return getStringList(path)?.map { it.toLong() }
+            return getStringList(path).map { it.toShort() }
         } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
 
         return listOf()
     }
 
-    fun getShortList(path: String, nullable: Boolean = true): List<Short>? {
+    fun getDoubleList(path: String): List<Double> {
         try {
-            return getStringList(path)?.map { it.toShort() }
+            return getStringList(path).map { it.toDouble() }
         } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
 
         return listOf()
     }
 
-    fun getDoubleList(path: String, nullable: Boolean = true): List<Double>? {
+    fun getFloatList(path: String): List<Float> {
         try {
-            return getStringList(path)?.map { it.toDouble() }
+            return getStringList(path).map { it.toFloat() }
         } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
 
         return listOf()
     }
 
-    fun getFloatList(path: String, nullable: Boolean = true): List<Float>? {
+    fun getBooleanList(path: String): List<Boolean> {
         try {
-            return getStringList(path)?.map { it.toFloat() }
+            return getObjectList(path).map { it as Boolean }
         } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
-
-        return listOf()
-    }
-
-    fun getBooleanList(path: String, nullable: Boolean = true): List<Boolean>? {
-        try {
-            return getList(path)?.map { it as Boolean }
-        } catch (ignore: Exception) {}
-
-        if (nullable)
-            return null
 
         return listOf()
     }
@@ -276,28 +253,14 @@ class JsonManager private constructor(content: String) {
         return null
     }
 
+    @Deprecated("", level = DeprecationLevel.ERROR)
     fun copyTo(path: String, newPath: String, override: Boolean = true): Boolean {
-        if (!this.contains(path) && !override)
-            return false
-
-        if (this.contains(newPath) && !override)
-            return false
-
-        return this.write(newPath, this.getObject(path))
+        return false
     }
 
+    @Deprecated("", level = DeprecationLevel.ERROR)
     fun move(path: String, newPath: String, override: Boolean = true): Boolean {
-        if (!this.contains(path) && !override)
-            return false
-
-        if (this.contains(newPath) && !override)
-            return false
-
-        if (!this.write(newPath, this.getObject(path)))
-            return false
-
-        this.remove(path)
-        return true
+        return false
     }
 
     fun removeMany(vararg paths: String) {
@@ -348,8 +311,8 @@ class JsonManager private constructor(content: String) {
     }
 
     private fun write(path: String, jsonObject: JSONObject, obj: Any?): JSONObject? {
-        var o = obj
-        if (o == null) {
+        var temp = obj
+        if (temp == null) {
             this.remove(path)
             return jsonObject
         }
@@ -363,10 +326,10 @@ class JsonManager private constructor(content: String) {
             val currentObject = current[part]
 
             if (i == parts.size - 1) {
-                if (o is Enum<*>) o = o.toString()
-                if (o is JsonManager) o = o.toJsonObject()
+                if (temp is Enum<*>) temp = temp.toString()
+                if (temp is JsonManager) temp = temp.toJsonObject()
 
-                current[part] = o
+                current[part] = temp
                 this.content = original.toJSONString()
                 return current
             }

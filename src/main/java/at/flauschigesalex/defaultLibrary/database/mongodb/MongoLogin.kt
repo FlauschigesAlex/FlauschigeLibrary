@@ -58,19 +58,15 @@ class MongoLogin(
             val username = json.getString("username")
                 ?: throw IllegalArgumentException("Login-Phrase \"username\" cannot be null!")
 
-            val password = json.getString("password") ?: json.getString("accessKey")?.also {
-                System.err.println("Login-Phrase \"accessKey\" has been replaced with \"password\".\n" +
-                        "Please note that the phrase \"accessKey\" could be dropped at any point.")
-            } ?: throw IllegalArgumentException("Login-Phrase \"password\" cannot be null!")
-            val database = json.getString("database")
-                ?: throw IllegalArgumentException("Login-Phrase \"database\" cannot be null!")
+            val password = json.getString("password") ?: throw IllegalArgumentException("Login-Phrase \"password\" cannot be null!")
+            val database = json.getString("database") ?: throw IllegalArgumentException("Login-Phrase \"database\" cannot be null!")
 
             val hostname = hostnames.first()
-            val more = hostnames.drop(1)
+            val additionalHostnames = hostnames.drop(1)
 
-            return MongoLogin(hostname, username, password, database, more)
+            return MongoLogin(hostname, username, password, database, additionalHostnames)
         }
-        operator fun invoke(map: Map<String, Any?>) : MongoLogin? {
+        operator fun invoke(map: Map<String, Any?>) : MongoLogin {
             return this(JsonManager(map))
         }
     }

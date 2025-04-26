@@ -71,7 +71,7 @@ object MojangAPI {
     }
 
     private fun find(any: Any, url: String): MojangProfile? {
-        val response = HttpRequestHandler.get(url)
+        val response = HttpRequestHandler.request<String>(url)
         if (response.statusCode() != 200) {
             invalid.add(any)
             return null
@@ -92,7 +92,7 @@ object MojangAPI {
         
         val uuidS = profileJson.getString("id")
         
-        val properties = HttpRequestHandler.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuidS").body().let { JsonManager(it)?.getJsonList("properties") }
+        val properties = HttpRequestHandler.request<String>("https://sessionserver.mojang.com/session/minecraft/profile/$uuidS").body().let { JsonManager(it)?.getJsonList("properties") }
         val texture = properties?.firstOrNull { it.getString("name") == "textures" }?.getString("value")
         
         val item = MojangProfile(profileJson.getString("name")!!, uuidS!!.toUUID(), texture)
