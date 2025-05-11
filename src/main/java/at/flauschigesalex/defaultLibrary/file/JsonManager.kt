@@ -30,12 +30,12 @@ class JsonManager private constructor(content: String) {
             return invoke(jsonObject.toString())
         }
         operator fun invoke(map: Map<String, Any?>) : JsonManager {
-            return this().apply { this.writeMany(map) }
+            return this().apply { this.writeMany(map.filter { it.value != null }) }
         }
-        operator fun invoke(vararg pairs: Pair<String, Any>) : JsonManager {
+        operator fun invoke(vararg pairs: Pair<String, Any?>) : JsonManager {
             return this(mapOf(*pairs))
         }
-        operator fun invoke(pairs: Collection<Pair<String, Any>>) : JsonManager {
+        operator fun invoke(pairs: Collection<Pair<String, Any?>>) : JsonManager {
             return this(pairs.toMap())
         }
         operator fun invoke(data: DataHandler?) : JsonManager? {
