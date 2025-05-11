@@ -201,22 +201,23 @@ class TranslatedLocale private constructor(val locale: Locale) {
         throw TranslationException("Key \"$key\" requires fewer arguments: $correct but found: <$found>\nsource: $source")
     }
 
-    fun modify(value: String, replacements: Map<String, Any?> = mapOf()): String {
+    fun modify(value: String, replacements: Map<String, Any?> = emptyMap()): String {
+        val modifierNames = Modifiers.entries.joinToString("|") { it.name.lowercase() }
+        val tagPattern = Regex("<($modifierNames)(:([^<>]*))?>")
 
         var result = value
-        Modifiers.entries.forEach { modifier ->
+        while (true) {
+            val match = tagPattern.find(result) ?: break
 
-            val items = result.split("<").filter { it.startsWith(modifier.name.lowercase()) }.map { it.split(">")[0] }
-            if (items.isEmpty())
-                return@forEach
+            val fullTag = match.value
+            val modName = match.groupValues[1]
+            val args = match.groupValues[3].split(":").filter { it.isNotEmpty() }
 
-            val tags = items.map { Pair("<"+it+">", it.split(":").drop(1)) }
-            tags.forEach { (tag, args) ->
-                val modified = modifier.func.invoke(args, TranslationData(this, replacements))
-                result = result.replace(tag, modified)
-            }
+            val modifier = Modifiers.valueOf(modName.uppercase())
+            val replacement = modifier.func(args, TranslationData(this, replacements))
+
+            result = result.replaceFirst(fullTag, replacement)
         }
-
         return result
     }
 
@@ -229,7 +230,8 @@ class TranslatedLocale private constructor(val locale: Locale) {
                 if (!validator.isValid)
                     continue
 
-                result = validator.value
+                val value = validator.value
+                result = data.locale.modify(value, data.replacements)
                 break
             }
             result ?: list.first()
@@ -240,7 +242,8 @@ class TranslatedLocale private constructor(val locale: Locale) {
             for (item: String in list) {
                 val replacement = data.replacements[item] ?: continue
 
-                result = replacement.toString()
+                val value = replacement.toString();
+                result = data.locale.modify(value, data.replacements)
                 break
             }
             result ?: list.first()
