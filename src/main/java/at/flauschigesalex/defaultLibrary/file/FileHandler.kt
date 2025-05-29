@@ -16,13 +16,17 @@ class FileHandler(val file: File) : DataHandler() {
         if (file.exists())
             return file
 
+        val parent = file.parentFile
+        if (parent != null && !file.parentFile.mkdirs())
+            return null
+        
         return tryCatch { if (file.createNewFile()) file else null }
     }
     fun createDirectory(): File? {
         if (file.exists() && file.isDirectory)
             return file
 
-        return tryCatch { if (file.mkdir()) file else null }
+        return tryCatch { if (file.mkdirs()) file else null }
     }
 
     override fun readStream(): InputStream? {
