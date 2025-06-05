@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/minecraft/paper/base/base (paper).iml" filepath="$PROJECT_DIR$/minecraft/paper/base/base (paper).iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/velocity/base/base (velocity).iml" filepath="$PROJECT_DIR$/minecraft/velocity/base/base (velocity).iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/brigadier/brigadier.iml" filepath="$PROJECT_DIR$/minecraft/brigadier/brigadier.iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/_bundled/bundled (minecraft).iml" filepath="$PROJECT_DIR$/minecraft/_bundled/bundled (minecraft).iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/paper/_bundled/bundled (paper).iml" filepath="$PROJECT_DIR$/minecraft/paper/_bundled/bundled (paper).iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/velocity/_bundled/bundled (velocity).iml" filepath="$PROJECT_DIR$/minecraft/velocity/_bundled/bundled (velocity).iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/paper/paper.iml" filepath="$PROJECT_DIR$/minecraft/paper/paper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/parent.iml" filepath="$PROJECT_DIR$/parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/paper/ui/ui.iml" filepath="$PROJECT_DIR$/minecraft/paper/ui/ui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/velocity/velocity.iml" filepath="$PROJECT_DIR$/minecraft/velocity/velocity.iml" />
+    </modules>
+  </component>
+</project>
