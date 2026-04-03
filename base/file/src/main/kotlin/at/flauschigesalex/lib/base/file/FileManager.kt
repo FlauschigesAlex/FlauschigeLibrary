@@ -14,10 +14,12 @@ class FileManager(val file: File) : DataManager(file.toURI()) {
     constructor(path: String) : this(File(path))
     constructor(parent: File?, path: String) : this(File(parent, path))
     constructor(parent: FileManager?, path: String) : this(parent?.file, path)
+    
+    val originalContent: String? = this.readString()
 
-    fun createJsonFile(): File? {
-        return this.createFile()?.apply { write("{}") }
-    }
+    @Deprecated("Deprecated", level = DeprecationLevel.ERROR)
+    fun createJsonFile(): File? = createFile()
+    
     fun createFile(): File? {
         if (file.exists())
             return file
