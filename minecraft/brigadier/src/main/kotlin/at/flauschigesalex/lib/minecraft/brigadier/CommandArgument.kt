@@ -37,6 +37,15 @@ data class CommandArgument<T: CommandArgumentType<*>>(val name: String, val type
     }
 
     @CommandInternal
+    var suggest = true
+        private set
+    
+    @OptIn(CommandInternal::class)
+    fun suggest(suggest: Boolean) {
+        this.suggest = suggest
+    }
+
+    @CommandInternal
     val requirements = mutableListOf<CommandRequirement>()
     @OptIn(CommandInternal::class)
     fun require(consumer: CommandRequirement) {

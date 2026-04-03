@@ -55,6 +55,9 @@ internal object TabCompleteListener : PaperListener(false) {
                 if (sender is Player && !argument.canUse(sender.uniqueId, fullCommand, argList, paperArgs))
                     return@filter false
 
+                if (argument.suggest.not())
+                    return@filter false
+                
                 return@filter argument.type.suggestType(currentArg, sender)
             }
 
