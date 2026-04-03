@@ -442,3 +442,4 @@ class JsonBodyPublisher(json: JsonManager) : HttpRequest.BodyPublisher {
 }
 
 fun DataManager.readJson(): JsonManager? = this.readString()?.let { JsonManager(it) }
+fun DataManager.readJsonList(): List<JsonManager> = JsonManager.listOf(this)
