@@ -137,6 +137,9 @@ object CommandConfigurator {
                         val suggestArguments = possibleArguments.filter { argument ->
                             if (sender is Player && !argument.canUse(sender.uniqueId, fullCommand, argList, velocityArgs))
                                 return@filter false
+                            
+                            if (argument.suggest.not())
+                                return@filter false
 
                             return@filter argument.type.suggestType(currentArg, sender)
                         }
