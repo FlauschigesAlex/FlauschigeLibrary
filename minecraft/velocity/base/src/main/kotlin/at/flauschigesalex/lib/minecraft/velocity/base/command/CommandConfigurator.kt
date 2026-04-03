@@ -176,8 +176,7 @@ object CommandConfigurator {
                                     val data = GreedyCommandArgumentData(index, values, any, type)
                                     dataList.add(data)
                                     argList.add(any)
-
-                                    return sendSuggestions()
+                                    
                                 } else {
                                     val data = CommandArgumentData(index, value, any, type)
                                     dataList.add(data)

@@ -1,5 +1,6 @@
 package at.flauschigesalex.lib.minecraft.brigadier
 
+import at.flauschigesalex.lib.minecraft.brigadier.types.internal.GreedyArgumentType
 import java.util.UUID
 
 @Suppress("UNCHECKED_CAST", "unused")
@@ -77,6 +78,9 @@ abstract class CommandBase protected constructor(val command: String) {
             
             // Adds all non-optional arguments to the list
             set.addAll(arguments.map { it to it })
+            
+            if (this is CommandArgument<*> && this.type is GreedyArgumentType<*, *>)
+                set.add(this to this)
             
             // Adds all optional (sub-) arguments to the list
             val optional = arguments.filter { it.optional }.flatMap { base -> base.optionalTree().map { base to it } }
