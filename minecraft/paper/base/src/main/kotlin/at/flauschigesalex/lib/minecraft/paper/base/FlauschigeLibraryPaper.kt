@@ -15,6 +15,7 @@ import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperListener
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperReflect
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import org.bukkit.Bukkit
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import java.lang.reflect.Modifier
 
@@ -94,6 +95,9 @@ object FlauschigeLibraryPaper {
                 fail.printStackTrace()
             }
         }
+        
+        if (plugin is Listener)
+            Bukkit.getPluginManager().registerEvents(plugin, plugin)
         
         plugin.lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             val registrar = event.registrar()

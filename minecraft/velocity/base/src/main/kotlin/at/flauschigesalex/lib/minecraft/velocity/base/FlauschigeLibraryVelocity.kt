@@ -26,7 +26,7 @@ object FlauschigeLibraryVelocity {
     val activeData: Set<InternalPluginData>
         get() = _activeData.toSet()
 
-    fun init(plugin: Any, server: ProxyServer, packages: String? = null): InternalPluginData {
+    fun init(plugin: Any, server: ProxyServer, packages: String? = null, registerSelfListener: Boolean): InternalPluginData {
         val packageName = packages ?: plugin.javaClass.packageName
         val data = InternalPluginData(plugin, packageName)
 
@@ -35,7 +35,7 @@ object FlauschigeLibraryVelocity {
 
         firstInit(plugin, server)
         _activeData.add(data)
-        reflectPaper(data, server)
+        reflectPaper(data, server, registerSelfListener)
         return data
     }
 
@@ -60,7 +60,7 @@ object FlauschigeLibraryVelocity {
         }
     }
 
-    private fun reflectPaper(data: InternalPluginData, server: ProxyServer) {
+    private fun reflectPaper(data: InternalPluginData, server: ProxyServer, registerSelfListener: Boolean) {
         val (plugin, packageName) = data
         
         Reflector.reflect(plugin.javaClass.classLoader, packageName).getSubTypes(VelocityReflect::class.java).filter {
@@ -84,6 +84,9 @@ object FlauschigeLibraryVelocity {
                 fail.printStackTrace()
             }
         }
+        
+        if (registerSelfListener && plugin !is VelocityListener)
+            server.eventManager.register(plugin, plugin)
         
         server.eventManager.fire(VelocityReflectFinishEvent(data))
     }
