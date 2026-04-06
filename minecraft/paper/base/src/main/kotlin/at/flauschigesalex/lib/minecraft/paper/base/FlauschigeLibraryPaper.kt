@@ -2,22 +2,20 @@
 
 package at.flauschigesalex.lib.minecraft.paper.base
 
-import at.flauschigesalex.lib.minecraft.paper.base.command.BrigadierCommand
 import at.flauschigesalex.lib.base.general.Reflector
 import at.flauschigesalex.lib.minecraft.api.CacheableMojangProfile
 import at.flauschigesalex.lib.minecraft.api.MojangAPI
 import at.flauschigesalex.lib.minecraft.api.MojangProfile
+import at.flauschigesalex.lib.minecraft.paper.base.command.BrigadierCommand
 import at.flauschigesalex.lib.minecraft.paper.base.command.CommandConfigurator
 import at.flauschigesalex.lib.minecraft.paper.base.command.TabCompleteListener
+import at.flauschigesalex.lib.minecraft.paper.base.events.PaperReflectFinishEvent
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperCommand
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperListener
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperReflect
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import org.bukkit.Bukkit
-import org.bukkit.command.Command
-import org.bukkit.command.CommandMap
 import org.bukkit.plugin.java.JavaPlugin
-import java.lang.foreign.ValueLayout
 import java.lang.reflect.Modifier
 
 @Deprecated("") typealias FlauschigeLibrary = FlauschigeLibraryPaper
@@ -25,24 +23,27 @@ import java.lang.reflect.Modifier
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object FlauschigeLibraryPaper {
 
-    private val activeData = mutableSetOf<InternalPluginData>()
+    private val _activeData = mutableSetOf<InternalPluginData>()
+    val activeData: Set<InternalPluginData>
+        get() = _activeData.toSet()
     
     var displayExceptionMessage = "Oops, %s threw an exception: %s"
 
-    fun init(plugin: JavaPlugin, packages: String? = null) {
+    fun init(plugin: JavaPlugin, packages: String? = null): InternalPluginData {
         val packageName = packages ?: plugin.javaClass.packageName
         val data = InternalPluginData(plugin, packageName)
 
-        if (activeData.any { (it.plugin == plugin) })
-            return
+        if (_activeData.any { (it.plugin == plugin) })
+            return data
 
         this.firstInit(plugin)
-        activeData.add(data)
-        this.reflectPaper(plugin, packageName)
+        _activeData.add(data)
+        this.reflectPaper(data)
+        return data
     }
 
     private fun firstInit(plugin: JavaPlugin) {
-        if (activeData.isNotEmpty())
+        if (_activeData.isNotEmpty())
             return
 
         CommandConfigurator // ENABLES COMMAND REGISTRATION
@@ -61,7 +62,8 @@ object FlauschigeLibraryPaper {
         }
     }
 
-    private fun reflectPaper(plugin: JavaPlugin, packageName: String) {
+    private fun reflectPaper(data: InternalPluginData) {
+        val (plugin, packageName) = data
 
         TabCompleteListener.register(plugin)
         
@@ -101,6 +103,8 @@ object FlauschigeLibraryPaper {
                 registrar.register(node, command.description, command.aliases)
             }
         }
+
+        PaperReflectFinishEvent(data).callEvent()
     }
 }
 
