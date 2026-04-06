@@ -8,6 +8,7 @@ import at.flauschigesalex.lib.minecraft.api.CacheableMojangProfile
 import at.flauschigesalex.lib.minecraft.api.MojangAPI
 import at.flauschigesalex.lib.minecraft.api.MojangProfile
 import at.flauschigesalex.lib.minecraft.velocity.base.command.CommandConfigurator
+import at.flauschigesalex.lib.minecraft.velocity.base.events.VelocityReflectFinishEvent
 import at.flauschigesalex.lib.minecraft.velocity.base.internal.VelocityListener
 import at.flauschigesalex.lib.minecraft.velocity.base.internal.VelocityReflect
 import com.velocitypowered.api.proxy.ProxyServer
@@ -34,7 +35,7 @@ object FlauschigeLibraryVelocity {
 
         firstInit(plugin, server)
         _activeData.add(data)
-        reflectPaper(plugin, packageName, server)
+        reflectPaper(data, server)
         return data
     }
 
@@ -59,8 +60,9 @@ object FlauschigeLibraryVelocity {
         }
     }
 
-    private fun reflectPaper(plugin: Any, packageName: String, server: ProxyServer) {
-
+    private fun reflectPaper(data: InternalPluginData, server: ProxyServer) {
+        val (plugin, packageName) = data
+        
         Reflector.reflect(plugin.javaClass.classLoader, packageName).getSubTypes(VelocityReflect::class.java).filter {
             !Modifier.isAbstract(it.modifiers) && !it.isAnonymousClass
         }.forEach {
@@ -82,6 +84,8 @@ object FlauschigeLibraryVelocity {
                 fail.printStackTrace()
             }
         }
+        
+        server.eventManager.fire(VelocityReflectFinishEvent(data))
     }
 }
 
