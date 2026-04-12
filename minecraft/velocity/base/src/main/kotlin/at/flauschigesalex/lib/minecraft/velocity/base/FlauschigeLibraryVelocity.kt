@@ -7,6 +7,7 @@ import at.flauschigesalex.lib.base.general.Reflector
 import at.flauschigesalex.lib.minecraft.api.CacheableMojangProfile
 import at.flauschigesalex.lib.minecraft.api.MojangAPI
 import at.flauschigesalex.lib.minecraft.api.MojangProfile
+import at.flauschigesalex.lib.minecraft.api.MojangProfileTexture
 import at.flauschigesalex.lib.minecraft.velocity.base.command.CommandConfigurator
 import at.flauschigesalex.lib.minecraft.velocity.base.events.VelocityReflectFinishEvent
 import at.flauschigesalex.lib.minecraft.velocity.base.internal.VelocityListener
@@ -49,13 +50,13 @@ object FlauschigeLibraryVelocity {
         MojangAPI.addNameLookup(MojangAPI.LookupCall.BEFORE) { uuid ->
             val player = server.getPlayer(uuid).getOrNull() ?: return@addNameLookup null
             val textures = player.gameProfile.properties.firstOrNull { it.name.equals("textures", true) }?.let { it.value to it.signature!! }
-            val profile = MojangProfile(player.username, player.uniqueId, textures)
+            val profile = MojangProfile(player.username, player.uniqueId, textures?.let { MojangProfileTexture(it.first, it.second) })
             return@addNameLookup CacheableMojangProfile(profile)
         }
         MojangAPI.addUuidLookup(MojangAPI.LookupCall.BEFORE) { name ->
             val player = server.getPlayer(name).getOrNull() ?: return@addUuidLookup null
             val textures = player.gameProfile.properties.firstOrNull { it.name.equals("textures", true) }?.let { it.value to it.signature!! }
-            val profile = MojangProfile(player.username, player.uniqueId, textures)
+            val profile = MojangProfile(player.username, player.uniqueId, textures?.let { MojangProfileTexture(it.first, it.second) })
             return@addUuidLookup CacheableMojangProfile(profile)
         }
     }

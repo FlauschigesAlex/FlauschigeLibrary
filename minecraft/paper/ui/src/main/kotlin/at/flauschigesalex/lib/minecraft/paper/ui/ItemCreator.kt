@@ -2,6 +2,7 @@
 
 package at.flauschigesalex.lib.minecraft.paper.ui
 
+import at.flauschigesalex.lib.minecraft.api.MojangProfileTexture
 import at.flauschigesalex.lib.minecraft.paper.base.utils.PersistentData
 import at.flauschigesalex.lib.minecraft.paper.base.utils.isColorable
 import at.flauschigesalex.lib.minecraft.paper.base.utils.persistentData
@@ -38,7 +39,7 @@ class ItemCreator<out M: ItemMeta> private constructor(internal val item: ItemSt
         fun skull(uuid: UUID, consumer: (SkullMeta) -> Unit = {}): ItemCreator<SkullMeta> {
             return skull(Bukkit.getOfflinePlayer(uuid), consumer)
         }
-        fun skull(texture: String, consumer: (SkullMeta) -> Unit = {}): ItemCreator<SkullMeta> {
+        fun skull(texture: MojangProfileTexture, consumer: (SkullMeta) -> Unit = {}): ItemCreator<SkullMeta> {
             return skull(Bukkit.createProfile(UUID.randomUUID()).texture(texture))
         }
 

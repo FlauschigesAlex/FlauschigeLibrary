@@ -3,6 +3,7 @@
 package at.flauschigesalex.lib.minecraft.paper.base.utils
 
 import at.flauschigesalex.lib.minecraft.api.MojangProfile
+import at.flauschigesalex.lib.minecraft.api.MojangProfileTexture
 import com.destroystokyo.paper.profile.PlayerProfile
 import com.destroystokyo.paper.profile.ProfileProperty
 import net.kyori.adventure.audience.Audience
@@ -67,8 +68,8 @@ val Material.isObtainable: Boolean
         return true
     }
 
-fun PlayerProfile.texture(texture: String): PlayerProfile {
-    this.setProperty(ProfileProperty("textures", texture, null))
+fun PlayerProfile.texture(texture: MojangProfileTexture): PlayerProfile {
+    this.setProperty(ProfileProperty("textures", texture.value, texture.signature))
     return this
 }
 

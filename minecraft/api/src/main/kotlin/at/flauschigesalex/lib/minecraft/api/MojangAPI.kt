@@ -99,7 +99,7 @@ object MojangAPI {
             it.getString("value")!! to it.getString("signature")!!
         }
 
-        val item = MojangProfile(profileJson.getString("name")!!, uuidS!!.toUUID(), texture)
+        val item = MojangProfile(profileJson.getString("name")!!, uuidS!!.toUUID(), texture?.let { MojangProfileTexture(it.first, it.second) })
         cache.add(item)
         return item
     }
@@ -201,7 +201,8 @@ object MojangAPI {
     }
 }
 
-data class MojangProfile(val name: String, val uniqueId: UUID, val texture: Pair<String, String>?)
+data class MojangProfile(val name: String, val uniqueId: UUID, val texture: MojangProfileTexture?)
+data class MojangProfileTexture(val value: String, val signature: String)
 data class CacheableMojangProfile(val profile: MojangProfile, internal val shouldCache: Boolean = true)
 
 internal fun CharSequence.toUUID(): UUID {
