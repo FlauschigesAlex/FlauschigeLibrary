@@ -2,11 +2,9 @@
 
 package at.flauschigesalex.lib.minecraft.paper.ui
 
-import at.flauschigesalex.lib.minecraft.paper.base.FlauschigeLibraryPaper
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperListener
-import at.flauschigesalex.lib.minecraft.paper.ui.PluginGUI.Companion.getOpenGUI
+import at.flauschigesalex.lib.minecraft.paper.ui.PaperGUI.Companion.openGUIs
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.HumanEntity
@@ -19,10 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scheduler.BukkitTask
-import org.jetbrains.annotations.Range
 import java.util.*
-import kotlin.math.max
 
 operator fun Inventory.get(index: Int): ItemStack? {
     return this.getItem(index)
@@ -34,55 +29,24 @@ operator fun Inventory.set(index: IntRange, item: ItemStack?) {
     index.forEach { this[it] = item }
 }
 
+fun HumanEntity.getOpenGUI(): PaperGUI? {
+    return openGUIs[this.uniqueId]
+}
+
+@Deprecated("Legacy name", ReplaceWith("PaperGUI")) typealias PluginGUI = PaperGUI
+
 /**
  * @since v1.5.0
  */
-abstract class PluginGUI protected constructor(
+abstract class PaperGUI protected constructor(
     val plugin: JavaPlugin,
-    open val size: Int,
-    protected val titleConstructor: (Player) -> Component,
-    protected val autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
+    open val size: Int
 ) {
-
-    constructor(
-        plugin: JavaPlugin,
-        size: Int,
-        title: Component = Component.text(" "),
-        autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
-    ) : this(plugin, size, { _: Player -> title}, autoUpdateTickDelay)
-
-    constructor(
-        plugin: JavaPlugin,
-        size: Int,
-        richTitle: String = " ",
-        autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
-    ) : this(plugin, size, { _: Player -> MiniMessage.miniMessage().deserialize(richTitle)}, autoUpdateTickDelay)
-
     companion object {
-
-        /*
-        init {
-
-            Reflector.reflect(PluginGUI::class.java.packageName).getSubTypes(PaperListener::class.java)
-                .filter { !it.isInterface && !Modifier.isAbstract(it.modifiers) }
-                .forEach {
-                    val constructor = it.getDeclaredConstructor()
-                    constructor.isAccessible = true
-                    val instance = constructor.newInstance()
-                    instance.register(FlauschigeLibraryPaper.javaPlugin)
-                }
-        }
-        */
-
-        internal val openGUIs = hashMapOf<UUID, PluginGUI>()
-
-        @JvmStatic
-        fun HumanEntity.getOpenGUI(): PluginGUI? {
-            return openGUIs[this.uniqueId]
-        }
-
-        val controllers = HashSet<BukkitTask>()
+        internal val openGUIs = hashMapOf<UUID, PaperGUI>()
     }
+    
+     abstract val titleConstructor: (Player) -> Component
 
     protected open fun createGUI(player: Player): Inventory {
         return Bukkit.createInventory(player, size, titleConstructor.invoke(player))
@@ -105,36 +69,9 @@ abstract class PluginGUI protected constructor(
         return loadGUI(player, inventory)
     }
 
-    open fun onClick(event: PluginGUIClick): Boolean = false
+    open fun onClick(data: PaperGuiClickData): Boolean = false
     open fun onOpen(player: Player, inventory: Inventory): Boolean = false
     open fun onClose(player: Player, inventory: Inventory): Boolean = false
-
-    protected fun liveInventory(player: Player, inventory: Inventory) {
-        if (autoUpdateTickDelay <= 0)
-            return
-
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, { it ->
-            it?.run { controllers.add(this) }
-
-            if (!player.isOnline || player.getOpenGUI() != this) {
-                it?.run {
-                    controllers.remove(it)
-                    it.cancel()
-                }
-
-                openGUIs.remove(player.uniqueId, this)
-                return@runTaskTimerAsynchronously
-            }
-
-            runCatching {
-                this.loadLiveGUI(player, inventory)
-            }.onFailure {
-                it.printStackTrace()
-                player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-                player.closeInventory()
-            }
-        }, 0, max(autoUpdateTickDelay, 1).toLong())
-    }
 
     open fun reloadForAllViewers(loadBackground: Boolean = false) {
         viewers.forEach { reload(it, loadBackground) }
@@ -145,84 +82,41 @@ abstract class PluginGUI protected constructor(
 
         val gui = player.openInventory.topInventory
 
-        if (loadBackground)
-            runCatching {
-                this.designGUI(player, gui)
-            }.onFailure {
-                it.printStackTrace()
-                player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-                player.closeInventory()
-            }
-
         runCatching {
+            if (loadBackground)
+                this.designGUI(player, gui)
+            
             this.loadGUI(player, gui)
         }.onFailure {
             it.printStackTrace()
-            player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
             player.closeInventory()
         }
+        
         return true
     }
 
     open fun open(player: Player) {
         if (player.getOpenGUI() == this) {
-            runCatching {
-                this.reload(player, true)
-            }.onFailure {
-                it.printStackTrace()
-                player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-                player.closeInventory()
-            }
+            this.reload(player)
             return
         }
 
         player.getOpenGUI()?.onClose(player, player.openInventory.topInventory)
-
-        val inventory = runCatching {
-            this.createGUI(player)
-        }.onFailure {
-            it.printStackTrace()
-            player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-        }.getOrNull() ?: return
         openGUIs[player.uniqueId] = this
         
         runCatching {
+            val inventory = this.createGUI(player)
             this.designGUI(player, inventory)
-        }.onFailure {
-            it.printStackTrace()
-            player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-            return
-        }
-
-        runCatching {
             this.loadGUI(player, inventory)
-        }.onFailure {
-            it.printStackTrace()
-            player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-            return
-        }
-
-        player.openInventory(inventory)
-
-        runCatching {
+            
+            player.openInventory(inventory)
             this.onOpen(player, inventory)
-        }.onFailure {
+        }.onFailure { 
+            player.closeInventory()
             it.printStackTrace()
-            player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-            return player.closeInventory()
         }
-        
-        if (autoUpdateTickDelay > 0)
-            runCatching {
-                this.liveInventory(player, inventory)
-            }.onFailure {
-                it.printStackTrace()
-                player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
-                return player.closeInventory()
-            }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     val isAnvilGUI
         get() = this is AnvilGUI
 
@@ -245,24 +139,16 @@ private class PaperGUIListener private constructor(): PaperListener() {
             return
 
         runCatching {
-            gui.onClick(
-                PluginGUIClick(
+            gui.onClick(PaperGuiClickData(
                     player,
                     gui,
                     clickedInventory,
                     event.currentItem,
                     event.slot,
                     event.click,
-                    event.cursor.let {
-                        if (it.type.isAir)
-                            return@let null
-
-                        return@let it
-                    }, event)
-            )
+                    event.cursor.let { if (it.type.isAir) null else it }, event))
         }.onFailure {
             it.printStackTrace()
-            player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
             player.closeInventory()
         }
     }
@@ -282,12 +168,11 @@ private class PaperGUIListener private constructor(): PaperListener() {
             if (inventory.location == newInventory.location && newInventory.location == null)
                 return@Runnable
 
-            PluginGUI.openGUIs.remove(player.uniqueId, gui)
+            openGUIs.remove(player.uniqueId, gui)
             runCatching {
                 gui.onClose(player, inventory)
             }.onFailure {
                 it.printStackTrace()
-                player.sendRichMessage("<red>${FlauschigeLibraryPaper.displayExceptionMessage.format(this::class.simpleName, it.javaClass.simpleName)}")
             }
         }, 1)
     }
@@ -306,24 +191,24 @@ private class PaperGUIListener private constructor(): PaperListener() {
         }
 
         inventory.clear()
-        PluginGUI.openGUIs.remove(player.uniqueId, gui)
+        openGUIs.remove(player.uniqueId, gui)
     }
 }
 
-data class PluginGUIClick(val player: Player,
-                          val gui: PluginGUI,
-                          val inventory: Inventory,
-                          val clickedItem: ItemStack?,
-                          val clickedSlot: Int,
-                          val clickType: ClickType,
-                          val cursorItem: ItemStack?,
-                          val source: InventoryClickEvent,
+@Deprecated("Legacy name", ReplaceWith("PaperGuiClickData")) typealias PluginGUIClick = PaperGuiClickData 
+data class PaperGuiClickData(val player: Player,
+                             val gui: PaperGUI,
+                             val inventory: Inventory,
+                             val clickedItem: ItemStack?,
+                             val clickedSlot: Int,
+                             val clickType: ClickType,
+                             val cursorItem: ItemStack?,
+                             val event: InventoryClickEvent,
 ) {
     var isCancelled: Boolean
-        get() = source.isCancelled
-        set(value) { source.isCancelled = value }
-
-    override fun toString(): String {
-        return listOf(player, gui, inventory, clickedItem, clickedSlot, clickType, cursorItem, source).toString()
-    }
+        get() = event.isCancelled
+        set(value) { event.isCancelled = value }
+    
+    @Deprecated("Legacy name", ReplaceWith("event"))
+    val source: InventoryClickEvent = this.event
 }

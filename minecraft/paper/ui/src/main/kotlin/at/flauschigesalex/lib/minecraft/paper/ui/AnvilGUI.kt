@@ -5,7 +5,6 @@ package at.flauschigesalex.lib.minecraft.paper.ui
 
 import at.flauschigesalex.lib.base.general.Validator
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperListener
-import at.flauschigesalex.lib.minecraft.paper.ui.PluginGUI.Companion.getOpenGUI
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -29,12 +28,10 @@ private val anvilTypingControllers = HashMap<Player, UUID>()
  * @since 1.6.0
  */
 
-@ExperimentalStdlibApi
 abstract class AnvilGUI(
     plugin: JavaPlugin,
     autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
-    val legacyTitle: String = " ",
-) : PluginGUI(plugin, 9, Component.text(legacyTitle), autoUpdateTickDelay) {
+) : PluginGUI(plugin, 9) {
 
     companion object {
         @JvmStatic
@@ -45,6 +42,8 @@ abstract class AnvilGUI(
             this.richName("")
         }
     }
+    
+    override val titleConstructor: (Player) -> Component = { Component.text(" ") }
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     final override val size: Int = 0
@@ -64,19 +63,19 @@ abstract class AnvilGUI(
     open fun onTyping(player: Player, inventory: AnvilInventory, input: Validator<String>): ItemStack? = null
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
-    final override fun onClick(event: PluginGUIClick): Boolean {
-        val anvilView = event.player.openInventory as AnvilView
+    final override fun onClick(data: PaperGuiClickData): Boolean {
+        val anvilView = data.player.openInventory as AnvilView
         val renameText = anvilView.renameText ?: ""
 
         val s = CompletableFuture<Validator<String>>().completeAsync {
             Validator(renameText, {
-                this.isValidInput(event.player, it)
+                this.isValidInput(data.player, it)
             })
         }
 
-        return onClick(event, s.join())
+        return onClick(data, s.join())
     }
-    protected open fun onClick(event: PluginGUIClick, input: Validator<String>): Boolean {
+    protected open fun onClick(event: PaperGuiClickData, input: Validator<String>): Boolean {
         event.isCancelled = true
         return false
     }
@@ -153,7 +152,7 @@ abstract class AnvilGUI(
     }
 
     protected open fun anvilView(player: Player, view: AnvilView, inventory: AnvilInventory) {
-        view.title = legacyTitle.toLegacyColored()
+        view.title = MiniMessage.miniMessage().serialize(this.titleConstructor.invoke(player)).toLegacyColored()
         view.repairCost = 0
     }
 
@@ -180,8 +179,6 @@ abstract class AnvilGUI(
         }))
 
         this.onOpen(player, inventory)
-        if (autoUpdateTickDelay > 0)
-            this.liveInventory(player, inventory)
     }
 }
 
