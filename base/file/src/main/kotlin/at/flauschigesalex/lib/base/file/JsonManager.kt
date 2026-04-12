@@ -9,8 +9,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
-import org.bson.BsonDocument
-import org.bson.Document
 import java.io.File
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -49,7 +47,6 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         operator fun invoke(vararg pairs: Pair<String, Any?>): JsonManager = invoke(pairs.toList())
         operator fun invoke(handler: DataManager): JsonManager? = handler.readString()?.let { invoke(it) }
         operator fun invoke(file: File): JsonManager? = invoke(FileManager(file))
-        operator fun invoke(document: Document): JsonManager = invoke(document.toJson())!!
 
         fun listOf(json: String): List<JsonManager> = runCatching {
             val array = Json.parseToJsonElement(json).jsonArray
@@ -60,7 +57,6 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         fun listOf(json: Any?): List<JsonManager> = json?.let { listOf(it.toString()) } ?: emptyList()
         fun listOf(handler: DataManager): List<JsonManager> = handler.readString()?.let { listOf(it) } ?: emptyList()
         fun listOf(file: File): List<JsonManager> = listOf(FileManager(file))
-        fun listOf(document: Document): List<JsonManager> = listOf(document.toJson())
          
         val BodyHandler = HttpResponse.BodyHandler<JsonManager> {
             BodySubscribers.mapping(BodySubscribers.ofString(Charsets.UTF_8)) {
@@ -398,8 +394,6 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
 
     fun toObject(): Any = this._content
     fun toJsonObject(): JsonObject = this._content
-    fun toDocument(): Document = Document.parse(this.toString())
-    fun toBsonDocument(): BsonDocument = this.toDocument().toBsonDocument()
 
     public override fun clone(): JsonManager = JsonManager(this.toString())!!
     override fun toString(): String = this.toString(true)
