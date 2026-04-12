@@ -6,6 +6,7 @@ import at.flauschigesalex.lib.base.general.Reflector
 import at.flauschigesalex.lib.minecraft.api.CacheableMojangProfile
 import at.flauschigesalex.lib.minecraft.api.MojangAPI
 import at.flauschigesalex.lib.minecraft.api.MojangProfile
+import at.flauschigesalex.lib.minecraft.api.MojangProfileTexture
 import at.flauschigesalex.lib.minecraft.paper.base.command.BrigadierCommand
 import at.flauschigesalex.lib.minecraft.paper.base.command.CommandConfigurator
 import at.flauschigesalex.lib.minecraft.paper.base.command.TabCompleteListener
@@ -28,8 +29,6 @@ object FlauschigeLibraryPaper {
     val activeData: Set<InternalPluginData>
         get() = _activeData.toSet()
     
-    var displayExceptionMessage = "Oops, %s threw an exception: %s"
-
     fun init(plugin: JavaPlugin, packages: String? = null): InternalPluginData {
         val packageName = packages ?: plugin.javaClass.packageName
         val data = InternalPluginData(plugin, packageName)
@@ -52,13 +51,13 @@ object FlauschigeLibraryPaper {
         MojangAPI.addNameLookup(MojangAPI.LookupCall.BEFORE) { uuid ->
             val player = Bukkit.getPlayer(uuid) ?: return@addNameLookup null
             val textures = player.playerProfile.properties.firstOrNull { it.name.equals("textures", true) }?.let { it.value to it.signature!! }
-            val profile = MojangProfile(player.name, player.uniqueId, textures)
+            val profile = MojangProfile(player.name, player.uniqueId, textures?.let { MojangProfileTexture(it.first, it.second) })
             return@addNameLookup CacheableMojangProfile(profile)
         }
         MojangAPI.addUuidLookup(MojangAPI.LookupCall.BEFORE) { name ->
             val player = Bukkit.getPlayerExact(name) ?: return@addUuidLookup null
             val textures = player.playerProfile.properties.firstOrNull { it.name.equals("textures", true) }?.let { it.value to it.signature!! }
-            val profile = MojangProfile(player.name, player.uniqueId, textures)
+            val profile = MojangProfile(player.name, player.uniqueId, textures?.let { MojangProfileTexture(it.first, it.second) })
             return@addUuidLookup CacheableMojangProfile(profile)
         }
     }
