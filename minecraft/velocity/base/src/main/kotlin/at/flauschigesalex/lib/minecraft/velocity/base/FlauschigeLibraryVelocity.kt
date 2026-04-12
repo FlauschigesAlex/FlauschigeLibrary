@@ -26,7 +26,7 @@ object FlauschigeLibraryVelocity {
     val activeData: Set<InternalPluginData>
         get() = _activeData.toSet()
 
-    fun init(plugin: Any, server: ProxyServer, packages: String? = null, registerSelfListener: Boolean): InternalPluginData {
+    fun init(plugin: Any, server: ProxyServer, packages: String? = null, registerSelfListener: Boolean = false): InternalPluginData {
         val packageName = packages ?: plugin.javaClass.packageName
         val data = InternalPluginData(plugin, packageName)
 
