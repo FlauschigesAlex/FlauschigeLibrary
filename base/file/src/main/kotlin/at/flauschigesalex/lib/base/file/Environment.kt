@@ -20,13 +20,13 @@ object Environment {
         handler ?: return
         val string = handler.readString() ?: return
 
-        string.split("\n").mapNotNull {
-            val split = it.split("=")
-            try {
-                return@mapNotNull Pair(split[0], split[1])
-            } catch (_: Exception) {
-            }
-            return@mapNotNull null
+        string.split(System.lineSeparator()).mapNotNull {
+            if (it.contains('=').not()) return@mapNotNull null
+            
+            val key = it.substringBefore('=')
+            val value = it.substringAfter('=')
+            
+            return@mapNotNull key to value
         }.toMap().apply {
             fields.putAll(this)
         }
@@ -41,6 +41,6 @@ object Environment {
     
     operator fun set(key: String, value: String) {
         fields[key] = value
-        file.write(fields.map { "${it.key}=${it.value}" }.joinToString("\n"))
+        file.write(fields.map { "${it.key}=${it.value}" }.joinToString(System.lineSeparator()))
     }
 }
