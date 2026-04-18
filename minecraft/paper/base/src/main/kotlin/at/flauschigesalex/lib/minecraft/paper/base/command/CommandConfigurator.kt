@@ -11,6 +11,7 @@ import org.bukkit.Location
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.permissions.Permissible
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(CommandInternal::class)
@@ -21,6 +22,7 @@ object CommandConfigurator {
     init {
 
         CommandBase.COMMAND_REGISTRAR = { commandBuilder ->
+            
             val instance = object : Command(commandBuilder.command, "", "", commandBuilder.aliases) {
                 override fun execute(sender: CommandSender, command: String, stringArgs: Array<out String>): Boolean {
                     executeAsync(sender, command, stringArgs, commandBuilder.dispatcher)
@@ -50,7 +52,7 @@ object CommandConfigurator {
                             val type = any.type
                             val value = runBlocking { type.parse(string, sender) } ?: return@required false
                             
-                            if (sender is Player && !any.canUse(sender.uniqueId, fullCommand, argList, paperArgs))
+                            if (sender is Player && !any.canUse(sender, fullCommand, dataList, paperArgs))
                                 return@required false
                             
                             if (type is NumberArgumentType<*>) {
@@ -71,7 +73,8 @@ object CommandConfigurator {
                                 argList.add(any)
                                 
                                 val executor = any.commandSuccess ?: any.commandFail
-                                return executor.invoke(sender, fullCommand, dataList, paperArgs)
+                                val context = CommandContext(sender, fullCommand, dataList, paperArgs)
+                                return executor.invoke(context)
                             } else {
                                 val data = CommandArgumentData(index, value, any, type)
                                 dataList.add(data)
@@ -85,8 +88,10 @@ object CommandConfigurator {
                             return@required true
                         }
                         
-                        if (success.not())
-                            return current.commandFail(sender, fullCommand, dataList, paperArgs)
+                        if (success.not()) {
+                            val context = CommandContext(sender, fullCommand, dataList, paperArgs)
+                            return current.commandFail(context)
+                        }
                     }
 
                     val providedExecutor = argList.toMutableList().apply {
@@ -99,7 +104,7 @@ object CommandConfigurator {
                         val arguments = current.arguments
                         val preferred = arguments.filter { 
                             if (sender is Player)
-                                it.canUse(sender.uniqueId, fullCommand, argList, paperArgs) 
+                                it.canUse(sender, fullCommand, dataList, paperArgs) 
                             else true
                         }.find { it.optional } ?: break
                         
@@ -110,8 +115,9 @@ object CommandConfigurator {
                     }
 
                     val executor = providedExecutor ?: optionalExecutor.commandSuccess ?: optionalExecutor.commandFail
-                    
-                    return executor.invoke(sender, fullCommand, dataList, paperArgs)
+
+                    val context = CommandContext(sender, fullCommand, dataList, paperArgs)
+                    return executor.invoke(context)
                 }
 
                 override fun tabComplete(
@@ -131,15 +137,21 @@ object CommandConfigurator {
         }
 
         @Suppress("DEPRECATION")
-        CommandBase.COMMAND_CAN_USE = use@{ uuid, commandArgument, fullCommand, data, args ->
-            val permission = commandArgument.permission
-            val sender = Bukkit.getPlayer(uuid)!!
-
-            return@use (permission == null || sender.hasPermission(permission)) && commandArgument.requirements.all { it(sender, fullCommand, data, args) }
+        CommandBase.COMMAND_CAN_USE = use@{ sender, commandArgument, fullCommand, data, args ->
+            val permission = commandArgument.permission ?: return@use true
+            val context = CommandContext(sender, fullCommand, data, args)
+            
+            val require = commandArgument.requirements.all {
+                it(context)
+            }
+            if (require.not()) return@use false
+            
+            if (sender !is Permissible) return@use true
+            return@use sender.hasPermission(permission)
         }
 
-        CommandBase.COMMAND_HAS_PERMISSION = permission@{ uuid, commandArgument ->
-            val sender = Bukkit.getPlayer(uuid)!!
+        CommandBase.COMMAND_HAS_PERMISSION = permission@{ sender, commandArgument ->
+            if (sender !is Permissible) return@permission true
 
             var current: CommandBase? = commandArgument
             while (current != null) {

@@ -8,6 +8,7 @@ import at.flauschigesalex.lib.minecraft.velocity.base.internal.CommandData
 import at.flauschigesalex.lib.minecraft.velocity.base.internal.VelocityCommand
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.command.RawCommand
+import com.velocitypowered.api.permission.PermissionSubject
 import com.velocitypowered.api.proxy.Player
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -52,7 +53,7 @@ object CommandConfigurator {
                             val type = any.type
                             val value = runBlocking { type.parse(string, sender) } ?: return@required false
 
-                            if (sender is Player && !any.canUse(sender.uniqueId, fullCommand, argList, velocityArgs))
+                            if (sender is Player && !any.canUse(sender, fullCommand, dataList, velocityArgs))
                                 return@required false
 
                             if (type is NumberArgumentType<*>) {
@@ -73,7 +74,8 @@ object CommandConfigurator {
                                 argList.add(any)
                                 
                                 val executor = any.commandSuccess ?: any.commandFail
-                                return executor.invoke(sender, fullCommand, dataList, velocityArgs)
+                                val context = CommandContext(sender, fullCommand, dataList, velocityArgs)
+                                return executor.invoke(context)
                             } else {
                                 val data = CommandArgumentData(index, value, any, type)
                                 dataList.add(data)
@@ -87,8 +89,10 @@ object CommandConfigurator {
                             return@required true
                         }
 
-                        if (success.not())
-                            return current.commandFail(sender, fullCommand, dataList, velocityArgs)
+                        if (success.not()) {
+                            val context = CommandContext(sender, fullCommand, dataList, velocityArgs)
+                            return current.commandFail(context)
+                        }
                     }
 
                     val providedExecutor = argList.toMutableList().apply {
@@ -101,7 +105,7 @@ object CommandConfigurator {
                         val arguments = current.arguments
                         val preferred = arguments.filter {
                             if (sender is Player)
-                                it.canUse(sender.uniqueId, fullCommand, argList, velocityArgs)
+                                it.canUse(sender, fullCommand, dataList, velocityArgs)
                             else true
                         }.find { it.optional } ?: break
 
@@ -113,7 +117,8 @@ object CommandConfigurator {
 
                     val executor = providedExecutor ?: optionalExecutor.commandSuccess ?: optionalExecutor.commandFail
 
-                    return executor.invoke(sender, fullCommand, dataList, velocityArgs)
+                    val context = CommandContext(sender, fullCommand, dataList, velocityArgs)
+                    return executor.invoke(context)
                 }
 
                 override fun suggestAsync(invocation: RawCommand.Invocation): CompletableFuture<List<String>> {
@@ -135,7 +140,7 @@ object CommandConfigurator {
                         val possibleArguments = current.arguments
 
                         val suggestArguments = possibleArguments.filter { argument ->
-                            if (sender is Player && !argument.canUse(sender.uniqueId, fullCommand, argList, velocityArgs))
+                            if (sender is Player && !argument.canUse(sender, fullCommand, dataList, velocityArgs))
                                 return@filter false
                             
                             if (argument.suggest.not())
@@ -157,7 +162,7 @@ object CommandConfigurator {
                                 val type = any.type
                                 val value = runBlocking { type.parse(string, sender) } ?: return@required false
 
-                                if (sender is Player && !any.canUse(sender.uniqueId, fullCommand, argList, mustBeCorrect))
+                                if (sender is Player && !any.canUse(sender, fullCommand, dataList, mustBeCorrect))
                                     return@required false
 
                                 if (type is NumberArgumentType<*>) {
@@ -213,15 +218,21 @@ object CommandConfigurator {
         }
 
         @Suppress("DEPRECATION")
-        CommandBase.COMMAND_CAN_USE = use@{ uuid, commandArgument, fullCommand, data, args ->
-            val permission = commandArgument.permission
-            val sender = FlauschigeLibraryVelocity.server.getPlayer(uuid).orElseThrow()
+        CommandBase.COMMAND_CAN_USE = use@{ sender, commandArgument, fullCommand, data, args ->
+            val permission = commandArgument.permission ?: return@use true
+            val context = CommandContext(sender, fullCommand, data, args)
 
-            return@use (permission == null || sender.hasPermission(permission)) && commandArgument.requirements.all { it(sender, fullCommand, data, args) }
+            val require = commandArgument.requirements.all {
+                it(context)
+            }
+            if (require.not()) return@use false
+
+            if (sender !is PermissionSubject) return@use true
+            return@use sender.hasPermission(permission)
         }
 
-        CommandBase.COMMAND_HAS_PERMISSION = permission@{ uuid, commandArgument ->
-            val sender = FlauschigeLibraryVelocity.server.getPlayer(uuid).orElseThrow()
+        CommandBase.COMMAND_HAS_PERMISSION = permission@{ sender, commandArgument ->
+            if (sender !is PermissionSubject) return@permission true
 
             var current: CommandBase? = commandArgument
             while (current != null) {

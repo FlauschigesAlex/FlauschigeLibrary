@@ -3,8 +3,8 @@
 package at.flauschigesalex.lib.minecraft.brigadier
 
 import at.flauschigesalex.lib.minecraft.brigadier.types.internal.LiteralArgumentType
+import net.kyori.adventure.audience.Audience
 import org.jetbrains.annotations.Range
-import java.util.*
 
 data class CommandArgument<T: CommandArgumentType<*>>(val name: String, val type: T) : CommandBase(name) {
 
@@ -53,12 +53,12 @@ data class CommandArgument<T: CommandArgumentType<*>>(val name: String, val type
     }
     
     @OptIn(CommandInternal::class)
-    fun canUse(sender: UUID, fullCommand: String, data: Collection<CommandArgument<*>>, args: Array<out String>): Boolean {
+    fun canUse(sender: Audience, fullCommand: String, data: CommandArgumentDataList, args: Array<out String>): Boolean {
         return COMMAND_CAN_USE(sender, this, fullCommand, data, args) && hasPermission(sender)
     }
 
     @OptIn(CommandInternal::class)
-    fun hasPermission(sender: UUID): Boolean {
+    fun hasPermission(sender: Audience): Boolean {
         return COMMAND_HAS_PERMISSION(sender, this)
     }
 }

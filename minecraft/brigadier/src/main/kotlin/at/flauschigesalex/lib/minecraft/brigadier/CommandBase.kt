@@ -1,6 +1,6 @@
 package at.flauschigesalex.lib.minecraft.brigadier
 
-import java.util.UUID
+import net.kyori.adventure.audience.Audience
 
 @Suppress("UNCHECKED_CAST", "unused")
 abstract class CommandBase protected constructor(val command: String) {
@@ -8,8 +8,8 @@ abstract class CommandBase protected constructor(val command: String) {
     companion object {
 
         @JvmStatic
-        var DEFAULT_COMMAND_FAIL: CommandConsumer = { sender, fullCommand, _, _ ->
-            sender.sendIncompleteCommand(fullCommand)
+        var DEFAULT_COMMAND_FAIL: CommandExecutor = { context ->
+            context.sender.sendIncompleteCommand(context.fullCommand)
         }
         @JvmStatic
         var DEFAULT_COMMAND_LABEL: String? = null
@@ -23,13 +23,13 @@ abstract class CommandBase protected constructor(val command: String) {
         
         @JvmStatic
         @CommandInternal
-        var COMMAND_CAN_USE: (UUID, CommandArgument<*>, String, Collection<CommandArgument<*>>, Array<out String>) -> Boolean = { _, _, _, _, _ ->
+        var COMMAND_CAN_USE: (Audience, CommandArgument<*>, String, CommandArgumentDataList, Array<out String>) -> Boolean = { _, _, _, _, _ ->
             throw NotImplementedError()
         }
         
         @JvmStatic
         @CommandInternal
-        var COMMAND_HAS_PERMISSION: (UUID, CommandArgument<*>) -> Boolean = { _, _ ->
+        var COMMAND_HAS_PERMISSION: (Audience, CommandArgument<*>) -> Boolean = { _, _ ->
             throw NotImplementedError()
         }
     }
@@ -104,13 +104,13 @@ abstract class CommandBase protected constructor(val command: String) {
         arguments.add(argument)
     }
 
-    var commandFail: CommandConsumer = DEFAULT_COMMAND_FAIL
-    open fun fail(fail: CommandConsumer) {
+    var commandFail: CommandExecutor = DEFAULT_COMMAND_FAIL
+    open fun fail(fail: CommandExecutor) {
         this.commandFail = fail
     }
 
-    var commandSuccess: CommandConsumer? = null
-    open fun execute(execute: CommandConsumer) {
+    var commandSuccess: CommandExecutor? = null
+    open fun execute(execute: CommandExecutor) {
         this.commandSuccess = execute
     }
 

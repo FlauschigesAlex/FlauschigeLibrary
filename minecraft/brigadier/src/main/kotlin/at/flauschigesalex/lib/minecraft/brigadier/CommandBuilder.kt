@@ -8,8 +8,23 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import kotlin.coroutines.CoroutineContext
 
-typealias CommandConsumer = (Audience, String, CommandArgumentDataList, Array<out String>) -> Unit
-typealias CommandRequirement = (Audience, String, Collection<CommandArgument<*>>, Array<out String>) -> Boolean
+/**
+ * @param sender The sender of the command
+ * @param fullCommand The full command
+ * @param arguments The data arguments of the command
+ * @param strings The string arguments of the command
+ */
+data class CommandContext(val sender: Audience,
+                          val fullCommand: String,
+                          val arguments: CommandArgumentDataList,
+                          val strings: Array<out String>
+) {
+    override fun hashCode(): Int = fullCommand.hashCode()
+    override fun equals(other: Any?): Boolean = other is CommandContext && other.fullCommand == fullCommand
+}
+
+typealias CommandExecutor = (context: CommandContext) -> Unit
+typealias CommandRequirement = (context: CommandContext) -> Boolean
 
 fun Audience.sendIncompleteCommand(fullCommand: String) {
     this.sendMessage(Component.translatable("command.unknown.command").color(NamedTextColor.RED)

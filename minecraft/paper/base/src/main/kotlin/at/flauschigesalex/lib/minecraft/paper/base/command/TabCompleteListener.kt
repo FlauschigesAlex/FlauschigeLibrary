@@ -11,12 +11,7 @@ import at.flauschigesalex.lib.minecraft.brigadier.types.internal.GreedyArgumentT
 import at.flauschigesalex.lib.minecraft.brigadier.types.primitive.number.NumberArgumentType
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperListener
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
-import com.mojang.brigadier.Command
-import com.mojang.brigadier.context.CommandContext
-import com.mojang.brigadier.context.CommandContextBuilder
-import io.papermc.paper.command.brigadier.Commands
 import kotlinx.coroutines.runBlocking
-import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -52,7 +47,7 @@ internal object TabCompleteListener : PaperListener(false) {
             val possibleArguments = argList.lastOrNull()?.arguments ?: commandBuilder.arguments
 
             val suggestArguments = possibleArguments.filter { argument ->
-                if (sender is Player && !argument.canUse(sender.uniqueId, fullCommand, argList, paperArgs))
+                if (sender is Player && !argument.canUse(sender, fullCommand, dataList, paperArgs))
                     return@filter false
 
                 if (argument.suggest.not())
@@ -81,7 +76,7 @@ internal object TabCompleteListener : PaperListener(false) {
                     val type = any.type
                     val value = runBlocking { type.parse(string, sender) } ?: return@required false
 
-                    if (sender is Player && !any.canUse(sender.uniqueId, fullCommand, argList, mustBeCorrect))
+                    if (sender is Player && !any.canUse(sender, fullCommand, dataList, mustBeCorrect))
                         return@required false
 
                     if (type is NumberArgumentType<*>) {
