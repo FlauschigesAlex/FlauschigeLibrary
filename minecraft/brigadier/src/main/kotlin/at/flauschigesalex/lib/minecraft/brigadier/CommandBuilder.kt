@@ -10,11 +10,13 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * @param sender The sender of the command
+ * @param executor The executor of the command (affected by `/execute as` on paper)
  * @param fullCommand The full command
  * @param arguments The data arguments of the command
  * @param strings The string arguments of the command
  */
 data class CommandContext(val sender: Audience,
+                          val executor: Audience,
                           val fullCommand: String,
                           val arguments: CommandArgumentDataList,
                           val strings: Array<out String>

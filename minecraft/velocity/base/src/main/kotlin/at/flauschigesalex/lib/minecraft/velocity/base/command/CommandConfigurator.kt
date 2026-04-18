@@ -40,8 +40,11 @@ object CommandConfigurator {
                     }
 
                     val velocityArgs = stringArgs.filter { it.isNotEmpty() }.toTypedArray()
-
                     var current: CommandBase = commandBuilder
+                    val resolvedCommand = fullCommand.ifBlank {
+                        if (velocityArgs.isEmpty()) commandBuilder.command
+                        else "${commandBuilder.command} ${velocityArgs.joinToString(" ")}"
+                    }
 
                     val dataList = CommandArgumentDataList()
                     val argList = mutableSetOf<CommandArgument<*>>()
@@ -49,11 +52,11 @@ object CommandConfigurator {
                     velocityArgs.forEachIndexed paperArgs@{ index, string ->
                         val success = current.eligibleArguments.filterNot {
                             argList.contains(it.second)
-                        }.any required@{ (base, any) ->
+                        }.any required@{ (_, any) ->
                             val type = any.type
                             val value = runBlocking { type.parse(string, sender) } ?: return@required false
 
-                            if (sender is Player && !any.canUse(sender, fullCommand, dataList, velocityArgs))
+                            if (sender is Player && !any.canUse(sender, resolvedCommand, dataList, velocityArgs))
                                 return@required false
 
                             if (type is NumberArgumentType<*>) {
@@ -72,10 +75,10 @@ object CommandConfigurator {
                                 val data = GreedyCommandArgumentData(index, values, any, type)
                                 dataList.add(data)
                                 argList.add(any)
-                                
-                                val executor = any.commandSuccess ?: any.commandFail
-                                val context = CommandContext(sender, fullCommand, dataList, velocityArgs)
-                                return executor.invoke(context)
+
+                                val invocation = any.commandSuccess ?: any.commandFail
+                                val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
+                                return invocation.invoke(commandContext)
                             } else {
                                 val data = CommandArgumentData(index, value, any, type)
                                 dataList.add(data)
@@ -90,45 +93,50 @@ object CommandConfigurator {
                         }
 
                         if (success.not()) {
-                            val context = CommandContext(sender, fullCommand, dataList, velocityArgs)
-                            return current.commandFail(context)
+                            val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
+                            return current.commandFail(commandContext)
                         }
                     }
 
-                    val providedExecutor = argList.toMutableList().apply {
+                    val providedInvocation = argList.toMutableList().apply {
                         while (this.count { it.optional.not() } > 1)
                             this.removeFirst()
                     }.reversed().firstOrNull { it.commandSuccess != null }?.commandSuccess
 
-                    var optionalExecutor = current
+                    var optionalInvocation = current
                     while (true) {
                         val arguments = current.arguments
                         val preferred = arguments.filter {
                             if (sender is Player)
-                                it.canUse(sender, fullCommand, dataList, velocityArgs)
+                                it.canUse(sender, resolvedCommand, dataList, velocityArgs)
                             else true
                         }.find { it.optional } ?: break
 
                         if (preferred.commandSuccess != null)
-                            optionalExecutor = preferred
+                            optionalInvocation = preferred
 
                         current = preferred
                     }
 
-                    val executor = providedExecutor ?: optionalExecutor.commandSuccess ?: optionalExecutor.commandFail
+                    val invocation = providedInvocation ?: optionalInvocation.commandSuccess ?: optionalInvocation.commandFail
 
-                    val context = CommandContext(sender, fullCommand, dataList, velocityArgs)
-                    return executor.invoke(context)
+                    val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
+                    return invocation.invoke(commandContext)
                 }
 
                 override fun suggestAsync(invocation: RawCommand.Invocation): CompletableFuture<List<String>> {
                     val sender = invocation.source()
-                    val strings = invocation.arguments().split(" ").toTypedArray()
+                    val rawArguments = invocation.arguments()
+                    val velocityArgs = rawArguments
+                        .takeIf { it.isNotBlank() }
+                        ?.split(' ')
+                        ?.toTypedArray()
+                        ?: emptyArray()
 
-                    val fullCommand = "${invocation.alias()} ${invocation.arguments()}"
-                    val baseCommand = strings.first()
-
-                    val velocityArgs = strings.clone()
+                    val fullCommand = rawArguments
+                        .takeIf { it.isNotBlank() }
+                        ?.let { "${invocation.alias()} $it" }
+                        ?: invocation.alias()
                     val currentArg = velocityArgs.lastOrNull().orEmpty()
 
                     var current: CommandBase = commandBuilder
@@ -137,12 +145,12 @@ object CommandConfigurator {
                     val argList = mutableSetOf<CommandArgument<*>>()
                     
                     fun sendSuggestions(): CompletableFuture<List<String>> {
-                        val possibleArguments = current.arguments
+                        val possibleArguments = argList.lastOrNull()?.arguments ?: commandBuilder.arguments
 
                         val suggestArguments = possibleArguments.filter { argument ->
                             if (sender is Player && !argument.canUse(sender, fullCommand, dataList, velocityArgs))
                                 return@filter false
-                            
+
                             if (argument.suggest.not())
                                 return@filter false
 
@@ -158,7 +166,7 @@ object CommandConfigurator {
                         mustBeCorrect.forEachIndexed paperArgs@{ index, string ->
                             val success = current.eligibleArguments.filterNot {
                                 argList.contains(it.second)
-                            }.any required@{ (base, any) ->
+                            }.any required@{ (_, any) ->
                                 val type = any.type
                                 val value = runBlocking { type.parse(string, sender) } ?: return@required false
 
@@ -219,14 +227,14 @@ object CommandConfigurator {
 
         @Suppress("DEPRECATION")
         CommandBase.COMMAND_CAN_USE = use@{ sender, commandArgument, fullCommand, data, args ->
-            val permission = commandArgument.permission ?: return@use true
-            val context = CommandContext(sender, fullCommand, data, args)
+            val context = CommandContext(sender, sender, fullCommand, data, args)
 
             val require = commandArgument.requirements.all {
                 it(context)
             }
             if (require.not()) return@use false
 
+            val permission = commandArgument.permission ?: return@use true
             if (sender !is PermissionSubject) return@use true
             return@use sender.hasPermission(permission)
         }
