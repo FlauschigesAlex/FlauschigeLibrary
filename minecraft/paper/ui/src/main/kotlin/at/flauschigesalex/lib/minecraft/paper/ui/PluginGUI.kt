@@ -2,6 +2,7 @@
 
 package at.flauschigesalex.lib.minecraft.paper.ui
 
+import at.flauschigesalex.lib.minecraft.paper.base.FlauschigeLibraryPaper
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperListener
 import at.flauschigesalex.lib.minecraft.paper.ui.PaperGUI.Companion.openGUIs
 import net.kyori.adventure.text.Component
@@ -44,6 +45,10 @@ abstract class PaperGUI protected constructor(
 ) {
     companion object {
         internal val openGUIs = hashMapOf<UUID, PaperGUI>()
+
+        init {
+            PaperGUIListener.register(FlauschigeLibraryPaper.activeData.first().plugin)
+        }
     }
     
      abstract val titleConstructor: (Player) -> Component
@@ -81,6 +86,10 @@ abstract class PaperGUI protected constructor(
             return false
 
         val gui = player.openInventory.topInventory
+        if (!this.isAnvilGUI && gui.size != this.size) {
+            openGUIs.remove(player.uniqueId, this)
+            return false
+        }
 
         runCatching {
             if (loadBackground)
@@ -112,6 +121,7 @@ abstract class PaperGUI protected constructor(
             player.openInventory(inventory)
             this.onOpen(player, inventory)
         }.onFailure { 
+            openGUIs.remove(player.uniqueId, this)
             player.closeInventory()
             it.printStackTrace()
         }
@@ -127,7 +137,7 @@ abstract class PaperGUI protected constructor(
     }
 }
 
-private class PaperGUIListener private constructor(): PaperListener() {
+internal object PaperGUIListener : PaperListener() {
 
     @EventHandler
     private fun inventoryClick(event: InventoryClickEvent) {
@@ -159,13 +169,11 @@ private class PaperGUIListener private constructor(): PaperListener() {
         val player = event.player as Player
         val gui = player.getOpenGUI() ?: return
 
-        val inventory = player.openInventory.topInventory
+        val inventory = event.inventory
         inventory.clear()
 
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-            val newInventory = player.openInventory.topInventory
-
-            if (inventory.location == newInventory.location && newInventory.location == null)
+            if (player.getOpenGUI() != gui)
                 return@Runnable
 
             openGUIs.remove(player.uniqueId, gui)
