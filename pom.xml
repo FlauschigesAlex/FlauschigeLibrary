@@ -37,11 +37,18 @@
             <version>1.11.0</version>
         </dependency>
     </dependencies>
+    
+    <repositories>
+        <repository>
+            <id>flx-library</id>
+            <url>https://repo.flauschigesalex.at/repository/maven-public/</url>
+        </repository>
+    </repositories>
 
     <distributionManagement>
         <repository>
             <id>flx-library</id>
-            <url>https://repo.flauschigesalex.at/repository/flx-library/</url>
+            <url>https://repo.flauschigesalex.at/repository/maven-public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
