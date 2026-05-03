@@ -1,8 +1,12 @@
+@file:Suppress("unused")
+
 package at.flauschigesalex.lib.base.file
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -18,7 +22,6 @@ import java.util.UUID
 import java.util.concurrent.Flow
 import kotlin.collections.toByteArray
 
-@Suppress("unused")
 @Serializable(with = JsonManager.Companion.JsonSerializer::class)
 class JsonManager(private var _content: JsonObject) : Cloneable {
 
@@ -27,19 +30,16 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
             return JsonManager(JsonObject(emptyMap()))
         }
 
-        operator fun invoke(json: String): JsonManager? {
-            try {
-                return JsonManager(Json.parseToJsonElement(json).jsonObject)
-            } catch (_: Exception) {}
-            return null
+        fun parse(json: String): Result<JsonManager> {
+            return runCatching { this.parseOrThrow(json) }
         }
-        operator fun invoke(json: Any?): JsonManager? = json?.let { invoke(it.toString()) }
-        operator fun invoke(json: JsonElement): JsonManager? {
-            try {
-                JsonManager(json.jsonObject)
-            } catch (_: Exception) {}
-            return null
+        fun parseOrThrow(json: String): JsonManager = JsonManager(Json.parseToJsonElement(json).jsonObject)
+        
+        operator fun invoke(json: String): JsonManager? = this.parse(json).getOrNull()
+        operator fun invoke(json: Any?): JsonManager? = json?.let {
+            invoke(it.toString()) ?: it.toJsonManagerOrNull()
         }
+        operator fun invoke(json: JsonElement): JsonManager? = runCatching { JsonManager(json.jsonObject) }.getOrNull()
         operator fun invoke(map: Map<String, Any?>): JsonManager = JsonManager().apply {
             map.forEach { (key, value) -> this.put(key, value) }
         }
@@ -50,10 +50,9 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
 
         fun listOf(json: String): List<JsonManager> = runCatching {
             val array = Json.parseToJsonElement(json).jsonArray
-            return array.map { item ->
-                JsonManager(item.toString())!!
-            }
+            return array.map { item -> item.toJsonManagerOrThrow() }
         }.getOrElse { JsonManager(json)?.let { listOf(it) } ?: emptyList() }
+        
         fun listOf(json: Any?): List<JsonManager> = json?.let { listOf(it.toString()) } ?: emptyList()
         fun listOf(handler: DataManager): List<JsonManager> = handler.readString()?.let { listOf(it) } ?: emptyList()
         fun listOf(file: File): List<JsonManager> = listOf(FileManager(file))
@@ -68,7 +67,7 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
                 runCatching {
                     val array = Json.parseToJsonElement(it).jsonArray
                     val jsonList = array.map { item ->
-                        JsonManager(item.toString())!!
+                        item.toJsonManagerOrThrow()
                     }
                     return@runCatching jsonList
                 }.getOrNull()
@@ -82,7 +81,7 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
             override val descriptor: SerialDescriptor
                 get() = PrimitiveSerialDescriptor("JsonManager", PrimitiveKind.STRING)
 
-            override fun deserialize(decoder: Decoder): JsonManager = JsonManager(decoder.decodeString())!!
+            override fun deserialize(decoder: Decoder): JsonManager = parseOrThrow(decoder.decodeString())
             override fun serialize(encoder: Encoder, value: JsonManager) = encoder.encodeString(value.toString())
         }
     }
@@ -105,12 +104,12 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         if (value == null)
             return remove(path)
 
-        val prevoius = this[path]
+        val previous = this[path]
 
         val mappedValue = mapValue(value)
         this.putInternal(path, mappedValue)
 
-        return prevoius
+        return previous
     }
 
     @Deprecated("", ReplaceWith("putIfAbsent(path, value)"))
@@ -436,3 +435,23 @@ class JsonBodyPublisher(json: JsonManager) : HttpRequest.BodyPublisher {
 }
 
 fun DataManager.readJson(): JsonManager? = this.readString()?.let { JsonManager(it) }
+
+inline fun <reified T: Any> JsonManager.deserializeOrThrow(deserializer: DeserializationStrategy<T>? = null) =
+    this.deserialize<T>(deserializer).getOrThrow()
+inline fun <reified T: Any> JsonManager.deserializeOrNull(deserializer: DeserializationStrategy<T>? = null) =
+    this.deserialize<T>(deserializer).getOrNull()
+inline fun <reified T: Any> JsonManager.deserialize(deserializer: DeserializationStrategy<T>? = null): Result<T> =
+    runCatching {
+        deserializer?.let { s -> Json.decodeFromString(s, this.toString(false)) }?.let { return@runCatching it }
+        return@runCatching Json.decodeFromString(this.toString())
+    }
+
+inline fun <reified T: Any> T.toJsonManagerOrThrow(serializer: SerializationStrategy<T>? = null): JsonManager =
+    this.toJsonManager(serializer).getOrThrow()
+inline fun <reified T: Any> T.toJsonManagerOrNull(serializer: SerializationStrategy<T>? = null): JsonManager? =
+    this.toJsonManager(serializer).getOrNull()
+inline fun <reified T: Any> T.toJsonManager(serializer: SerializationStrategy<T>? = null): Result<JsonManager> =
+    runCatching {
+        serializer?.let { s -> Json.encodeToString(s, this).let { return@runCatching JsonManager.parseOrThrow(it) } }
+        return@runCatching Json.encodeToString(this).let { JsonManager.parseOrThrow(it) }
+    }
