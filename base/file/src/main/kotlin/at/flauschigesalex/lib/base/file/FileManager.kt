@@ -15,7 +15,9 @@ class FileManager(val file: File) : DataManager(file.toURI()) {
     constructor(parent: File?, path: String) : this(File(parent, path))
     constructor(parent: FileManager?, path: String) : this(parent?.file, path)
     
-    val originalContent: String? = this.readString()
+    @Deprecated("Legacy code", level = DeprecationLevel.ERROR)
+    val originalContent: String
+        get() = throw NotImplementedError()
 
     @Deprecated("Deprecated", level = DeprecationLevel.ERROR)
     fun createJsonFile(): File? = createFile()
@@ -28,32 +30,24 @@ class FileManager(val file: File) : DataManager(file.toURI()) {
         if (parent != null && !file.parentFile.mkdirs() && !parent.exists())
             return null
 
-        try {
+        return runCatching { 
             file.createNewFile()
-            return file
-        } catch (_: Exception) {
-            return null
-        }
+            return@runCatching file
+        }.getOrNull()
     }
     fun createDirectory(): File? {
         if (file.exists() && file.isDirectory)
             return file
 
-        try {
+        return runCatching { 
             file.mkdirs()
-            return file
-        } catch (_: Exception) {
-            return null
-        }
+            return@runCatching file
+        }.getOrNull()
     }
 
-    override fun readStream(): InputStream? {
-        return try {
-            file.inputStream()
-        } catch (_: Exception) {
-            null
-        }
-    }
+    override fun readStream(): InputStream? = runCatching {
+        file.inputStream()
+    }.getOrNull()
 
     fun write(obj: Any): Boolean {
         return write(obj.toString().toByteArray())
