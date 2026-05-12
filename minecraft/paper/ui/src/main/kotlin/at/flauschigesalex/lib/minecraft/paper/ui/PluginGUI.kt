@@ -170,7 +170,6 @@ internal object PaperGUIListener : PaperListener() {
         val gui = player.getOpenGUI() ?: return
 
         val inventory = event.inventory
-        inventory.clear()
 
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             if (player.getOpenGUI() != gui)
@@ -182,6 +181,8 @@ internal object PaperGUIListener : PaperListener() {
             }.onFailure {
                 it.printStackTrace()
             }
+
+            inventory.clear()
         }, 1)
     }
 
