@@ -2,15 +2,6 @@
 
 package at.flauschigesalex.lib.base.general.version
 
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-
-@Serializable(SemanticVersionSerializer::class)
 data class SemanticVersion(val major: Int, val minor: Int, val patch: Int, val suffix: String = ""): Comparable<SemanticVersion> {
     companion object {
         
@@ -65,10 +56,4 @@ data class SemanticVersion(val major: Int, val minor: Int, val patch: Int, val s
     }
 
     override fun toString(): String = version
-}
-
-internal object SemanticVersionSerializer: KSerializer<SemanticVersion> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("SemanticVersion", PrimitiveKind.STRING)
-    override fun serialize(encoder: Encoder, value: SemanticVersion) = encoder.encodeString(value.version)
-    override fun deserialize(decoder: Decoder): SemanticVersion = SemanticVersion.parseOrThrow(decoder.decodeString())
 }

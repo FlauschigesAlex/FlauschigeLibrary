@@ -5,18 +5,18 @@
     <parent>
         <groupId>at.flauschigesalex.lib.database</groupId>
         <artifactId>parent-database</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
     </parent>
 
     <artifactId>database-minio</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>at.flauschigesalex.lib.database</groupId>
             <artifactId>database-internal</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
         </dependency>
         <dependency>
             <groupId>io.minio</groupId>
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>at.flauschigesalex.lib.base</groupId>
             <artifactId>default-file</artifactId>
-            <version>2.0.0</version>
+            <version>2.2.1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
