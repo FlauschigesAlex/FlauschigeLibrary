@@ -48,6 +48,7 @@ abstract class PaperGUI protected constructor(
 
         init {
             PaperGUIListener.register(FlauschigeLibraryPaper.activeData.first().plugin)
+            AnvilListener.register(FlauschigeLibraryPaper.activeData.first().plugin)
         }
     }
     
@@ -111,7 +112,6 @@ abstract class PaperGUI protected constructor(
         }
 
         player.getOpenGUI()?.onClose(player, player.openInventory.topInventory)
-        openGUIs[player.uniqueId] = this
         
         runCatching {
             val inventory = this.createGUI(player)
@@ -119,6 +119,7 @@ abstract class PaperGUI protected constructor(
             this.loadGUI(player, inventory)
             
             player.openInventory(inventory)
+            openGUIs[player.uniqueId] = this
             this.onOpen(player, inventory)
         }.onFailure { 
             openGUIs.remove(player.uniqueId, this)
@@ -140,7 +141,7 @@ abstract class PaperGUI protected constructor(
 internal object PaperGUIListener : PaperListener() {
 
     @EventHandler
-    private fun inventoryClick(event: InventoryClickEvent) {
+    private fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as Player
         val gui = player.getOpenGUI() ?: return
         
@@ -163,19 +164,20 @@ internal object PaperGUIListener : PaperListener() {
         }
     }
 
-    @Suppress("DEPRECATION")
     @EventHandler
-    private fun inventoryClose(event: InventoryCloseEvent) {
+    @Suppress("DEPRECATION")
+    private fun onInventoryClose(event: InventoryCloseEvent) {
         val player = event.player as Player
         val gui = player.getOpenGUI() ?: return
 
         val inventory = event.inventory
+        if (gui.isAnvilGUI) inventory.clear()
 
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-            if (player.getOpenGUI() != gui)
-                return@Runnable
+            if (player.getOpenGUI() != gui) return@Runnable
 
-            openGUIs.remove(player.uniqueId, gui)
+            openGUIs.remove(player.uniqueId)
+
             runCatching {
                 gui.onClose(player, inventory)
             }.onFailure {
@@ -192,7 +194,8 @@ internal object PaperGUIListener : PaperListener() {
         val gui = player.getOpenGUI() ?: return
 
         val inventory = player.openInventory.topInventory
-
+        openGUIs.remove(player.uniqueId, gui)
+        
         runCatching {
             gui.onClose(player, inventory)
         }.onFailure {
@@ -200,7 +203,6 @@ internal object PaperGUIListener : PaperListener() {
         }
 
         inventory.clear()
-        openGUIs.remove(player.uniqueId, gui)
     }
 }
 

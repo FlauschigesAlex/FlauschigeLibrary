@@ -95,11 +95,7 @@ abstract class AnvilGUI(
     }
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
-    final override fun loadLiveGUI(player: Player, inventory: Inventory) {
-        try {
-            val anvilView = player.openInventory as AnvilView
-        } catch (ignore: Exception) {}
-    }
+    final override fun loadLiveGUI(player: Player, inventory: Inventory) {}
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     final override fun onOpen(player: Player, inventory: Inventory): Boolean {
@@ -111,7 +107,7 @@ abstract class AnvilGUI(
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     final override fun onClose(player: Player, inventory: Inventory): Boolean {
-        return this.onClose(player, inventory as AnvilInventory)
+        return runCatching { this.onClose(player, inventory as AnvilInventory) }.getOrDefault(false)
     }
     open fun onClose(player: Player, inventory: AnvilInventory): Boolean {
         inventory.clear()
@@ -177,7 +173,7 @@ abstract class AnvilGUI(
 /**
  * @since 1.6.0
  */
-private class AnvilListener private constructor(): PaperListener() {
+internal object AnvilListener : PaperListener() {
 
     @EventHandler
     private fun onTyping(event: PrepareAnvilEvent) {
