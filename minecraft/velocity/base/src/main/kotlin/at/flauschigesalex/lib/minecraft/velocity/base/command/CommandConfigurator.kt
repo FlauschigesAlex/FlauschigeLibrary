@@ -28,6 +28,11 @@ internal object CommandConfigurator {
             val instance = object : VelocityCommand() {
                 override val data: CommandData = CommandData(commandBuilder.command, commandBuilder.aliases)
 
+                override fun hasPermission(invocation: RawCommand.Invocation): Boolean {
+                    val permission = this.permission
+                    return permission == null || invocation.source().hasPermission(permission)
+                }
+
                 override fun executeCommand(sender: CommandSource, fullCommand: String, stringArgs: Array<String>) {
                     executeAsync(sender, fullCommand, stringArgs, commandBuilder.dispatcher)
                 }
