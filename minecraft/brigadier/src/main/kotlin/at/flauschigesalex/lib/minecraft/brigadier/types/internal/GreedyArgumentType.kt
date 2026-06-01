@@ -4,7 +4,7 @@ import at.flauschigesalex.lib.minecraft.brigadier.CommandArgumentType
 import net.kyori.adventure.audience.Audience
 
 @Suppress("unused")
-class GreedyArgumentType<A, T: CommandArgumentType<A>> private constructor(val any: T) : CommandArgumentType<A>() {
+open class GreedyArgumentType<A, T: CommandArgumentType<A>> protected constructor(val any: T) : CommandArgumentType<A>() {
 
     companion object {
         fun <A, T: CommandArgumentType<A>> greedy(any: T) = GreedyArgumentType(any)
