@@ -1,4 +1,4 @@
-package at.flauschigesalex.lib.database._internal
+package at.flauschigesalex.lib.database.base
 
 abstract class DatabaseLogin<T> protected constructor() {
 
