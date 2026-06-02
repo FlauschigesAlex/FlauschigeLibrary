@@ -34,7 +34,7 @@ internal object CommandConfigurator {
                 }
 
                 override fun executeCommand(sender: CommandSource, fullCommand: String, stringArgs: Array<String>) {
-                    executeAsync(sender, fullCommand, stringArgs, commandBuilder.dispatcher)
+                    executeAsync(sender, fullCommand, stringArgs, commandBuilder.commandInternal.coroutineContext)
                 }
 
                 private fun executeAsync(sender: CommandSource, fullCommand: String, stringArgs: Array<out String>, context: CoroutineContext?) {
@@ -45,89 +45,140 @@ internal object CommandConfigurator {
                         return
                     }
 
-                    val velocityArgs = stringArgs.filter { it.isNotEmpty() }.toTypedArray()
-                    var current: CommandBase = commandBuilder
-                    val resolvedCommand = fullCommand.ifBlank {
-                        if (velocityArgs.isEmpty()) commandBuilder.command
-                        else "${commandBuilder.command} ${velocityArgs.joinToString(" ")}"
-                    }
+                    runBlocking {
+                        val velocityArgs = stringArgs.filter { it.isNotEmpty() }.toTypedArray()
+                        var current: CommandBase = commandBuilder
+                        val resolvedCommand = fullCommand.ifBlank {
+                            if (velocityArgs.isEmpty()) commandBuilder.command
+                            else "${commandBuilder.command} ${velocityArgs.joinToString(" ")}"
+                        }
 
-                    val dataList = CommandArgumentDataList()
-                    val argList = mutableSetOf<CommandArgument<*>>()
+                        val dataList = CommandArgumentDataList()
+                        val argList = mutableSetOf<CommandArgument<*>>()
 
-                    velocityArgs.forEachIndexed paperArgs@{ index, string ->
-                        val success = current.eligibleArguments.filterNot {
-                            argList.contains(it.second)
-                        }.any required@{ (_, any) ->
-                            val type = any.type
-                            val value = runBlocking { type.parse(string, sender) } ?: return@required false
+                        var index = 0
+                        while (index < velocityArgs.size) {
+                            val string = velocityArgs[index]
+                            val success = current.commandInternal.eligibleArguments.filterNot {
+                                argList.contains(it.second)
+                            }.any required@{ (_, any) ->
+                                val type = any.type
+                                val value = type.parse(string, sender) ?: return@required false
 
-                            if (sender is Player && !any.canUse(sender, resolvedCommand, dataList, velocityArgs))
-                                return@required false
-
-                            if (type is NumberArgumentType<*>) {
-                                if (value !is Number)
-                                    throw IllegalStateException()
-
-                                if (type.allowRange(sender, value, any.isSuppressRangeWarning.not()) != true)
-                                    return@required false
-                            }
-
-                            if (type is GreedyArgumentType<*, *>) {
-                                val values = velocityArgs.copyOfRange(index, velocityArgs.size).map { arg -> runBlocking { type.parse(arg, sender) } }
-                                if (values.any { it == null })
+                                if (sender is Player && !any.canUse(sender, resolvedCommand, dataList, velocityArgs))
                                     return@required false
 
-                                val data = GreedyCommandArgumentData(index, values, any, type)
-                                dataList.add(data)
-                                argList.add(any)
+                                if (type is NumberArgumentType<*>) {
+                                    if (value !is Number)
+                                        throw IllegalStateException()
 
-                                val invocation = any.commandSuccess ?: any.commandFail
-                                val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
-                                return invocation.invoke(commandContext)
-                            } else {
-                                val data = CommandArgumentData(index, value, any, type)
-                                dataList.add(data)
-                                argList.add(any)
-                            }
+                                    if (type.allowRange(sender, value, any.isSuppressRangeWarning.not()) != true)
+                                        return@required false
+                                }
 
-                            if (any.isOptional && commandBuilder.optionalArgumentMode != OptionalArgumentMode.ORDERED)
+                                if (type is GreedyArgumentType<*, *>) {
+                                    val tailArguments = any.commandInternal.eligibleArguments
+                                        .asSequence()
+                                        .map { it.second }
+                                        .filterNot(argList::contains)
+                                        .filterNot { it.type is GreedyArgumentType<*, *> }
+                                        .distinct()
+                                        .toList()
+
+                                    val firstTailIndex = if (any.isOptional) index else index + 1
+                                    val preferredTailIndex = (firstTailIndex until velocityArgs.size).firstOrNull { tailIndex ->
+                                        val greedyValues = velocityArgs.copyOfRange(index, tailIndex).map { arg ->
+                                            type.parse(arg, sender)
+                                        }
+                                        if (greedyValues.any { it == null })
+                                            return@firstOrNull false
+
+                                        val simulatedDataList = CommandArgumentDataList(dataList.arguments.toMutableSet())
+                                        simulatedDataList.add(GreedyCommandArgumentData(index, greedyValues, any, type))
+
+                                        tailArguments.any { argument ->
+                                            val tailValue = argument.type.parse(velocityArgs[tailIndex], sender)
+                                                ?: return@any false
+
+                                            if (sender is Player && !argument.canUse(sender, resolvedCommand, simulatedDataList, velocityArgs))
+                                                return@any false
+
+                                            val argType = argument.type
+                                            if (argType is NumberArgumentType<*>) {
+                                                if (tailValue !is Number)
+                                                    throw IllegalStateException()
+
+                                                if (argType.allowRange(sender, tailValue, argument.isSuppressRangeWarning.not()) != true)
+                                                    return@any false
+                                            }
+
+                                            true
+                                        }
+                                    }
+                                    val greedyEndIndex = preferredTailIndex ?: velocityArgs.size
+                                    val values = velocityArgs.copyOfRange(index, greedyEndIndex).map { arg -> type.parse(arg, sender) }
+                                    if (values.any { it == null })
+                                        return@required false
+
+                                    val data = GreedyCommandArgumentData(index, values, any, type)
+                                    dataList.add(data)
+                                    argList.add(any)
+
+                                    current = any
+                                    if (preferredTailIndex == null) {
+                                        index = velocityArgs.size - 1
+                                        return@required true
+                                    }
+
+                                    index = preferredTailIndex - 1
+                                    return@required true
+                                } else {
+                                    val data = CommandArgumentData(index, value, any, type)
+                                    dataList.add(data)
+                                    argList.add(any)
+                                }
+
+                                if (any.isOptional && commandBuilder.baseInternal.optionalArgumentMode != OptionalArgumentMode.ORDERED)
+                                    return@required true
+
+                                current = any
                                 return@required true
+                            }
 
-                            current = any
-                            return@required true
+                            if (success.not()) {
+                                val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
+                                return@runBlocking current.commandInternal.commandFail(commandContext)
+                            }
+                            index++
                         }
 
-                        if (success.not()) {
-                            val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
-                            return current.commandFail(commandContext)
+                        val providedInvocation = argList.toMutableList().apply {
+                            while (this.count { it.isOptional.not() } > 1)
+                                this.removeFirst()
+                        }.reversed().firstOrNull { it.commandInternal.commandSuccess != null }?.commandInternal?.commandSuccess
+
+                        var optionalInvocation = current
+                        while (true) {
+                            val arguments = current.commandInternal.arguments
+                            val preferred = arguments.filter {
+                                if (sender is Player)
+                                    it.canUse(sender, resolvedCommand, dataList, velocityArgs)
+                                else true
+                            }.find { it.isOptional } ?: break
+
+                            if (preferred.commandInternal.commandSuccess != null)
+                                optionalInvocation = preferred
+
+                            current = preferred
                         }
+
+                        val invocation = providedInvocation
+                            ?: optionalInvocation.commandInternal.commandSuccess
+                            ?: optionalInvocation.commandInternal.commandFail
+
+                        val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
+                        return@runBlocking invocation.invoke(commandContext)
                     }
-
-                    val providedInvocation = argList.toMutableList().apply {
-                        while (this.count { it.isOptional.not() } > 1)
-                            this.removeFirst()
-                    }.reversed().firstOrNull { it.commandSuccess != null }?.commandSuccess
-
-                    var optionalInvocation = current
-                    while (true) {
-                        val arguments = current.arguments
-                        val preferred = arguments.filter {
-                            if (sender is Player)
-                                it.canUse(sender, resolvedCommand, dataList, velocityArgs)
-                            else true
-                        }.find { it.isOptional } ?: break
-
-                        if (preferred.commandSuccess != null)
-                            optionalInvocation = preferred
-
-                        current = preferred
-                    }
-
-                    val invocation = providedInvocation ?: optionalInvocation.commandSuccess ?: optionalInvocation.commandFail
-
-                    val commandContext = CommandContext(sender, sender, resolvedCommand, dataList, velocityArgs)
-                    return invocation.invoke(commandContext)
                 }
 
                 override fun suggestAsync(invocation: RawCommand.Invocation): CompletableFuture<List<String>> {
@@ -151,15 +202,15 @@ internal object CommandConfigurator {
                     val argList = mutableSetOf<CommandArgument<*>>()
                     
                     fun sendSuggestions(): CompletableFuture<List<String>> {
-                        val possibleArguments = if (commandBuilder.optionalArgumentMode == OptionalArgumentMode.UNORDERED) {
-                            current.eligibleArguments
+                        val possibleArguments = if (commandBuilder.baseInternal.optionalArgumentMode == OptionalArgumentMode.UNORDERED) {
+                            current.commandInternal.eligibleArguments
                                 .asSequence()
                                 .map { it.second }
                                 .filterNot(argList::contains)
                                 .distinct()
                                 .toList()
                         } else {
-                            argList.lastOrNull()?.arguments ?: commandBuilder.arguments
+                            argList.lastOrNull()?.commandInternal?.arguments ?: commandBuilder.commandInternal.arguments
                         }
 
                         val suggestArguments = possibleArguments.filter { argument ->
@@ -172,14 +223,18 @@ internal object CommandConfigurator {
                             return@filter argument.type.suggestType(currentArg, sender)
                         }
 
-                        return CompletableFuture.supplyAsync { suggestArguments.flatMap { it.type.defaultChatSuggestions(currentArg, sender) }.filter { it.startsWith(currentArg, true) } }
+                        return CompletableFuture.supplyAsync { suggestArguments.flatMap {
+                            it.overrideSuggest ?: it.type.defaultChatSuggestions(currentArg, sender)
+                        }.filter { it.startsWith(currentArg, true) } }
                     }
 
                     if (velocityArgs.size > 1) {
                         val mustBeCorrect = velocityArgs.dropLast(1).toTypedArray()
 
-                        mustBeCorrect.forEachIndexed paperArgs@{ index, string ->
-                            val success = current.eligibleArguments.filterNot {
+                        var index = 0
+                        while (index < mustBeCorrect.size) {
+                            val string = mustBeCorrect[index]
+                            val success = current.commandInternal.eligibleArguments.filterNot {
                                 argList.contains(it.second)
                             }.any required@{ (_, any) ->
                                 val type = any.type
@@ -197,7 +252,46 @@ internal object CommandConfigurator {
                                 }
 
                                 if (type is GreedyArgumentType<*, *>) {
-                                    val values = mustBeCorrect.copyOfRange(index, mustBeCorrect.size).map { arg -> runBlocking { type.parse(arg, sender) } }
+                                    val tailArguments = any.commandInternal.eligibleArguments
+                                        .asSequence()
+                                        .map { it.second }
+                                        .filterNot(argList::contains)
+                                        .filterNot { it.type is GreedyArgumentType<*, *> }
+                                        .distinct()
+                                        .toList()
+
+                                    val firstTailIndex = if (any.isOptional) index else index + 1
+                                    val preferredTailIndex = (firstTailIndex until mustBeCorrect.size).firstOrNull { tailIndex ->
+                                        val greedyValues = mustBeCorrect.copyOfRange(index, tailIndex).map { arg ->
+                                            runBlocking { type.parse(arg, sender) }
+                                        }
+                                        if (greedyValues.any { it == null })
+                                            return@firstOrNull false
+
+                                        val simulatedDataList = CommandArgumentDataList(dataList.arguments.toMutableSet())
+                                        simulatedDataList.add(GreedyCommandArgumentData(index, greedyValues, any, type))
+
+                                        tailArguments.any { argument ->
+                                            val tailValue = runBlocking { argument.type.parse(mustBeCorrect[tailIndex], sender) }
+                                                ?: return@any false
+
+                                            if (sender is Player && !argument.canUse(sender, fullCommand, simulatedDataList, mustBeCorrect))
+                                                return@any false
+
+                                            val argType = argument.type
+                                            if (argType is NumberArgumentType<*>) {
+                                                if (tailValue !is Number)
+                                                    throw IllegalStateException()
+
+                                                if (argType.allowRange(sender, tailValue, argument.isSuppressRangeWarning.not()) != true)
+                                                    return@any false
+                                            }
+
+                                            true
+                                        }
+                                    }
+                                    val greedyEndIndex = preferredTailIndex ?: mustBeCorrect.size
+                                    val values = mustBeCorrect.copyOfRange(index, greedyEndIndex).map { arg -> runBlocking { type.parse(arg, sender) } }
                                     if (values.any { it == null })
                                         return@required false
 
@@ -205,14 +299,19 @@ internal object CommandConfigurator {
                                     dataList.add(data)
                                     argList.add(any)
 
-                                    return sendSuggestions()
+                                    current = any
+                                    if (preferredTailIndex == null)
+                                        return sendSuggestions()
+
+                                    index = preferredTailIndex - 1
+                                    return@required true
                                 } else {
                                     val data = CommandArgumentData(index, value, any, type)
                                     dataList.add(data)
                                     argList.add(any)
                                 }
 
-                                if (any.isOptional && commandBuilder.optionalArgumentMode != OptionalArgumentMode.ORDERED)
+                                if (any.isOptional && commandBuilder.baseInternal.optionalArgumentMode != OptionalArgumentMode.ORDERED)
                                     return@required true
 
                                 current = any
@@ -222,6 +321,7 @@ internal object CommandConfigurator {
                             if (success.not()) {
                                 return CompletableFuture.supplyAsync { emptyList() }
                             }
+                            index++
                         }
                     }
                     

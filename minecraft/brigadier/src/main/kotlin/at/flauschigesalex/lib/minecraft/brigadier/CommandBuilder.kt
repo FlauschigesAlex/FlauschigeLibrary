@@ -1,7 +1,9 @@
 @file:Suppress("UNCHECKED_CAST", "unused", "MemberVisibilityCanBePrivate")
+@file:OptIn(CommandInternal::class)
 
 package at.flauschigesalex.lib.minecraft.brigadier
 
+import at.flauschigesalex.lib.minecraft.brigadier.CommandBase.Companion.DEFAULT_OPTIONAL_ARGUMENT_MODE
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -15,17 +17,18 @@ import kotlin.coroutines.CoroutineContext
  * @param arguments The data arguments of the command
  * @param strings The string arguments of the command
  */
-data class CommandContext(val sender: Audience,
-                          val executor: Audience,
-                          val fullCommand: String,
-                          val arguments: CommandArgumentDataList,
-                          val strings: Array<out String>
+data class CommandContext(
+    val sender: Audience, 
+    val executor: Audience, 
+    val fullCommand: String,
+    val arguments: CommandArgumentDataList,
+    val strings: Array<out String>
 ) {
     override fun hashCode(): Int = fullCommand.hashCode()
     override fun equals(other: Any?): Boolean = other is CommandContext && other.fullCommand == fullCommand
 }
 
-typealias CommandExecutor = (context: CommandContext) -> Unit
+typealias CommandExecutor = suspend (context: CommandContext) -> Unit
 typealias CommandRequirement = (context: CommandContext) -> Boolean
 
 fun Audience.sendIncompleteCommand(fullCommand: String) {
@@ -42,47 +45,23 @@ class CommandBuilder private constructor(command: String, consumer: CommandBuild
             CommandBuilder(command, consumer)
         }
     }
-    
-    @Deprecated("", ReplaceWith("CommandBuilder(command) {\nTODO(\"Unused CommandBuilder implementation\")\n}"), DeprecationLevel.ERROR)
-    constructor(command: String): this(command, throw IllegalArgumentException())
 
+    val baseInternal = InternalCommandBuilderMeta()
+    override var base: CommandBuilder = this
+    
+    @CommandInternal
     override val aliases: MutableList<String> = mutableListOf()
     internal var isRegistered = false
-    
-    @OptIn(CommandInternal::class)
-    @Deprecated("Deprecated by paper brigadier", level = DeprecationLevel.ERROR)
-    fun label(label: String) {}
-    
-    @CommandInternal
-    var optionalArgumentMode: OptionalArgumentMode = DEFAULT_OPTIONAL_ARGUMENT_MODE
-        private set
 
-    @OptIn(CommandInternal::class)
-    fun optionalMode(mode: OptionalArgumentMode) {
-        this.optionalArgumentMode = mode
-    }
-
-    @CommandInternal
-    var dispatcher: CoroutineContext? = null
-        private set
-
-    @Deprecated("Async command parsing behavior is declared deprecated by Mojang brigadier.")
-    @OptIn(CommandInternal::class)
-    fun dispatcher(dispatcher: CoroutineContext) {
-        this.dispatcher = dispatcher
-    }
-    
     init {
         consumer.invoke(this)
         this.registerInternally()
     }
 
-    @Deprecated("Replaced with consuming constructor", level = DeprecationLevel.ERROR)
-    fun register() {
-        throw IllegalArgumentException("Use consuming constructor instead")
+    fun optionalMode(mode: OptionalArgumentMode) {
+        this.baseInternal.optionalArgumentMode = mode
     }
-    
-    @OptIn(CommandInternal::class)
+
     private fun registerInternally() {
         if (isRegistered)
             return
@@ -93,4 +72,9 @@ class CommandBuilder private constructor(command: String, consumer: CommandBuild
 
     override fun equals(other: Any?): Boolean = other is CommandBuilder && other.command == command
     override fun hashCode(): Int = command.hashCode()
+}
+
+@CommandInternal
+class InternalCommandBuilderMeta {
+    var optionalArgumentMode: OptionalArgumentMode = DEFAULT_OPTIONAL_ARGUMENT_MODE
 }

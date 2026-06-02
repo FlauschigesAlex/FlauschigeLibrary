@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>minecraft-brigadier</artifactId>
-    <version>2.0.2</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -17,6 +17,12 @@
             <groupId>net.kyori</groupId>
             <artifactId>adventure-api</artifactId>
             <version>4.26.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-core</artifactId>
+            <version>1.10.2</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

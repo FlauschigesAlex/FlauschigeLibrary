@@ -77,7 +77,6 @@ fun Audience.sendRichMessage(message: String, vararg args: Pair<String, Any>) =
     this.sendRichMessage(message, args.map { Placeholder.unparsed(it.first, it.second.toString()) }.toTypedArray())
 fun Audience.sendRichMessage(message: String, args: Array<TagResolver>) =
     this.sendMessage(MiniMessage.miniMessage().deserialize(message, *args))
-fun Throwable.toRichString(prefix: String = "<red>", hover: (String) -> String = { "<red>$it" }) = "$prefix<hover:\"show_text\":\"${ hover(this.message.toString()) + "\n" + hover(this.stackTrace.toList().take(7).joinToString("\n") { hover(it.toString()).substringAfterLast("//") }) }\">${this::class.simpleName}</hover>"
 
 fun MojangProfile.toPlayerProfile() = Bukkit.createProfileExact(this.uniqueId, this.name)
 fun MojangProfile.toOfflinePlayer() = Bukkit.getOfflinePlayer(this.uniqueId)

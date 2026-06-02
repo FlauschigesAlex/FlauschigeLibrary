@@ -8,6 +8,7 @@ import at.flauschigesalex.lib.minecraft.brigadier.CommandInternal
 import at.flauschigesalex.lib.minecraft.brigadier.GreedyCommandArgumentData
 import at.flauschigesalex.lib.minecraft.brigadier.OptionalArgumentMode
 import at.flauschigesalex.lib.minecraft.brigadier.isOptional
+import at.flauschigesalex.lib.minecraft.brigadier.overrideSuggest
 import at.flauschigesalex.lib.minecraft.brigadier.shouldSuggest
 import at.flauschigesalex.lib.minecraft.brigadier.types.internal.GreedyArgumentType
 import at.flauschigesalex.lib.minecraft.brigadier.types.primitive.number.NumberArgumentType
@@ -47,15 +48,15 @@ internal object TabCompleteListener : PaperListener(false) {
         val argList = mutableSetOf<CommandArgument<*>>()
         
         fun sendSuggestions() {
-            val possibleArguments = if (commandBuilder.optionalArgumentMode == OptionalArgumentMode.UNORDERED) {
-                current.eligibleArguments
+            val possibleArguments = if (commandBuilder.baseInternal.optionalArgumentMode == OptionalArgumentMode.UNORDERED) {
+                current.commandInternal.eligibleArguments
                     .asSequence()
                     .map { it.second }
                     .filterNot(argList::contains)
                     .distinct()
                     .toList()
             } else {
-                argList.lastOrNull()?.arguments ?: commandBuilder.arguments
+                argList.lastOrNull()?.commandInternal?.arguments ?: commandBuilder.commandInternal.arguments
             }
 
             val suggestArguments = possibleArguments.filter { argument ->
@@ -73,7 +74,9 @@ internal object TabCompleteListener : PaperListener(false) {
             val completions = event.completions()
             completions.clear()
 
-            suggestArguments.flatMap { it.type.defaultChatSuggestions(currentArg, sender) }.filter { it.startsWith(currentArg, true) }.map {
+            suggestArguments.flatMap {
+                it.overrideSuggest ?: it.type.defaultChatSuggestions(currentArg, sender)
+            }.filter { it.startsWith(currentArg, true) }.map {
                 AsyncTabCompleteEvent.Completion.completion(it, null)
             }.forEach(completions::add)
         }
@@ -82,7 +85,7 @@ internal object TabCompleteListener : PaperListener(false) {
             val mustBeCorrect = paperArgs.dropLast(1).toTypedArray()
 
             mustBeCorrect.forEachIndexed paperArgs@{ index, string ->
-                val success = current.eligibleArguments.toList().filterNot {
+                val success = current.commandInternal.eligibleArguments.toList().filterNot {
                     argList.contains(it.second)
                 }.any required@{ (_, any) ->
                     val type = any.type
@@ -115,7 +118,7 @@ internal object TabCompleteListener : PaperListener(false) {
                         argList.add(any)
                     }
 
-                    if (any.isOptional && commandBuilder.optionalArgumentMode != OptionalArgumentMode.ORDERED)
+                    if (any.isOptional && commandBuilder.baseInternal.optionalArgumentMode != OptionalArgumentMode.ORDERED)
                         return@required true
 
                     current = any

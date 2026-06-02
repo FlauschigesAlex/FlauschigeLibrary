@@ -1,3 +1,5 @@
+@file:OptIn(CommandInternal::class)
+
 package at.flauschigesalex.lib.minecraft.brigadier.types.primitive.number
 
 import at.flauschigesalex.lib.minecraft.brigadier.CommandArgument
@@ -7,54 +9,42 @@ import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
+@Suppress("unused")
 interface NumberArgumentType<N> where N: Number, N: Comparable<N> {
 
     val min: N?
     val max: N?
 
+    @Suppress("UNCHECKED_CAST")
     fun allowRange(sender: Audience, value: Any, sendMessage: Boolean): Boolean? {
 
-        if (value !is Number)
-            return false
-
+        val number = value as? N ?: return false
         val className = value::class.java.simpleName.lowercase()
+        
+        val (min, max) = this.min to this.max
 
-        if (min != null && value.check(min!!, false)) {
+        if (min != null && number < min) {
             if (sendMessage) sender.sendMessage(Component.translatable("argument.$className.low").color(NamedTextColor.RED).arguments(Component.text(this.min.toString()), Component.text(value.toString())))
             return null
         }
-        if (max != null && value.check(max!!, true)) {
+        if (max != null && number > max) {
             if (sendMessage) sender.sendMessage(Component.translatable("argument.$className.big").color(NamedTextColor.RED).arguments(Component.text(this.max.toString()), Component.text(value.toString())))
             return null
         }
 
         return true
     }
-    
-    // TODO IMPROVE
-    private inline fun <reified N: Number> N.check(num: Number, larger: Boolean): Boolean {
-        return when (this) {
-            is Long -> if (larger) this > num.toLong() else this < num.toLong()
-            is Int -> if (larger) this > num.toInt() else this < num.toInt()
-            is Short -> if (larger) this > num.toShort() else this < num.toShort()
-            is Byte -> if (larger) this > num.toByte() else this < num.toByte()
-
-            is Double -> if (larger) this > num.toDouble() else this < num.toDouble()
-            is Float -> if (larger) this > num.toFloat() else this < num.toFloat()
-            
-            else -> throw IllegalArgumentException()
-        }
-    }
 }
 
 @CommandInternal
 fun Number.compareTo(other: Number): Int {
+    this.toLong().compareTo(other.toLong()).takeIf { it != 0 }?.let { return it }
     return this.toDouble().compareTo(other.toDouble())
 }
 
 fun <T> CommandArgument<T>.suppressRangeWarning() where T: CommandArgumentType<*>, T: NumberArgumentType<*> {
-    this.meta["suppressRangeWarning"] = true
+    this.commandInternal.meta["suppressRangeWarning"] = true
 }
 @CommandInternal
 val CommandArgument<*>.isSuppressRangeWarning: Boolean
-    get() = this.meta["suppressRangeWarning"] as? Boolean ?: false
+    get() = this.commandInternal.meta["suppressRangeWarning"] as? Boolean ?: false

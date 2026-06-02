@@ -27,7 +27,7 @@ object FlauschigeLibraryVelocity {
     val activeData: Set<InternalPluginData>
         get() = _activeData.toSet()
 
-    fun init(plugin: Any, server: ProxyServer, packages: String? = null, registerSelfListener: Boolean = false): InternalPluginData {
+    fun init(plugin: Any, server: ProxyServer, packages: String? = null): InternalPluginData {
         val packageName = packages ?: plugin.javaClass.packageName
         val data = InternalPluginData(plugin, packageName)
 
@@ -36,7 +36,7 @@ object FlauschigeLibraryVelocity {
 
         firstInit(plugin, server)
         _activeData.add(data)
-        reflectPaper(data, server, registerSelfListener)
+        reflectPaper(data, server)
         return data
     }
 
@@ -61,7 +61,7 @@ object FlauschigeLibraryVelocity {
         }
     }
 
-    private fun reflectPaper(data: InternalPluginData, server: ProxyServer, registerSelfListener: Boolean) {
+    private fun reflectPaper(data: InternalPluginData, server: ProxyServer) {
         val (plugin, packageName) = data
         
         Reflector.reflect(plugin.javaClass.classLoader, packageName).getSubTypes(VelocityReflect::class.java).filter {
@@ -86,9 +86,6 @@ object FlauschigeLibraryVelocity {
             }
         }
         
-        if (registerSelfListener && plugin !is VelocityListener)
-            server.eventManager.register(plugin, plugin)
-        
         server.eventManager.fire(VelocityReflectFinishEvent(data))
     }
 }
@@ -102,8 +99,4 @@ data class InternalPluginData(internal val plugin: Any, val packageName: String)
             if (!it.exists) it.createDirectory()
             it.file
         }
-    
-    init {
-        dataFolder // CREATE DATA FOLDER
-    }
 }

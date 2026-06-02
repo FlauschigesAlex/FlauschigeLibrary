@@ -1,4 +1,5 @@
 @file:Suppress("UNCHECKED_CAST", "unused")
+@file:OptIn(CommandInternal::class)
 
 package at.flauschigesalex.lib.minecraft.brigadier
 
@@ -14,8 +15,9 @@ data class CommandArgument<T: CommandArgumentType<*>>(val name: String, val type
         private set
     
     @OptIn(CommandInternal::class)
-    internal fun parent(base: CommandBase) {
-        this.parent = base
+    internal fun parent(parent: CommandBase) {
+        this.parent = parent
+        this.base = parent.base
     }
 
     fun depth(): Int {
@@ -23,21 +25,21 @@ data class CommandArgument<T: CommandArgumentType<*>>(val name: String, val type
         var current: CommandBase? = this
         while (current != null) {
             depth++
-            current = current.arguments.firstOrNull()
+            current = current.commandInternal.arguments.firstOrNull()
         }
         return depth
     }
     
-    internal val meta = mutableMapOf<String, Any>()
-    @CommandInternal
-    fun getMeta(key: String): Any? = meta[key]
-    
     fun optional() {
-        meta["optional"] = true
+        this.commandInternal.meta["optional"] = true
     }
 
     fun suggest(suggest: Boolean) {
-        meta["suggest"] = suggest
+        this.commandInternal.meta["suggest"] = suggest
+    }
+    
+    fun suggestions(suggestions: Set<String>) {
+        this.commandInternal.meta["suggestions"] = suggestions
     }
 
     @CommandInternal
@@ -108,7 +110,12 @@ class InternalCommandArgumentMeta {
     val requirements = mutableListOf<CommandRequirement>()
 }
 
+@CommandInternal
 val CommandArgument<*>.isOptional: Boolean
-    get() = meta["optional"] as? Boolean ?: false
+    get() = this.commandInternal.meta["optional"] as? Boolean ?: false
+@CommandInternal
 val CommandArgument<*>.shouldSuggest: Boolean
-    get() = meta["suggest"] as? Boolean ?: true
+    get() = this.commandInternal.meta["suggest"] as? Boolean ?: true
+@CommandInternal
+val CommandArgument<*>.overrideSuggest: List<String>?
+    get() = (this.commandInternal.meta["suggestions"] as? Set<String>)?.toList()
