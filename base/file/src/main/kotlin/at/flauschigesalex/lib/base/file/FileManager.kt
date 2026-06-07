@@ -80,8 +80,9 @@ class FileManager(val file: File) : DataManager(file.toURI()) {
     fun move(newFile: File): Boolean {
         return file.renameTo(newFile)
     }
-    fun copy(newFile: File): File {
-        return file.copyTo(newFile, overwrite = true)
+    fun copy(newFile: File): File? {
+        val success = file.copyRecursively(newFile, overwrite = true)
+        return if (success) newFile else null
     }
 
     val exists: Boolean
@@ -103,3 +104,10 @@ val File.listFiles: List<File>
     get() = this.listFiles()?.toList() ?: emptyList()
 val File.list: List<String>
     get() = this.list()?.toList() ?: emptyList()
+
+fun main() {
+    val file = FileManager(".idea")
+    println(file.exists)
+    
+    file.copy(File(".idea2"))
+}
