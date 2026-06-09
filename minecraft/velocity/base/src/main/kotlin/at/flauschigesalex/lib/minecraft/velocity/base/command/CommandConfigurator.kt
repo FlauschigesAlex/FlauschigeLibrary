@@ -223,8 +223,10 @@ internal object CommandConfigurator {
                             return@filter argument.type.suggestType(currentArg, sender)
                         }
 
-                        return CompletableFuture.supplyAsync { suggestArguments.flatMap {
-                            it.overrideSuggest ?: it.type.defaultChatSuggestions(currentArg, sender)
+                        val context = CommandContext(sender, sender, fullCommand, dataList, velocityArgs)
+                        
+                        return CompletableFuture.supplyAsync { suggestArguments.flatMap { arg ->
+                            arg.commandInternal.overrideSuggestions?.let { it(context) } ?: arg.type.defaultChatSuggestions(currentArg, sender)
                         }.filter { it.startsWith(currentArg, true) } }
                     }
 

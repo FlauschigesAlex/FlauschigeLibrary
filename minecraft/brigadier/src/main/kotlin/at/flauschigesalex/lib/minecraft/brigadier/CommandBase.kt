@@ -82,6 +82,8 @@ class InternalCommandBaseMeta {
     val arguments = mutableListOf<CommandArgument<*>>()
     val meta = mutableMapOf<String, Any>()
     var coroutineContext: CoroutineContext? = null
+    
+    var overrideSuggestions: ((CommandContext) -> Set<String>)? = null
 
     @CommandInternal
     val eligibleArguments: List<Pair<CommandArgument<*>, CommandArgument<*>>>

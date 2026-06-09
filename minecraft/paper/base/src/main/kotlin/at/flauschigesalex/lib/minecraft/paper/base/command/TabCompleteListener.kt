@@ -1,15 +1,6 @@
 package at.flauschigesalex.lib.minecraft.paper.base.command
 
-import at.flauschigesalex.lib.minecraft.brigadier.CommandArgument
-import at.flauschigesalex.lib.minecraft.brigadier.CommandArgumentData
-import at.flauschigesalex.lib.minecraft.brigadier.CommandArgumentDataList
-import at.flauschigesalex.lib.minecraft.brigadier.CommandBase
-import at.flauschigesalex.lib.minecraft.brigadier.CommandInternal
-import at.flauschigesalex.lib.minecraft.brigadier.GreedyCommandArgumentData
-import at.flauschigesalex.lib.minecraft.brigadier.OptionalArgumentMode
-import at.flauschigesalex.lib.minecraft.brigadier.isOptional
-import at.flauschigesalex.lib.minecraft.brigadier.overrideSuggest
-import at.flauschigesalex.lib.minecraft.brigadier.shouldSuggest
+import at.flauschigesalex.lib.minecraft.brigadier.*
 import at.flauschigesalex.lib.minecraft.brigadier.types.internal.GreedyArgumentType
 import at.flauschigesalex.lib.minecraft.brigadier.types.primitive.number.NumberArgumentType
 import at.flauschigesalex.lib.minecraft.brigadier.types.primitive.number.isSuppressRangeWarning
@@ -19,7 +10,6 @@ import kotlinx.coroutines.runBlocking
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
-import kotlin.collections.copyOfRange
 
 internal object TabCompleteListener : PaperListener(false) {
     
@@ -30,7 +20,8 @@ internal object TabCompleteListener : PaperListener(false) {
             return
         
         val sender = event.sender
-        val strings = event.buffer.drop(1).split(' ')
+        val command = event.buffer.drop(1)
+        val strings = if (command.endsWith(' ')) command.dropLast(1).split(' ') + "" else command.split(' ')
         
         val fullCommand = event.buffer
         val baseCommand = strings.first().substringAfterLast(":")
@@ -66,16 +57,18 @@ internal object TabCompleteListener : PaperListener(false) {
                 if (argument.shouldSuggest.not())
                     return@filter false
                 
-                return@filter argument.type.suggestType(currentArg, sender)
+                return@filter argument.commandInternal.overrideSuggestions != null || argument.type.suggestType(currentArg, sender)
             }
 
             event.isHandled = true
             event.completions = emptyList()
             val completions = event.completions()
             completions.clear()
+            
+            val context = CommandContext(sender, sender, fullCommand, dataList, paperArgs)
 
-            suggestArguments.flatMap {
-                it.overrideSuggest ?: it.type.defaultChatSuggestions(currentArg, sender)
+            suggestArguments.flatMap { arg ->
+                arg.commandInternal.overrideSuggestions?.let { it(context) } ?: arg.type.defaultChatSuggestions(currentArg, sender)
             }.filter { it.startsWith(currentArg, true) }.map {
                 AsyncTabCompleteEvent.Completion.completion(it, null)
             }.forEach(completions::add)

@@ -38,8 +38,9 @@ data class CommandArgument<T: CommandArgumentType<*>>(val name: String, val type
         this.commandInternal.meta["suggest"] = suggest
     }
     
-    fun suggestions(suggestions: Set<String>) {
-        this.commandInternal.meta["suggestions"] = suggestions
+    fun suggestions(suggestions: Set<String>) = this.suggestions { suggestions }
+    fun suggestions(suggestions: (CommandContext) -> Set<String>) {
+        this.commandInternal.overrideSuggestions = suggestions
     }
 
     @CommandInternal
@@ -116,6 +117,3 @@ val CommandArgument<*>.isOptional: Boolean
 @CommandInternal
 val CommandArgument<*>.shouldSuggest: Boolean
     get() = this.commandInternal.meta["suggest"] as? Boolean ?: true
-@CommandInternal
-val CommandArgument<*>.overrideSuggest: List<String>?
-    get() = (this.commandInternal.meta["suggestions"] as? Set<String>)?.toList()
