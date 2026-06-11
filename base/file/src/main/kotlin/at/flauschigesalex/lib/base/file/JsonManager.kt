@@ -435,6 +435,7 @@ class JsonBodyPublisher(json: JsonManager) : HttpRequest.BodyPublisher {
 }
 
 fun DataManager.readJson(): JsonManager? = this.readString()?.let { JsonManager(it) }
+fun DataManager.readJsonList(): List<JsonManager> = this.readString()?.let { JsonManager.listOf(it) }.orEmpty()
 
 inline fun <reified T: Any> JsonManager.deserializeOrThrow(deserializer: DeserializationStrategy<T>? = null) =
     this.deserialize<T>(deserializer).getOrThrow()
