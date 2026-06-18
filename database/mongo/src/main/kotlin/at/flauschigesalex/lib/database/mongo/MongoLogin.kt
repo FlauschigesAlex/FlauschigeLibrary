@@ -1,8 +1,8 @@
 package at.flauschigesalex.lib.database.mongo
 
 import at.flauschigesalex.lib.base.file.DataManager
-import at.flauschigesalex.lib.base.file.JsonManager
-import at.flauschigesalex.lib.base.file.readJson
+import at.flauschigesalex.lib.base.file.json.JsonManager
+import at.flauschigesalex.lib.base.file.json.readJson
 import at.flauschigesalex.lib.database.base.DatabaseLogin
 import com.mongodb.ServerAddress
 

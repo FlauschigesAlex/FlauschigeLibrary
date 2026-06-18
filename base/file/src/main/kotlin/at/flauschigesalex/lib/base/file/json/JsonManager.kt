@@ -1,14 +1,14 @@
 @file:Suppress("unused")
 
-package at.flauschigesalex.lib.base.file
+package at.flauschigesalex.lib.base.file.json
 
+import at.flauschigesalex.lib.base.file.DataManager
+import at.flauschigesalex.lib.base.file.FileManager
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -20,9 +20,11 @@ import java.net.http.HttpResponse.BodySubscribers
 import java.nio.ByteBuffer
 import java.util.UUID
 import java.util.concurrent.Flow
+import javax.xml.crypto.Data
 import kotlin.collections.toByteArray
+import kotlin.reflect.jvm.jvmName
 
-@Serializable(with = JsonManager.Companion.JsonSerializer::class)
+@Serializable(JsonManager.Companion.JsonSerializer::class)
 class JsonManager(private var _content: JsonObject) : Cloneable {
 
     companion object {
@@ -76,20 +78,17 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         
         @Suppress("FunctionName")
         fun BodyPublisher(json: JsonManager): JsonBodyPublisher = JsonBodyPublisher(json)
-        class JsonSerializer : KSerializer<JsonManager> {
-
-            override val descriptor: SerialDescriptor
-                get() = PrimitiveSerialDescriptor("JsonManager", PrimitiveKind.STRING)
-
-            override fun deserialize(decoder: Decoder): JsonManager = parseOrThrow(decoder.decodeString())
-            override fun serialize(encoder: Encoder, value: JsonManager) = encoder.encodeString(value.toString())
+        object JsonSerializer : KSerializer<JsonManager> {
+            override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
+            override fun deserialize(decoder: Decoder): JsonManager = JsonManager(decoder.decodeSerializableValue(JsonObject.serializer()))
+            override fun serialize(encoder: Encoder, value: JsonManager) = encoder.encodeSerializableValue(JsonObject.serializer(), value.content)
         }
     }
 
     val content: JsonObject
-        get() = _content
+        get() = JsonObject(this._content)
 
-    var originalContent = _content
+    var originalContent: JsonObject = content
         private set
 
     fun overrideOriginalContent() {
@@ -98,8 +97,6 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
 
     operator fun set(path: String, value: Any?) = this.put(path, value)
 
-    @Deprecated("", ReplaceWith("put(path, value)"))
-    fun write(path: String, value: Any?) = this.put(path, value)
     fun put(path: String, value: Any?): Any? {
         if (value == null)
             return remove(path)
@@ -112,19 +109,12 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         return previous
     }
 
-    @Deprecated("", ReplaceWith("putIfAbsent(path, value)"))
-    fun writeIfAbsent(path: String, value: Any?) = this.put(path, value)
     fun putIfAbsent(path: String, value: Any?): Any? {
         val current = this[path]
         if (current != null)
             return current
 
         return this.put(path, value)
-    }
-
-    @Deprecated("", ReplaceWith("putIfAbsent(path, value)"), DeprecationLevel.ERROR)
-    fun writeIfAbsent(map: Map<String, Any?>) {
-        throw IllegalAccessException()
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -162,17 +152,15 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
                 return JsonObject(map)
             }
 
-            try {
+            return runCatching {
                 val nextObj = (obj[key]?.jsonObject) ?: JsonObject(emptyMap())
                 val updatedChild = putRec(nextObj, remainingKeys.drop(1)) ?: JsonObject(emptyMap())
 
                 val map = obj.toMutableMap()
                 map[key] = updatedChild
 
-                return JsonObject(map)
-            } catch (_: Exception) {
-                return null
-            }
+                return@runCatching JsonObject(map)
+            }.getOrNull()
         }
 
         val new = putRec(_content, keys) ?: return null
@@ -181,10 +169,10 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
     }
 
     fun remove(path: String): Any? {
-        val prevoius = this[path]
+        val previous = this[path]
         removeInternal(path) ?: return null
 
-        return prevoius
+        return previous
     }
     private fun removeInternal(path: String): JsonObject? {
         val keys = path.split(".")
@@ -199,8 +187,7 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
                 return JsonObject(map)
             }
 
-            return try {
-                val child = obj[key]?.jsonObject ?: JsonObject(emptyMap())
+            return runCatching { val child = obj[key]?.jsonObject ?: JsonObject(emptyMap())
                 val updatedChild = removeRec(child, remainingKeys.drop(1))
 
                 if (updatedChild != null) {
@@ -211,9 +198,7 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
                     }
                 }
                 JsonObject(map)
-            } catch (_: Exception) {
-                null
-            }
+            }.getOrNull()
         }
 
         val new = removeRec(_content, keys) ?: return null
@@ -231,8 +216,6 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         return list as List<Any>
     }
 
-    @Deprecated("", ReplaceWith("getJson(path)"))
-    fun getJsonManager(path: String): JsonManager? = this.getJson(path)
     fun getJson(path: String): JsonManager? = this.getString(path)?.let { invoke(it) }
     fun getJsonList(path: String): List<JsonManager> = this.getList(path).mapNotNull { invoke(it) }
 
@@ -249,8 +232,6 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         return getList(path).map { (it as? JsonArray)?.mapNotNull { c -> c.jsonPrimitive.int.toByte() }?.toByteArray() }
     }
     
-    @Deprecated("", ReplaceWith("getInt(key)"))
-    fun getInteger(path: String) = this.getInt(path)
     fun getInt(path: String): Int? = this.getString(path)?.toIntOrNull()
     fun getIntList(path: String): List<Int> = this.getStringList(path).mapNotNull { it.toIntOrNull() }
 
@@ -275,25 +256,13 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         val currentValue = json[currentKey] ?: return null
 
         if (remainingKey.isBlank()) {
-            try {
-                return currentValue.jsonPrimitive.toKotlinAny()
-            } catch (_: Exception) {}
-            try {
-                return currentValue.jsonObject
-            } catch (_: Exception) {}
-            try {
-                return currentValue.jsonArray
-            } catch (_: Exception) {}
-
+            runCatching { return currentValue.jsonPrimitive.toKotlinAny() }
+            runCatching { return currentValue.jsonObject }
+            runCatching { return currentValue.jsonArray }
             return null
         }
 
-        try {
-            return this.getFrom(remainingKey, currentValue.jsonObject)
-        } catch (_: Exception) {
-        }
-
-        return null
+        return runCatching { this.getFrom(remainingKey, currentValue.jsonObject) }.getOrNull()
     }
 
     private fun JsonPrimitive.toKotlinAny(): Any? {
@@ -408,26 +377,20 @@ class JsonBodyPublisher(json: JsonManager) : HttpRequest.BodyPublisher {
 
     override fun subscribe(subscriber: Flow.Subscriber<in ByteBuffer>) {
         subscriber.onSubscribe(object : Flow.Subscription {
-            private var done = false
+            private var isComplete = false
             override fun request(n: Long) {
-                if (done || n <= 0)
-                    return
-
-                done = true
-                try {
-
+                if (isComplete || n <= 0) return
+                isComplete = true
+                
+                runCatching {
                     subscriber.onNext(ByteBuffer.wrap(bytes))
                     subscriber.onComplete()
-
-                } catch (e: Exception) {
-                    subscriber.onError(e)
-                }
+                }.onFailure { subscriber.onError(it) }
             }
 
             override fun cancel() {
-                done = true
+                isComplete = true
             }
-
         })
     }
 

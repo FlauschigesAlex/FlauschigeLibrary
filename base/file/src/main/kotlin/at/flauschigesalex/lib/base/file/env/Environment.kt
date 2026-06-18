@@ -1,6 +1,8 @@
-package at.flauschigesalex.lib.base.file
+package at.flauschigesalex.lib.base.file.env
 
-import java.lang.Exception
+import at.flauschigesalex.lib.base.file.DataManager
+import at.flauschigesalex.lib.base.file.FileManager
+import at.flauschigesalex.lib.base.file.ResourceManager
 
 @Suppress("unused")
 object Environment {
@@ -36,9 +38,6 @@ object Environment {
     fun getOrDefault(key: String, default: String) = get(key) ?: default
     fun getOrElse(key: String, default: () -> String) = get(key) ?: default()
 
-    @Deprecated("", ReplaceWith("set(key, value)")) 
-    fun put(key: String, value: String) = set(key, value)
-    
     operator fun set(key: String, value: String) {
         fields[key] = value
         file.write(fields.map { "${it.key}=${it.value}" }.joinToString(System.lineSeparator()))

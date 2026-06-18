@@ -2,7 +2,7 @@
 
 package at.flauschigesalex.lib.database.mongo.extensions
 
-import at.flauschigesalex.lib.base.file.JsonManager
+import at.flauschigesalex.lib.base.file.json.JsonManager
 import org.bson.BsonDocument
 import org.bson.Document
 

@@ -5,9 +5,6 @@ package at.flauschigesalex.lib.base.file
 import java.io.InputStream
 import java.net.URL
 
-@Deprecated("Renamed to ResourceManager", ReplaceWith("ResourceManager"), DeprecationLevel.ERROR)
-typealias ResourceHandler = ResourceManager
-
 @Suppress("MemberVisibilityCanBePrivate", "DEPRECATION")
 class ResourceManager private constructor(val url: URL) : DataManager(url.toURI()) {
 

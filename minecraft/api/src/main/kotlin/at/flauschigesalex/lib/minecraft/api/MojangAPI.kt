@@ -2,7 +2,7 @@
 
 package at.flauschigesalex.lib.minecraft.api
 
-import at.flauschigesalex.lib.base.file.JsonManager
+import at.flauschigesalex.lib.base.file.json.JsonManager
 import at.flauschigesalex.lib.base.general.HttpRequestHandler
 import java.util.*
 

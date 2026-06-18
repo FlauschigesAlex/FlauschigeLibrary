@@ -5,22 +5,12 @@ package at.flauschigesalex.lib.base.file
 import java.io.File
 import java.io.InputStream
 
-@Deprecated("Renamed to FileManager", ReplaceWith("FileManager"), DeprecationLevel.ERROR)
-typealias FileHandler = FileManager
-
 @Suppress("MemberVisibilityCanBePrivate")
 class FileManager(val file: File) : DataManager(file.toURI()) {
 
     constructor(path: String) : this(File(path))
     constructor(parent: File?, path: String) : this(File(parent, path))
     constructor(parent: FileManager?, path: String) : this(parent?.file, path)
-    
-    @Deprecated("Legacy code", level = DeprecationLevel.ERROR)
-    val originalContent: String
-        get() = throw NotImplementedError()
-
-    @Deprecated("Deprecated", level = DeprecationLevel.ERROR)
-    fun createJsonFile(): File? = createFile()
     
     fun createFile(): File? {
         if (file.exists())

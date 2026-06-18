@@ -7,9 +7,6 @@ import java.net.URI
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
-@Deprecated("Renamed to DataManager", ReplaceWith("DataManager"), DeprecationLevel.ERROR)
-typealias DataHandler = DataManager
-
 abstract class DataManager protected constructor(val uri: URI) {
 
     abstract fun readStream(): InputStream?
