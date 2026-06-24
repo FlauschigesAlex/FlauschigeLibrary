@@ -30,8 +30,9 @@ object Cache {
         this.put<T>(any, it)
     }
     @JvmName("getOrPutEntry")
-    inline fun <reified T: Any> getOrPut(any: Any, value: Supplier<CacheEntry<T>>): T = get<T>(any) ?: value.get().value.also {
-        this.put<T>(any, value.get())
+    inline fun <reified T: Any> getOrPut(any: Any, value: Supplier<CacheEntry<T>>): T = get<T>(any) ?: value.get().let { 
+        this.put<T>(any, it)
+        return@let it.value
     }
     
     @JvmName("putEntryTV")
