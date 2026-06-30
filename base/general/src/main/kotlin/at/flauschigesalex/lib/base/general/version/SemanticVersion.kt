@@ -31,9 +31,20 @@ data class SemanticVersion(val major: Int, val minor: Int, val patch: Int, val s
         fun parseOrThrow(string: String): SemanticVersion = this.parse(string).getOrThrow()
     }
     
-    val version: String = "$major.$minor.$patch${suffix.takeIf { it.isNotBlank() }?.let { "-$it" } ?: ""}"
+    constructor(major: Int, minor: Int, patch: Int, type: VersionType, build: Int): this(
+        major, minor, patch, type.names.firstOrNull()?.let { "$it.$build" } ?: ""
+    )
     
-    fun Char?.weight(): Int {
+    val version: String = "$major.$minor.$patch${suffix.takeIf { it.isNotBlank() }?.let { "-$it" } ?: ""}"
+
+    /**
+     * The version type of this version. Defaults to [VersionType.RELEASE] if no matching suffix is found.
+     */
+    val type: VersionType = VersionType.entries.find { s ->
+        s.names.any { it.startsWith(suffix, ignoreCase = true) }
+    } ?: VersionType.RELEASE
+    
+    private fun Char?.weight(): Int {
         if (this == null) return Int.MAX_VALUE
         
         if (this.toString().matches(Regex("[0-9a-zA-Z]")).not())
@@ -43,6 +54,12 @@ data class SemanticVersion(val major: Int, val minor: Int, val patch: Int, val s
     }
     
     override fun compareTo(other: SemanticVersion): Int {
+        if (this.major != other.major) return this.major.compareTo(other.major)
+        if (this.minor != other.minor) return this.minor.compareTo(other.minor)
+        if (this.patch != other.patch) return this.patch.compareTo(other.patch)
+        
+        if (this.suffix != other.suffix) return this.suffix.compareTo(other.suffix)
+        
         val size = maxOf(this.version.length, other.version.length)
         
         for (i in 0 until size) {
@@ -56,4 +73,13 @@ data class SemanticVersion(val major: Int, val minor: Int, val patch: Int, val s
     }
 
     override fun toString(): String = version
+}
+
+enum class VersionType(internal vararg val names: String) {
+    SNAPSHOT("snapshot", "snap", "s"),
+    ALPHA("alpha", "a"),
+    BETA("beta", "b"),
+    RELEASE_CANDIDATE("release-candidate", "cr", "rc"),
+    RELEASE,
+    ;
 }
