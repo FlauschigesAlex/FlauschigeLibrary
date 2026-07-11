@@ -41,7 +41,7 @@ data class SemanticVersion(val major: Int, val minor: Int, val patch: Int, val s
      * The version type of this version. Defaults to [VersionType.RELEASE] if no matching suffix is found.
      */
     val type: VersionType = VersionType.entries.find { s ->
-        s.names.any { it.startsWith(suffix, ignoreCase = true) }
+        s.names.any { suffix.startsWith(it, ignoreCase = true) }
     } ?: VersionType.RELEASE
     
     private fun Char?.weight(): Int {
@@ -58,7 +58,7 @@ data class SemanticVersion(val major: Int, val minor: Int, val patch: Int, val s
         if (this.minor != other.minor) return this.minor.compareTo(other.minor)
         if (this.patch != other.patch) return this.patch.compareTo(other.patch)
         
-        if (this.suffix != other.suffix) return this.suffix.compareTo(other.suffix)
+        if (this.type != other.type) return this.type.compareTo(other.type)
         
         val size = maxOf(this.version.length, other.version.length)
         
