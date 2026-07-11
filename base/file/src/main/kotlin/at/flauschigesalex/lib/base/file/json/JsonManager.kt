@@ -22,6 +22,7 @@ import java.util.UUID
 import java.util.concurrent.Flow
 import javax.xml.crypto.Data
 import kotlin.collections.toByteArray
+import kotlin.enums.EnumEntries
 import kotlin.reflect.jvm.jvmName
 
 @Serializable(JsonManager.Companion.JsonSerializer::class)
@@ -246,6 +247,16 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
 
     fun getBoolean(path: String): Boolean? = this.getString(path)?.toBoolean()
     fun getBooleanList(path: String): List<Boolean> = this.getStringList(path).map { it.toBoolean() }
+
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified E : Enum<E>> getEnum(path: String): E? {
+        val entries = runCatching {
+            E::class.java.getDeclaredMethod("getEntries").invoke(null) as EnumEntries<E>
+        }.getOrNull() ?: return null
+
+        return getEnum(entries, path)
+    }
+    fun <E: Enum<E>> getEnum(entries: EnumEntries<E>, path: String): E? = this.getString(path)?.let { s -> entries.find { it.name.equals(s, true) } }
 
     private fun getFrom(path: String, json: JsonObject): Any? {
 
