@@ -13,8 +13,18 @@ class Promise<T> {
     private var job: Job? = null
     private var scope: CoroutineScope? = null
 
-    internal val deferred: Deferred<T>
-    private var result: T? = null
+    internal var deferred: Deferred<T> = CompletableDeferred()
+        set(value) {
+            if (runCatching { field.getCompleted() }.getOrNull() != null)
+                throw IllegalArgumentException("Promise has already been supplied.")
+            
+            job?.cancel()
+            field = value
+            
+            this.getOrNull()?.let { 
+                this.callback(it)
+            }
+        }
     
     constructor(dispatcher: CoroutineDispatcher = Dispatchers.Default, supplier: suspend () -> T) {
         this.job = SupervisorJob()
@@ -24,35 +34,43 @@ class Promise<T> {
         this.init()
     }
     constructor(result: T) {
-        this.result = result
-        this.deferred = CompletableDeferred(result)
         this.init()
+        this.supply(result)
     }
+    
+    @PromiseWithoutSupplier constructor()
     
     private fun init() {
         deferred.invokeOnCompletion { 
             val value = deferred.getCompleted()
-            result = value
             callbacks.forEach { it(value) }
             job?.cancel()
         }
     }
     
+    fun supply(any: T) {
+        deferred = CompletableDeferred(any)
+    }
+    
     val isCompleted: Boolean
         get() = deferred.isCompleted
     
-    fun orElse(other: T): T = result ?: other
-    fun getOrElse(supplier: () -> T): T = result ?: supplier()
+    fun orElse(other: T): T = this.getOrNull() ?: other
+    fun getOrElse(supplier: () -> T): T = this.orElse(supplier())
     
     fun get(): Deferred<T> = deferred
-    fun getOrNull(): T? = result
-    fun getOrThrow(): T = result!!
+    fun getOrNull(): T? = runCatching { deferred.getCompleted() }.getOrNull()
+    fun getOrThrow(): T = this.get().getCompleted()
     
     private val callbacks = mutableListOf<(T) -> Unit>()
+    private fun callback(value: T) {
+        callbacks.forEach { it(value) }
+    }
+    
     fun onSuccess(block: (T) -> Unit) = apply { await(block) }
     fun await(block: (T) -> Unit) {
-        result?.run { 
-            return block(this)
+        this.getOrNull()?.let { 
+            return block(it)
         }
         
         callbacks.add(block)
@@ -84,3 +102,7 @@ fun <T, R> Promise<T>.map(transform: (T) -> R): Promise<R> =
     Promise { transform(this.deferred.await()) }
 fun <T, R> Promise<T>.mapPromise(transform: (T) -> Promise<R>): Promise<R> =
     Promise { transform(this.deferred.await()).deferred.await() }
+
+@Target(AnnotationTarget.CONSTRUCTOR)
+@RequiresOptIn("Promise does not have a supplier")
+annotation class PromiseWithoutSupplier
