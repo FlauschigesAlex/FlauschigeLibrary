@@ -12,6 +12,7 @@
 
     <groupId>at.flauschigesalex.lib.minecraft.paper</groupId>
     <artifactId>parent-minecraft-paper</artifactId>
+    <version>2.0.3</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -30,7 +31,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.11-R0.1-SNAPSHOT</version>
+            <version>[26.2.build, 26.3.build)</version>
             <scope>provided</scope>
         </dependency>
 
