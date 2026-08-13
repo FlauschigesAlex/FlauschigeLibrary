@@ -1,12 +1,15 @@
-@file:Suppress("KDocUnresolvedReference")
+@file:Suppress("KDocUnresolvedReference", "unused")
 
 package at.flauschigesalex.lib.minecraft.api
 
 import at.flauschigesalex.lib.base.file.json.JsonManager
 import at.flauschigesalex.lib.base.general.HttpRequestHandler
 import java.util.*
+import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
+import kotlin.uuid.toKotlinUuid
 
-@Suppress("MemberVisibilityCanBePrivate", "DEPRECATION", "unused")
+@Suppress("MemberVisibilityCanBePrivate", "DEPRECATION")
 object MojangAPI {
 
     private val cache = HashSet<MojangProfile>()
@@ -91,18 +94,24 @@ object MojangAPI {
             return null
         }
 
-        val uuidS = profileJson.getString("id")
+        val uuidS = profileJson.getString("id")!!
 
         val properties = HttpRequestHandler("https://sessionserver.mojang.com/session/minecraft/profile/$uuidS?unsigned=false")?.get()?.body()?.let { JsonManager(it)?.getJsonList("properties") }
         val texture = properties?.firstOrNull { it.getString("name") == "textures" }?.let {
             it.getString("value")!! to it.getString("signature")!!
         }
 
-        val item = MojangProfile(profileJson.getString("name")!!, uuidS!!.toUUID(), texture?.let { MojangProfileTexture(it.first, it.second) })
+        val uuid = uuidS.let { Uuid.parse(it) }
+        val item = MojangProfile(profileJson.getString("name")!!, uuid, texture?.let { MojangProfileTexture(it.first, it.second) })
         cache.add(item)
         return item
     }
 
+    /**
+     * @return The profile belonging to the provided Uuid
+     */
+    suspend fun profile(playerUUID: Uuid): MojangProfile? = this.profile(playerUUID.toJavaUuid())
+    
     /**
      * @return The profile belonging to the provided UUID
      */
@@ -114,8 +123,8 @@ object MojangAPI {
         if (cached != null)
             return cached
 
-        for (pair in uuidToNameLookup.filter { it.first == LookupCall.BEFORE }) {
-            val value = pair.second.invoke(playerUUID)
+        for ((_, pre) in uuidToNameLookup.filter { it.first == LookupCall.BEFORE }) {
+            val value = pre.invoke(playerUUID)
             if (value != null)
                 return value.profile.apply {
                     if (value.shouldCache)
@@ -127,8 +136,8 @@ object MojangAPI {
         if (default != null)
             return default
 
-        for (pair in uuidToNameLookup.filter { it.first == LookupCall.AFTER }) {
-            val value = pair.second.invoke(playerUUID)
+        for ((_, after) in uuidToNameLookup.filter { it.first == LookupCall.AFTER }) {
+            val value = after.invoke(playerUUID)
             if (value != null)
                 return value.profile.apply {
                     if (value.shouldCache)
@@ -138,6 +147,7 @@ object MojangAPI {
 
         return null
     }
+    
     /**
      * @return The profile belonging to the provided name
      */
@@ -149,8 +159,8 @@ object MojangAPI {
         if (cached != null)
             return cached
 
-        for (pair in nameToUuidLookup.filter { it.first == LookupCall.BEFORE }) {
-            val value = pair.second.invoke(playerName)
+        for ((_, pre) in nameToUuidLookup.filter { it.first == LookupCall.BEFORE }) {
+            val value = pre.invoke(playerName)
             if (value != null)
                 return value.profile.apply {
                     if (value.shouldCache)
@@ -162,8 +172,8 @@ object MojangAPI {
         if (default != null)
             return default
 
-        for (pair in nameToUuidLookup.filter { it.first == LookupCall.AFTER }) {
-            val value = pair.second.invoke(playerName)
+        for ((_, after) in nameToUuidLookup.filter { it.first == LookupCall.AFTER }) {
+            val value = after.invoke(playerName)
             if (value != null)
                 return value.profile.apply {
                     if (value.shouldCache)
@@ -200,22 +210,10 @@ object MojangAPI {
     }
 }
 
-data class MojangProfile(val name: String, val uniqueId: UUID, val texture: MojangProfileTexture?)
+data class MojangProfile(val name: String, val uniqueId: UUID, val texture: MojangProfileTexture?) {
+    constructor(name: String, uuid: Uuid, texture: MojangProfileTexture?) : this(name, uuid.toJavaUuid(), texture)
+    
+    val uuid: Uuid = uniqueId.toKotlinUuid()
+}
 data class MojangProfileTexture(val value: String, val signature: String)
 data class CacheableMojangProfile(val profile: MojangProfile, internal val shouldCache: Boolean = true)
-
-internal fun CharSequence.toUUID(): UUID {
-    if (this.length != 32)
-        throw IllegalArgumentException("String is not 32 chars long.")
-
-    val uuidS = this.substring(0, 8) + "-" +
-            this.substring(8, 12) + "-" +
-            this.substring(12, 16) + "-" +
-            this.substring(16, 20) + "-" +
-            this.substring(20)
-
-    if (!uuidS.matches(Regex("[a-z0-9-]+")))
-        throw IllegalArgumentException("String does not match UUID-regex.")
-
-    return UUID.fromString(uuidS)
-}

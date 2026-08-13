@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/minecraft/brigadier/minecraft-brigadier.iml" filepath="$PROJECT_DIR$/minecraft/brigadier/minecraft-brigadier.iml" />
       <module fileurl="file://$PROJECT_DIR$/minecraft/paper/base/minecraft-paper-base.iml" filepath="$PROJECT_DIR$/minecraft/paper/base/minecraft-paper-base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/minecraft/paper/dialog/minecraft-paper-dialog.iml" filepath="$PROJECT_DIR$/minecraft/paper/dialog/minecraft-paper-dialog.iml" />
       <module fileurl="file://$PROJECT_DIR$/minecraft/paper/ui/minecraft-paper-ui.iml" filepath="$PROJECT_DIR$/minecraft/paper/ui/minecraft-paper-ui.iml" />
       <module fileurl="file://$PROJECT_DIR$/minecraft/velocity/base/minecraft-velocity-base.iml" filepath="$PROJECT_DIR$/minecraft/velocity/base/minecraft-velocity-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/parent.iml" filepath="$PROJECT_DIR$/parent.iml" />
