@@ -21,7 +21,7 @@
         <dependency>
             <groupId>at.flauschigesalex.lib.minecraft.paper</groupId>
             <artifactId>minecraft-paper-base</artifactId>
-            <version>3.1.0</version>
+            <version>3.2.1</version>
         </dependency>
     </dependencies>
 

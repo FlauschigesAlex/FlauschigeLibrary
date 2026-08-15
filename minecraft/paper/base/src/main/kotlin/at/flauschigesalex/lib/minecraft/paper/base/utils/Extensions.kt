@@ -24,6 +24,7 @@ val Material.isColorable : Boolean
 val Material.isContainer : Boolean
     get() = asBlockType()?.createBlockData()?.createBlockState() is Container
 
+@Deprecated("")
 val Material.isObtainable: Boolean
     get() {
         // BY ITEM
@@ -78,5 +79,24 @@ fun Audience.sendRichMessage(message: String, vararg args: Pair<String, Any>) =
 fun Audience.sendRichMessage(message: String, args: Array<TagResolver>) =
     this.sendMessage(MiniMessage.miniMessage().deserialize(message, *args))
 
-fun MojangProfile.toPlayerProfile() = Bukkit.createProfileExact(this.uniqueId, this.name)
+fun MojangProfile.toPlayerProfile() = Bukkit.createProfileExact(this.uniqueId, this.name).also {
+    this.texture?.let { texture ->
+        it.texture(texture)
+    }
+}
+fun PlayerProfile.toMojangProfile(): MojangProfile {
+    val texture = this.properties.find { it.name == "textures" }?.let {
+        it.signature?.let { signature ->
+            MojangProfileTexture(it.value, signature)
+        }
+    }
+    
+    val name = this.name
+    require(name != null) { "Name must not be null" }
+    
+    val id = this.id
+    require(id != null) { "Id must not be null" }
+    
+    return MojangProfile(name, id, texture)
+}
 fun MojangProfile.toOfflinePlayer() = Bukkit.getOfflinePlayer(this.uniqueId)
