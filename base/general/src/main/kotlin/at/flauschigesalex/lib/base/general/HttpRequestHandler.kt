@@ -106,6 +106,12 @@ class HttpRequestHandler(val uri: URI, consumer: HttpSettingsConsumer = {}) {
         val builder = prepareBuilder().method(HttpRequestMethod.OPTIONS).build()
         return this.run(builder, handler)
     }
+  
+    suspend operator fun invoke(method: HttpRequestMethod): HttpResponse<String>? = invoke(method, BodyHandlers.ofString())
+    suspend operator fun <A: Any> invoke(method: HttpRequestMethod, handler: BodyHandler<A>, publisher: BodyPublisher = BodyPublishers.noBody()): HttpResponse<A>? {
+        val builder = prepareBuilder().method(method, publisher).build()
+        return this.run(builder, handler)
+    }
 
     private fun prepareBuilder(): HttpRequest.Builder {
         val builder = HttpRequest.newBuilder(uri)
