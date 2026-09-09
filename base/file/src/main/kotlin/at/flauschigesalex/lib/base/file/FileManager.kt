@@ -12,28 +12,25 @@ class FileManager(val file: File) : DataManager(file.toURI()) {
     constructor(parent: File?, path: String) : this(File(parent, path))
     constructor(parent: FileManager?, path: String) : this(parent?.file, path)
     
-    fun createFile(): File? {
+    fun createFile(): File? = runCatching {
         if (file.exists())
-            return file
+            return@runCatching file.takeIf { it.isFile }
 
         val parent = file.parentFile
-        if (parent != null && !file.parentFile.mkdirs() && !parent.exists())
-            return null
+        if (parent != null && !parent.isDirectory && !parent.mkdirs() && !parent.isDirectory)
+            return@runCatching null
 
-        return runCatching { 
-            file.createNewFile()
-            return@runCatching file
-        }.getOrNull()
-    }
-    fun createDirectory(): File? {
-        if (file.exists() && file.isDirectory)
-            return file
+        if (!file.createNewFile() && !file.isFile)
+            return@runCatching null
 
-        return runCatching { 
-            file.mkdirs()
-            return@runCatching file
-        }.getOrNull()
-    }
+        file.takeIf { it.isFile }
+    }.getOrNull()
+    fun createDirectory(): File? = runCatching {
+        if (!file.isDirectory && !file.mkdirs() && !file.isDirectory)
+            return@runCatching null
+
+        file.takeIf { it.isDirectory }
+    }.getOrNull()
 
     override fun readStream(): InputStream? = runCatching {
         file.inputStream()
@@ -94,10 +91,3 @@ val File.listFiles: List<File>
     get() = this.listFiles()?.toList() ?: emptyList()
 val File.list: List<String>
     get() = this.list()?.toList() ?: emptyList()
-
-fun main() {
-    val file = FileManager(".idea")
-    println(file.exists)
-    
-    file.copy(File(".idea2"))
-}

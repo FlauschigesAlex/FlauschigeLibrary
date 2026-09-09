@@ -4,11 +4,7 @@ package at.flauschigesalex.lib.base.file.json
 
 import at.flauschigesalex.lib.base.file.DataManager
 import at.flauschigesalex.lib.base.file.FileManager
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -18,12 +14,9 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodySubscribers
 import java.nio.ByteBuffer
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.Flow
-import javax.xml.crypto.Data
-import kotlin.collections.toByteArray
 import kotlin.enums.EnumEntries
-import kotlin.reflect.jvm.jvmName
 
 @Serializable(JsonManager.Companion.JsonSerializer::class)
 class JsonManager(private var _content: JsonObject) : Cloneable {
@@ -40,7 +33,7 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         
         operator fun invoke(json: String): JsonManager? = this.parse(json).getOrNull()
         operator fun invoke(json: Any?): JsonManager? = json?.let {
-            invoke(it.toString()) ?: it.toJsonManagerOrNull()
+            invoke(it.toString()) ?: it.serializeOrNull()
         }
         operator fun invoke(json: JsonElement): JsonManager? = runCatching { JsonManager(json.jsonObject) }.getOrNull()
         operator fun invoke(map: Map<String, Any?>): JsonManager = JsonManager().apply {
@@ -53,12 +46,16 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
 
         fun listOf(json: String): List<JsonManager> = runCatching {
             val array = Json.parseToJsonElement(json).jsonArray
-            return array.map { item -> item.toJsonManagerOrThrow() }
+            return array.map { item -> item.serializeOrThrow() }
         }.getOrElse { JsonManager(json)?.let { listOf(it) } ?: emptyList() }
         
         fun listOf(json: Any?): List<JsonManager> = json?.let { listOf(it.toString()) } ?: emptyList()
         fun listOf(handler: DataManager): List<JsonManager> = handler.readString()?.let { listOf(it) } ?: emptyList()
         fun listOf(file: File): List<JsonManager> = listOf(FileManager(file))
+        
+        var json: Json = Json {
+            prettyPrint = true
+        }
          
         val BodyHandler = HttpResponse.BodyHandler<JsonManager> {
             BodySubscribers.mapping(BodySubscribers.ofString(Charsets.UTF_8)) {
@@ -70,7 +67,7 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
                 runCatching {
                     val array = Json.parseToJsonElement(it).jsonArray
                     val jsonList = array.map { item ->
-                        item.toJsonManagerOrThrow()
+                        item.serializeOrThrow()
                     }
                     return@runCatching jsonList
                 }.getOrNull()
@@ -118,7 +115,6 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         return this.put(path, value)
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     private fun mapValue(value: Any): JsonElement {
         return when (value) {
             is JsonElement -> value
@@ -142,10 +138,10 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
             }
         }
     }
-    private fun putInternal(path: String, value: JsonElement): JsonObject? {
+    private fun putInternal(path: String, value: JsonElement): JsonObject {
         val keys = path.split(".")
 
-        fun putRec(obj: JsonObject, remainingKeys: List<String>): JsonObject? {
+        fun putRec(obj: JsonObject, remainingKeys: List<String>): JsonObject {
             val key = remainingKeys.first()
             if (remainingKeys.size == 1) {
                 val map = obj.toMutableMap()
@@ -153,18 +149,16 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
                 return JsonObject(map)
             }
 
-            return runCatching {
-                val nextObj = (obj[key]?.jsonObject) ?: JsonObject(emptyMap())
-                val updatedChild = putRec(nextObj, remainingKeys.drop(1)) ?: JsonObject(emptyMap())
+            val nextObj = obj[key] as? JsonObject ?: JsonObject(emptyMap())
+            val updatedChild = putRec(nextObj, remainingKeys.drop(1))
 
-                val map = obj.toMutableMap()
-                map[key] = updatedChild
+            val map = obj.toMutableMap()
+            map[key] = updatedChild
 
-                return@runCatching JsonObject(map)
-            }.getOrNull()
+            return JsonObject(map)
         }
 
-        val new = putRec(_content, keys) ?: return null
+        val new = putRec(_content, keys)
         _content = new
         return new
     }
@@ -221,13 +215,31 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
     fun getJsonList(path: String): List<JsonManager> = this.getList(path).mapNotNull { invoke(it) }
 
     fun getString(path: String): String? = this[path]?.toString()
-    fun getStringList(path: String): List<String> = this.getList(path).map { it.toString().trim('"') }
+    fun getStringList(path: String): List<String> = this.getList(path).map {
+        if (it is JsonPrimitive) it.content else it.toString()
+    }
     
     fun getUUID(path: String): UUID? = this.getString(path)?.let { runCatching { UUID.fromString(it) }.getOrDefault(null) }
     fun getUUIDList(path: String): List<UUID> = this.getStringList(path).mapNotNull { runCatching { UUID.fromString(it) }.getOrDefault(null) }
 
     fun getByte(path: String): Byte? = this.getInt(path)?.toByte()
-    fun getByteArray(path: String): ByteArray = this.getString(path)?.toByteArray() ?: ByteArray(0)
+    fun getByteArray(path: String): ByteArray {
+        return when (val value = this[path]) {
+            is String -> value.toByteArray(Charsets.UTF_8)
+            is JsonArray -> {
+                val bytes = ByteArray(value.size)
+                value.forEachIndexed { index, element ->
+                    val primitive = element as? JsonPrimitive ?: return ByteArray(0)
+                    if (primitive.isString) return ByteArray(0)
+                    val number = primitive.intOrNull ?: return ByteArray(0)
+                    if (number !in Byte.MIN_VALUE..Byte.MAX_VALUE) return ByteArray(0)
+                    bytes[index] = number.toByte()
+                }
+                bytes
+            }
+            else -> ByteArray(0)
+        }
+    }
     @Suppress("UNCHECKED_CAST")
     fun getByteArrayList(path: String): List<ByteArray?> {
         return getList(path).map { (it as? JsonArray)?.mapNotNull { c -> c.jsonPrimitive.int.toByte() }?.toByteArray() }
@@ -279,19 +291,15 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
     private fun JsonPrimitive.toKotlinAny(): Any? {
         if (this is JsonNull) return null
 
-        // falls es als String serialisiert war -> String
         if (this.isString) return this.content
 
-        // booleans
         this.booleanOrNull?.let { return it }
 
-        // integers / longs / doubles (versuche int zuerst)
         this.intOrNull?.let { return it }
         this.longOrNull?.let { return it }
-        this.floatOrNull?.let { return it }
         this.doubleOrNull?.let { return it }
+        this.floatOrNull?.let { return it }
 
-        // Fallback: content (String)
         return this.content
     }
 
@@ -313,28 +321,16 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
         return new
     }
     fun List<JsonManager?>.merge(override: Boolean): JsonManager {
-        assert(this.isNotEmpty())
-
-        val mutable = this.filterNotNull().toMutableList()
-
-        while (mutable.size != 1) {
-            val first = mutable[0]
-            val second = mutable[1]
-
-            mutable[0] = first.merge(second, override)
-            mutable.removeAt(1)
-        }
-
-        return mutable.first()
+        return filterNotNull().reduceOrNull { merged, next -> merged.merge(next, override) } ?: JsonManager()
     }
-
+    
+    val keySet: Set<String>
+        get() = keySet()
+    
     /**
      * @return A deep set of all keys
      * @see keys
      */
-    val keySet: Set<String>
-        get() = keySet()
-
     val lowestKeys: Set<String>
         get() {
             val deepKeys = keySet.toMutableList()
@@ -375,9 +371,7 @@ class JsonManager(private var _content: JsonObject) : Cloneable {
     fun toJsonObject(): JsonObject = this._content
 
     public override fun clone(): JsonManager = JsonManager(this.toString())!!
-    override fun toString(): String = this.toString(true)
-    fun toString(pretty: Boolean = true): String {
-        val json = Json { prettyPrint = pretty }
+    override fun toString(): String {
         val content = json.parseToJsonElement(_content.toString())
         return json.encodeToString(JsonElement.serializer(), content)
     }
@@ -410,23 +404,3 @@ class JsonBodyPublisher(json: JsonManager) : HttpRequest.BodyPublisher {
 
 fun DataManager.readJson(): JsonManager? = this.readString()?.let { JsonManager(it) }
 fun DataManager.readJsonList(): List<JsonManager> = this.readString()?.let { JsonManager.listOf(it) }.orEmpty()
-
-inline fun <reified T: Any> JsonManager.deserializeOrThrow(deserializer: DeserializationStrategy<T>? = null) =
-    this.deserialize<T>(deserializer).getOrThrow()
-inline fun <reified T: Any> JsonManager.deserializeOrNull(deserializer: DeserializationStrategy<T>? = null) =
-    this.deserialize<T>(deserializer).getOrNull()
-inline fun <reified T: Any> JsonManager.deserialize(deserializer: DeserializationStrategy<T>? = null): Result<T> =
-    runCatching {
-        deserializer?.let { s -> Json.decodeFromString(s, this.toString(false)) }?.let { return@runCatching it }
-        return@runCatching Json.decodeFromString(this.toString())
-    }
-
-inline fun <reified T: Any> T.toJsonManagerOrThrow(serializer: SerializationStrategy<T>? = null): JsonManager =
-    this.toJsonManager(serializer).getOrThrow()
-inline fun <reified T: Any> T.toJsonManagerOrNull(serializer: SerializationStrategy<T>? = null): JsonManager? =
-    this.toJsonManager(serializer).getOrNull()
-inline fun <reified T: Any> T.toJsonManager(serializer: SerializationStrategy<T>? = null): Result<JsonManager> =
-    runCatching {
-        serializer?.let { s -> Json.encodeToString(s, this).let { return@runCatching JsonManager.parseOrThrow(it) } }
-        return@runCatching Json.encodeToString(this).let { JsonManager.parseOrThrow(it) }
-    }

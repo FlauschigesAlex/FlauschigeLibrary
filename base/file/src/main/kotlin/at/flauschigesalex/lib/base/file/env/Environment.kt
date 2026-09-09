@@ -25,8 +25,8 @@ object Environment {
         string.split(System.lineSeparator()).mapNotNull {
             if (it.contains('=').not()) return@mapNotNull null
             
-            val key = it.substringBefore('=')
-            val value = it.substringAfter('=')
+            val key = it.substringBefore('=').trim()
+            val value = it.substringAfter('=').trim()
             
             return@mapNotNull key to value
         }.toMap().apply {
@@ -40,6 +40,6 @@ object Environment {
 
     operator fun set(key: String, value: String) {
         fields[key] = value
-        file.write(fields.map { "${it.key}=${it.value}" }.joinToString(System.lineSeparator()))
+        file.write(fields.map { "${it.key.trim()}=${it.value.trim()}" }.joinToString(System.lineSeparator()))
     }
 }

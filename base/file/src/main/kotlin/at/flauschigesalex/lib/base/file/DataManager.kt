@@ -7,7 +7,9 @@ import java.net.URI
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
-abstract class DataManager protected constructor(val uri: URI) {
+sealed class DataManager(
+    val uri: URI
+) {
 
     abstract fun readStream(): InputStream?
     open fun readBytes(): ByteArray? = this.readStream()?.readAllBytes()
