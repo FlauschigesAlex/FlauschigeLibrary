@@ -67,11 +67,6 @@ object Cache {
         val key = key as? CacheKey<*> ?: CacheKey(T::class.java, key)
         return this.remove(key)
     }
-    inline fun <reified T: Any> remove(key: Any, value: T): T? {
-        val key = key as? CacheKey<*> ?: CacheKey(T::class.java, key)
-        return this.remove(key)
-    }
-    
 }
 
 data class CacheKey<T>(val clazz: Class<out T>, val key: Any) {
@@ -84,6 +79,9 @@ data class CacheEntry<T>(val value: T, private val expireRequire: CacheEntry<T>.
     
     val isExpired: Boolean get() = this.isTTLExpired && this.expireRequire(value)
     val isTTLExpired: Boolean get() = expiration.isBefore(Instant.now())
+
+    override fun equals(other: Any?): Boolean = other is CacheEntry<*> && value == other.value && other.expiration == expiration
+    override fun hashCode(): Int = value.hashCode() * 31 + expiration.hashCode()
 }
 
 @Retention(AnnotationRetention.RUNTIME)

@@ -9,14 +9,14 @@
     </parent>
 
     <artifactId>default-general</artifactId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
-            <version>1.10.2</version>
+            <version>1.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>

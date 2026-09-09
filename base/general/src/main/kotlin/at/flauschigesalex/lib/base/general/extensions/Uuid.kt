@@ -1,7 +1,7 @@
 @file:Suppress("unused")
 @file:OptIn(ExperimentalUuidApi::class)
 
-package at.flauschigesalex.lib.base.general
+package at.flauschigesalex.lib.base.general.extensions
 
 import java.time.Instant
 import java.util.UUID

@@ -25,48 +25,9 @@ class HttpRequestHandler(val uri: URI, consumer: HttpSettingsConsumer = {}) {
     }
 
     private val settings = HttpHandlerSettings()
-
-    @Deprecated("Use settings.client instead", ReplaceWith("settings.client"))
-    val client: HttpClient
-        get() = settings.client
-    
-    @Deprecated("Use settings.printStackTrace instead", ReplaceWith("settings.printStackTrace"))
-    var printStackTrace: Boolean
-        get() = settings.printStackTrace
-        set(value) { settings.printStackTrace = value }
-    
-    @Deprecated("Use settings.headers instead", ReplaceWith("settings.headers"))
-    val headers: Map<String, Any>
-        get() = settings.headers.toMap()
     
     init {
         this.settings.consumer()
-    }
-    
-    @Suppress("DEPRECATION")
-    @Deprecated("Use constructor consumer instead", ReplaceWith("HttpRequestHandler(uri, consumer)"))
-    fun setHeaders(vararg headers: Pair<String, Any>) = this.setHeaders(headers.toMap())
-
-    @Suppress("DEPRECATION")
-    @Deprecated("Use constructor consumer instead", ReplaceWith("HttpRequestHandler(uri, consumer)"))
-    fun setHeaders(headers: Map<String, Any>): HttpRequestHandler = this.apply {
-        this.settings.headers = headers.toMutableMap()
-    }
-
-    @Suppress("DEPRECATION")
-    @Deprecated("Use constructor consumer instead", ReplaceWith("HttpRequestHandler(uri, consumer)"))
-    fun addHeaders(vararg headers: Pair<String, Any>) = this.addHeaders(headers.toMap())
-    
-    @Suppress("DEPRECATION")
-    @Deprecated("Use constructor consumer instead", ReplaceWith("HttpRequestHandler(uri, consumer)"))
-    fun addHeaders(headers: Map<String, Any>): HttpRequestHandler = this.apply { 
-        this.settings.headers += headers
-    }
-
-    @Suppress("DEPRECATION")
-    @Deprecated("Use constructor consumer instead", ReplaceWith("HttpRequestHandler(uri, consumer)"))
-    fun clearHeaders(): HttpRequestHandler = this.apply { 
-        this.settings.headers.clear()
     }
     
     // BEGIN HTTP FUNCTIONS
@@ -135,7 +96,7 @@ enum class HttpRequestMethod {
 data class HttpHandlerSettings internal constructor(
     var printStackTrace: Boolean = true,
     var headers: MutableMap<String, Any> = mutableMapOf(),
-    val client: HttpClient = DEFAULT_CLIENT
+    var client: HttpClient = DEFAULT_CLIENT
 ) {
     companion object {
         var DEFAULT_CLIENT: HttpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()

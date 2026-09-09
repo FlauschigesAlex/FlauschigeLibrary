@@ -2,6 +2,7 @@
 
 package at.flauschigesalex.lib.base.general
 
+@Deprecated("legacy", ReplaceWith("kotlin.Result"), level = DeprecationLevel.ERROR)
 class Validator<T>(val value: T, val isValid: Boolean, val reason: String? = null) {
 
     constructor(input: T, supplier: (T) -> Boolean, reason: String? = null): this(input, supplier.invoke(input), reason)
