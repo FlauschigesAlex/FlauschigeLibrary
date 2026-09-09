@@ -8,6 +8,7 @@ import at.flauschigesalex.lib.minecraft.paper.base.utils.isColorable
 import at.flauschigesalex.lib.minecraft.paper.base.utils.persistentData
 import at.flauschigesalex.lib.minecraft.paper.base.utils.texture
 import com.destroystokyo.paper.profile.PlayerProfile
+import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -23,8 +24,12 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 
 @Suppress("MemberVisibilityCanBePrivate")
-class ItemCreator<out M: ItemMeta> private constructor(internal val item: ItemStack, private val metaClass: Class<M>, private val constructorConsumer: M.() -> Unit = {}, private val overrideConsumer: M.() -> Unit = {}) {
-
+class ItemCreator<out M: ItemMeta> private constructor(
+    internal val item: ItemStack,
+    private val metaClass: Class<M>,
+    private val constructorConsumer: M.() -> Unit = {},
+    private val overrideConsumer: M.() -> Unit = {}
+) {
     companion object {
         fun skull(profile: OfflinePlayer, consumer: (SkullMeta) -> Unit = {}): ItemCreator<SkullMeta> {
             return ItemCreator(Material.PLAYER_HEAD, SkullMeta::class.java, consumer, overrideConsumer = {
@@ -60,7 +65,12 @@ class ItemCreator<out M: ItemMeta> private constructor(internal val item: ItemSt
         var defaultMaterial = Material.PAPER
     }
 
-    private constructor(material: Material, metaClass: Class<M>, consumer: M.() -> Unit = {}, overrideConsumer: M.() -> Unit = {}) : this(
+    private constructor(
+        material: Material,
+        metaClass: Class<M>,
+        consumer: M.() -> Unit = {},
+        overrideConsumer: M.() -> Unit = {}
+    ) : this(
         ItemStack(material), metaClass, consumer, overrideConsumer
     )
 
@@ -89,23 +99,3 @@ class ItemCreator<out M: ItemMeta> private constructor(internal val item: ItemSt
         }
     }
 }
-
-// EXTENSIONS
-
-fun ItemMeta.richName(richName: String) = this.customName(MiniMessage.miniMessage().deserialize(richName))
-fun ItemMeta.richLore(richLore: List<String>) = this.lore(richLore.map { MiniMessage.miniMessage().deserialize(it) })
-fun ItemMeta.richLore(vararg richLore: String) = this.richLore(richLore.toList())
-fun ItemMeta.appendRichLore(richLore: List<String>) = this.lore((this.lore()?: mutableListOf()).apply {
-    this.addAll(richLore.map { MiniMessage.miniMessage().deserialize(it) })
-})
-fun ItemMeta.appendRichLore(vararg richLore: String) = this.appendRichLore(richLore.toList())
-fun ItemMeta.texture(material: Material) = this.texture(material.key)
-fun ItemMeta.texture(key: NamespacedKey) {
-    this.itemModel = key
-}
-fun ItemMeta.persistentData(plugin: JavaPlugin, persistent: PersistentData.() -> Unit) = this.persistentData(plugin, persistent)
-
-@Suppress("UnstableApiUsage")
-fun ItemStack.customModelData(supplier: () -> CustomModelData.Builder) {
-    supplier.invoke().build()
-} 

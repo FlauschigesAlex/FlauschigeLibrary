@@ -5,6 +5,7 @@ package at.flauschigesalex.lib.minecraft.paper.ui
 import at.flauschigesalex.lib.minecraft.paper.base.FlauschigeLibraryPaper
 import at.flauschigesalex.lib.minecraft.paper.base.internal.PaperListener
 import at.flauschigesalex.lib.minecraft.paper.ui.PaperGUI.Companion.openGUIs
+import at.flauschigesalex.lib.minecraft.paper.ui.extensions.set
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -19,16 +20,6 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
-
-operator fun Inventory.get(index: Int): ItemStack? {
-    return this.getItem(index)
-}
-operator fun Inventory.set(index: Int, item: ItemStack?) {
-    this.setItem(index, item)
-}
-operator fun Inventory.set(index: IntRange, item: ItemStack?) {
-    index.forEach { this[it] = item }
-}
 
 fun HumanEntity.getOpenGUI(): PaperGUI? {
     return openGUIs[this.uniqueId]
@@ -206,15 +197,18 @@ internal object PaperGUIListener : PaperListener() {
     }
 }
 
-@Deprecated("Legacy name", ReplaceWith("PaperGuiClickData")) typealias PluginGUIClick = PaperGuiClickData 
-data class PaperGuiClickData(val player: Player,
-                             val gui: PaperGUI,
-                             val inventory: Inventory,
-                             val clickedItem: ItemStack?,
-                             val clickedSlot: Int,
-                             val clickType: ClickType,
-                             val cursorItem: ItemStack?,
-                             val event: InventoryClickEvent,
+@Deprecated("Legacy name", ReplaceWith("PaperGuiClickData"))
+typealias PluginGUIClick = PaperGuiClickData 
+
+open class PaperGuiClickData(
+    val player: Player,
+    val gui: PaperGUI,
+    val inventory: Inventory,
+    val clickedItem: ItemStack?,
+    val clickedSlot: Int,
+    val clickType: ClickType,
+    val cursorItem: ItemStack?,
+    val event: InventoryClickEvent,
 ) {
     var isCancelled: Boolean
         get() = event.isCancelled
