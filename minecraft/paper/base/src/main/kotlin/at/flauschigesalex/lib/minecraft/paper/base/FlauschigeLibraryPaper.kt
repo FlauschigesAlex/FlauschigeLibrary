@@ -2,7 +2,7 @@
 
 package at.flauschigesalex.lib.minecraft.paper.base
 
-import at.flauschigesalex.lib.base.general.Reflector
+import at.flauschigesalex.lib.base.general.reflect.Reflector
 import at.flauschigesalex.lib.minecraft.api.CacheableMojangProfile
 import at.flauschigesalex.lib.minecraft.api.MojangAPI
 import at.flauschigesalex.lib.minecraft.api.MojangProfile

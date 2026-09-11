@@ -3,7 +3,7 @@
 package at.flauschigesalex.lib.minecraft.velocity.base
 
 import at.flauschigesalex.lib.base.file.FileManager
-import at.flauschigesalex.lib.base.general.Reflector
+import at.flauschigesalex.lib.base.general.reflect.Reflector
 import at.flauschigesalex.lib.minecraft.api.CacheableMojangProfile
 import at.flauschigesalex.lib.minecraft.api.MojangAPI
 import at.flauschigesalex.lib.minecraft.api.MojangProfile
@@ -63,8 +63,8 @@ object FlauschigeLibraryVelocity {
 
     private fun reflectPaper(data: InternalPluginData, server: ProxyServer) {
         val (plugin, packageName) = data
-        
-        Reflector.reflect(plugin.javaClass.classLoader, packageName).getSubTypes(VelocityReflect::class.java).filter {
+
+        Reflector.reflect(plugin.javaClass.classLoader, packageName).subTypesOf<VelocityReflect>().filter {
             !Modifier.isAbstract(it.modifiers) && !it.isAnonymousClass
         }.forEach {
             try {

@@ -1,6 +1,6 @@
 package at.flauschigesalex.lib.discord
 
-import at.flauschigesalex.lib.base.general.Reflector
+import at.flauschigesalex.lib.base.general.reflect.Reflector
 import at.flauschigesalex.lib.discord.command.CommandListener
 import at.flauschigesalex.lib.discord.listener.DiscordListener
 import net.dv8tion.jda.api.JDA

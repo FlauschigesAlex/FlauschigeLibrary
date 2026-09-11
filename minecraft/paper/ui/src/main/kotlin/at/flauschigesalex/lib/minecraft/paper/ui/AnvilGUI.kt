@@ -20,7 +20,6 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.MenuType
 import org.bukkit.inventory.view.AnvilView
-import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 import javax.naming.OperationNotSupportedException
