@@ -65,7 +65,7 @@ class MongoDatabaseHandler(override val loginData: MongoLogin) :
     }
 
     override fun connect() = runCatching {
-        val addresses = loginData.hosts as List<ServerAddress?>
+        val addresses = loginData.hosts.toMutableList()
         val credential = MongoCredential.createCredential(
             loginData.username,
             loginData.database,
