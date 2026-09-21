@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 import kotlin.collections.get
 
+@Deprecated("Replaced by new 'at.flauschigesalex.lib.base:default-cache:1.0.0' module.")
 object Cache {
     
     @CacheInternal

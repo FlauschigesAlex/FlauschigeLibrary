@@ -8,23 +8,14 @@
         <version>2.0.4</version>
     </parent>
 
-    <artifactId>default-general</artifactId>
-    <version>3.0.1</version>
+    <artifactId>default-cache</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
-            <artifactId>kotlinx-coroutines-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
+            <artifactId>kotlinx-serialization-core</artifactId>
         </dependency>
     </dependencies>
-
 </project>

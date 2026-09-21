@@ -16,6 +16,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>cache</module>
         <module>file</module>
         <module>general</module>
         <module>time</module>
