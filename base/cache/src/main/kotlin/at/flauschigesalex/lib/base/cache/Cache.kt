@@ -20,7 +20,7 @@ object Cache {
     ): Set<CacheEntry<A?>> {
         this.removeInvalid()
         
-        return cache.filter { it.key.valueClass == A::class.java }
+        return cache.toSet().filter { it.key.valueClass == A::class.java }
             .filter { predicate(it as CacheEntry<A?>) }
             .toSet() as Set<CacheEntry<A?>>
     }
@@ -79,6 +79,17 @@ object Cache {
             .also { amount = it.count() }
             .forEach { cache.remove(it) }
 
+        return amount
+    }
+    
+    @JvmName("removeIfAny")
+    fun removeIf(predicate: (CacheEntry<*>) -> Boolean): Int {
+        val amount: Int
+        cache.toSet().filter { predicate(it) }.apply {
+            this.forEach { cache.remove(it) }
+            amount = this.count()
+        }
+        
         return amount
     }
 }
