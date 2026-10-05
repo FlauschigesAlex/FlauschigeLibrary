@@ -4,6 +4,8 @@ package at.flauschigesalex.lib.minecraft.api
 
 import at.flauschigesalex.lib.base.file.json.JsonManager
 import at.flauschigesalex.lib.base.general.HttpRequestHandler
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.util.*
 import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
@@ -210,10 +212,18 @@ object MojangAPI {
     }
 }
 
-data class MojangProfile(val name: String, val uniqueId: UUID, val texture: MojangProfileTexture?) {
-    constructor(name: String, uuid: Uuid, texture: MojangProfileTexture?) : this(name, uuid.toJavaUuid(), texture)
+@Serializable
+data class MojangProfile(val name: String, val uuid: Uuid, val texture: MojangProfileTexture?) {
+    constructor(name: String, uniqueId: UUID, texture: MojangProfileTexture?) : this(name, uniqueId.toKotlinUuid(), texture)
     
-    val uuid: Uuid = uniqueId.toKotlinUuid()
+    companion object;
+    
+    @Transient
+    val uniqueId: UUID = uuid.toJavaUuid()
 }
+
+@Serializable
 data class MojangProfileTexture(val value: String, val signature: String)
+
+@Serializable
 data class CacheableMojangProfile(val profile: MojangProfile, internal val shouldCache: Boolean = true)
