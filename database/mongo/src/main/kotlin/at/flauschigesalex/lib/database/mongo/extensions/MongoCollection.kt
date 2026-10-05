@@ -62,7 +62,12 @@ data class MongoCollectionChange<TDocument>(
 )
 
 fun MongoDatabase.enableFullDocumentWatcher(collection: MongoCollection<*>) {
-    this.runCommand(Document("collMod", collection.namespace.collectionName)
+    val collectionName = collection.namespace.collectionName
+    runCatching { 
+        createCollection(collectionName)
+    }
+    
+    this.runCommand(Document("collMod", collectionName)
         .append("changeStreamPreAndPostImages", Document("enabled", true))
     )
 }
